@@ -4,23 +4,53 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 
-public class PageActivity extends AppCompatActivity {
+import java.net.URL;
 
+public class PageActivity extends AppCompatActivity {
+    private Uri getUri() {
+        TextView urlText = findViewById(R.id.browser_url);
+        String str = urlText.getText().toString();
+        Uri uri = Uri.parse(str);
+        return uri;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.page_activity);
-        TextView urlText = findViewById(R.id.browsing_url);
+        TextView urlText = findViewById(R.id.browser_url);
         Intent intent = getIntent();
         Uri openUri = intent.getData();
         urlText.setText(openUri.toString());
         System.out.println(openUri.toString());
+    }
+
+    public void handlePageLoad(String url) {
+        if (!url.startsWith("gemini://")) {
+            url = String.format("gemini://%s", url);
+        }
+        Uri uri = Uri.parse(url);
+        System.out.println(uri.toString());
+        ((TextView)findViewById(R.id.browser_url)).setText(uri.toString());
+        LinearLayout content = findViewById(R.id.browser_content);
+        content.removeAllViewsInLayout();
+        TextView tv = new TextView(this);
+        tv.setText(url);
+        content.addView(tv);
+        // TODO: fetch and rendering
+    }
+
+    public void handlePageGo(View view) {
+        Uri uri = getUri();
+
+        TextView urlText = findViewById(R.id.browser_url);
+        handlePageLoad(urlText.getText().toString());
     }
 
 }
