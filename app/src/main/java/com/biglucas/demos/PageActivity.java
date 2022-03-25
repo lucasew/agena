@@ -11,9 +11,12 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 
+import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 public class PageActivity extends AppCompatActivity {
+    private Gemini gemini;
     private Uri getUri() {
         TextView urlText = findViewById(R.id.browser_url);
         String str = urlText.getText().toString();
@@ -28,6 +31,7 @@ public class PageActivity extends AppCompatActivity {
         Intent intent = getIntent();
         Uri openUri = intent.getData();
         urlText.setText(openUri.toString());
+        this.gemini = new Gemini(URI.create(openUri.toString()));
         System.out.println(openUri.toString());
     }
 
@@ -40,10 +44,18 @@ public class PageActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.browser_url)).setText(uri.toString());
         LinearLayout content = findViewById(R.id.browser_content);
         content.removeAllViewsInLayout();
-        TextView tv = new TextView(this);
-        tv.setText(url);
-        content.addView(tv);
+
         // TODO: fetch and rendering
+        try {
+            List<String> list = this.gemini.request(this, URI.create(url.toString()));
+            for (String item : list) {
+                TextView tv = new TextView(this);
+                tv.setText(item);
+                content.addView(tv);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void handlePageGo(View view) {
