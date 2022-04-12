@@ -14,4 +14,9 @@ public class FailedGeminiRequestException extends Exception {
             super("Unimplemented case");
         }
     }
+    public static class GeminiNotFound extends  FailedGeminiRequestException {
+        public GeminiNotFound () {
+            super("content not found");
+        }
+    }
 }

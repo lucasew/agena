@@ -13,18 +13,17 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="title_activity_page">PageActivity</string>
 
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
+    <string name="warning_icon">Just a warning icon to make it explicit that something unexpected happened</string>
+    <string name="more_information">More information</string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Generic unspecified/unhandled error</string>
+    <string name="error_unable_to_resolve_host">Unable to resolve host. It wasn\'t found by DNS.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="error_connection_timeout">Timeout while connecting to the server. Is really there a Gemini server?</string>
+    <string name="error_gemini_not_found">Content not found</string>
+    <string name="error_gemini_invalid_response">Server returned an invalid response</string>
+    <string name="error_gemini_unimplemented">Gemini protocol detail not implemented</string>
 </resources>

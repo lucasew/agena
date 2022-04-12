@@ -5,20 +5,19 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="102dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <EditText
             android:id="@+id/browser_url"
-            android:layout_width="330dp"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
             android:layout_weight="1"
             android:inputType="textPersonName" />
 
         <Button
             android:id="@+id/page_refresh"
-            android:layout_width="40dp"
+            android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:onClick="handlePageGo"
@@ -26,18 +25,18 @@
 
         <Button
             android:id="@+id/page_go"
-            android:layout_width="40dp"
+            android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:onClick="handlePageGo"
             android:text=">" />
     </LinearLayout>
 
-    <LinearLayout
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/browser_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="top" />
 
+    <!--        android:name="com.biglucas.demos.PageContentFragment"-->
 </LinearLayout>

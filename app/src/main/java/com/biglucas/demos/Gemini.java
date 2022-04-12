@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -52,7 +53,12 @@ public class Gemini {
         if (port == -1) {
             port = 1965;
         }
-        SSLSocket socket = (SSLSocket) SSLSocketFactorySingleton.getSSLSocketFactory().createSocket(uri.getHost(), port);
+        SSLSocket socket = (SSLSocket) SSLSocketFactorySingleton
+                .getSSLSocketFactory()
+                .createSocket();
+        // TODO: configurable timeout
+        socket.connect(new InetSocketAddress(uri.getHost(), port), 5 * 1000);
+        socket.setSoTimeout(5*1000);
         socket.startHandshake();
 
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
@@ -115,6 +121,10 @@ public class Gemini {
         if (responseCode >= 30 && responseCode < 40) {
             this.lastUri = uri;
             return this.request(activity, URI.create(meta));
+        }
+        if (responseCode == 51) {
+            this.lastUri = uri;
+            throw new FailedGeminiRequestException.GeminiNotFound();
         }
         System.out.printf("server header: %s\n", headerline);
         System.out.printf("meta: %s\n", meta);
