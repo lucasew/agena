@@ -91,9 +91,14 @@ public class Gemini {
         if (responseCode >= 20 && responseCode < 30) {
             if (meta.startsWith("text/gemini")) {
                 List<String> lines = new ArrayList<String>();
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    lines.add(line);
+                while (true) {
+                    String line = bufferedReader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    for (String l : line.split("\n")) {
+                        lines.add(line);
+                    }
                 }
                 this.lastUri = uri;
                 bufferedReader.close();
