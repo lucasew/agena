@@ -26,4 +26,5 @@
     <string name="error_gemini_not_found">Content not found</string>
     <string name="error_gemini_invalid_response">Server returned an invalid response</string>
     <string name="error_gemini_unimplemented">Gemini protocol detail not implemented</string>
+    <string name="please_wait">Please wait</string>
 </resources>

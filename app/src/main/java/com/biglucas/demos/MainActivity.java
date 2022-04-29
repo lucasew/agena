@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO: fazer multithread
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
+        // StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }

@@ -5,24 +5,18 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentContainer;
-import androidx.fragment.app.FragmentContainerView;
-import androidx.preference.PreferenceFragmentCompat;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Array;
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
-import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.Future;
 
 public class PageActivity extends AppCompatActivity {
     private Gemini gemini;
@@ -41,17 +35,18 @@ public class PageActivity extends AppCompatActivity {
         Uri openUri = intent.getData();
         urlText.setText(openUri.toString());
         this.gemini = new Gemini(URI.create(openUri.toString()));
+        handlePageGo(null);
         System.out.println(openUri.toString());
     }
 
-    public void handlePageLoaded(ArrayList<String> content) {
+    public void handleLoad(ArrayList<String> content) {
         this.getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.browser_content, new PageContentFragment(content))
                 .addToBackStack(null)
                 .commit();
     }
-    public synchronized void handlePageLoaded(Exception e) {
+    public synchronized void handleLoad(Exception e) {
         String errText;
         if (e instanceof UnknownHostException) {
             errText = this.getApplicationContext().getResources().getString(R.string.error_unable_to_resolve_host);
@@ -83,16 +78,42 @@ public class PageActivity extends AppCompatActivity {
         Uri uri = Uri.parse(url);
         System.out.println(uri.toString());
         ((TextView)findViewById(R.id.browser_url)).setText(uri.toString());
+        PageActivity that = this;
         // TODO: fetch and rendering
-        try {
-            ArrayList<String> list = (ArrayList<String>) this.gemini.request(this, URI.create(url.toString()));
-            handlePageLoaded(list);
-        } catch (Exception e) {
-            handlePageLoaded(e);
-        }
+        AsyncTask<String, Integer, ArrayList<String>> task = new AsyncTask<String, Integer, ArrayList<String>>() {
+            private Exception exception;
+            private ArrayList<String> list;
+
+            @Override
+            protected ArrayList<String> doInBackground(String ..._) {
+                try {
+                    System.out.println("* request na thread *");
+                    this.list = (ArrayList<String>) that.gemini.request(that, URI.create(uri.toString())); // gambiarra alert
+                } catch (Exception e) {
+                    this.exception = e;
+                }
+                return this.list;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<String> _) {
+                System.out.println("* post execute *");
+                if (list != null) {
+                    for (String item : list) {
+                        System.out.println(item);
+                    }
+                }
+                if (list != null) {
+                    that.handleLoad(list);
+                } else {
+                    that.handleLoad(exception);
+                }
+            }
+        };
+        task.execute("");
     }
 
-    public void handlePageGo(View view) {
+    public void handlePageGo(View view) { // this method is called from the XML
         TextView urlText = findViewById(R.id.browser_url);
         handlePageLoad(urlText.getText().toString());
     }
