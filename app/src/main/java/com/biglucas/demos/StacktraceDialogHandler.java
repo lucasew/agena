@@ -1,6 +1,7 @@
 package com.biglucas.demos;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.View;
@@ -17,7 +18,10 @@ public class StacktraceDialogHandler {
     }
 
     public void show(View view) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+        show(view.getContext());
+    }
+    public void show(Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());
         StringWriter sw = new StringWriter();

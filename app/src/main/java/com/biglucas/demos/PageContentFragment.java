@@ -1,14 +1,7 @@
 package com.biglucas.demos;
 
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.graphics.pdf.PdfDocument;
-import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
-import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,14 +9,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.material.resources.TextAppearance;
+import androidx.fragment.app.Fragment;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -86,7 +76,7 @@ public class PageContentFragment extends Fragment {
                         System.out.println(finalButtonURI);
                         URI newURI = that.oldURI.resolve(URI.create(finalButtonURI));
 
-                        that.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(newURI.toString())));
+                        new Invoker(that.getActivity(), newURI.toString()).invoke();
                     }
                 });
                 System.out.printf("label='%s' uri='%s'", label, buttonURI);

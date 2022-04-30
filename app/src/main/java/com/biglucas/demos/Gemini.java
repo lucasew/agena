@@ -1,7 +1,6 @@
 package com.biglucas.demos;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.icu.util.Output;
 import android.net.Uri;
@@ -38,10 +37,8 @@ public class Gemini {
         System.out.printf("Requesting: '%s'\n", uri.toString());
         System.out.printf("scheme: '%s'", uri.getScheme());
         if (!uri.getScheme().equals("gemini")) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri.toString()));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            activity.startActivity(intent);
-            return new ArrayList<String>();
+            new Invoker(activity, uri).invokeNewWindow();
+            return new ArrayList<>();
         }
         int port = uri.getPort();
         if (port == -1) {
@@ -104,15 +101,13 @@ public class Gemini {
             }
             if (meta.startsWith("image/")) {
                 File cachedImage = saveFileToCache(socket, Uri.parse(cleanedEntity), activity.getCacheDir());
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(cachedImage.toURI().toString()));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                 bufferedReader.close();
                 headInputStreamReader.close();
                 inputStream.close();
                 outWriter.close();
                 bufferedReader.close();
                 outputStreamWriter.close();
-                activity.startActivity(intent);
+                new Invoker(activity, cachedImage.toURI().toString()).invokeNewWindow();
                 return new ArrayList<String>();
             }
         }

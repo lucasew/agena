@@ -1,7 +1,6 @@
 package com.biglucas.demos;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,14 +9,10 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.concurrent.Future;
 
 public class PageActivity extends AppCompatActivity {
     private URI url;
@@ -37,16 +32,16 @@ public class PageActivity extends AppCompatActivity {
         String urlToGoTo = urlText.getText().toString();
         URI destURL = this.url.resolve(URI.create(urlToGoTo));
         System.out.printf("scheme: '%s'", destURL.getScheme());
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(destURL.toString()));
-        startActivity(intent);
+        new Invoker(this, destURL).invoke();
     }
     public void handlePageReload(View view) {
         handlePageLoad();
     }
     public void handleLoad(ArrayList<String> content) {
+        if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.browser_content, new PageContentFragment(content, this.url), "page")
+                .replace(R.id.browser_content, new PageContentFragment(content, this.url))
                 .commit();
     }
     private void handleLoad(Exception e) {
@@ -65,9 +60,10 @@ public class PageActivity extends AppCompatActivity {
         } else  {
             errText = appctx.getResources().getString(R.string.error_generic);
         }
+        if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.browser_content, new PageErrorFragment(errText, e), "page")
+                .replace(R.id.browser_content, new PageErrorFragment(errText, e))
                 .commit();
     }
 
@@ -76,9 +72,10 @@ public class PageActivity extends AppCompatActivity {
     }
     public void handlePageLoad(String url) {
         System.out.println("page load");
+        if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.browser_content, new PageLoadingFragment(), "page")
+                .replace(R.id.browser_content, new PageLoadingFragment())
                 .commit();
         Uri uri = Uri.parse(url);
         System.out.println(uri.toString());
