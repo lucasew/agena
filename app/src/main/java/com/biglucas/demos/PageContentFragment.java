@@ -1,7 +1,9 @@
 package com.biglucas.demos;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -31,16 +33,11 @@ import java.util.regex.Pattern;
 public class PageContentFragment extends Fragment {
 
     private final ArrayList<String> content;
-    private final PageHandler ph;
+    private final URI oldURI;
 
-    public PageContentFragment(PageHandler ph) {
-        this.content = new ArrayList<>();
-        this.ph = ph;
-    }
-
-    public PageContentFragment(PageHandler ph, ArrayList<String> list) {
+    public PageContentFragment(ArrayList<String> list, URI oldURI) {
         this.content = list;
-        this.ph = ph;
+        this.oldURI = oldURI;
     }
 
     @Override
@@ -87,7 +84,9 @@ public class PageContentFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
                         System.out.println(finalButtonURI);
-                        that.ph.handlePageLoad(finalButtonURI);
+                        URI newURI = that.oldURI.resolve(URI.create(finalButtonURI));
+
+                        that.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(newURI.toString())));
                     }
                 });
                 System.out.printf("label='%s' uri='%s'", label, buttonURI);
