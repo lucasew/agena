@@ -43,6 +43,7 @@ public class Gemini {
         if (this.lastUri != null) {
             uri = this.lastUri.resolve(uri);
         }
+        System.out.printf("scheme: '%s'", uri.getScheme());
         if (!uri.getScheme().equals("gemini")) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri.toString()));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);

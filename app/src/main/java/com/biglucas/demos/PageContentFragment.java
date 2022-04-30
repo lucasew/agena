@@ -1,6 +1,7 @@
 package com.biglucas.demos;
 
 import android.graphics.Typeface;
+import android.graphics.pdf.PdfDocument;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -30,17 +31,16 @@ import java.util.regex.Pattern;
 public class PageContentFragment extends Fragment {
 
     private final ArrayList<String> content;
+    private final PageHandler ph;
 
-    public PageContentFragment() {
+    public PageContentFragment(PageHandler ph) {
         this.content = new ArrayList<>();
+        this.ph = ph;
     }
 
-    public PageContentFragment(ArrayList<String> list) {
+    public PageContentFragment(PageHandler ph, ArrayList<String> list) {
         this.content = list;
-    }
-
-    public static PageContentFragment newInstance(List<String> content) {
-        return new PageContentFragment();
+        this.ph = ph;
     }
 
     @Override
@@ -68,10 +68,7 @@ public class PageContentFragment extends Fragment {
                 monospaceText = String.format("%s\n%s", monospaceText, item);
             }
             if (item.startsWith("=>")) { // TODO: arrumar esse regex cagado
-                StringTokenizer tokenizer = new StringTokenizer(item);
-                String equalBigger = tokenizer.nextToken();
-                System.out.println(equalBigger);
-                assert equalBigger.startsWith("=>");
+                StringTokenizer tokenizer = new StringTokenizer(item.substring(2));
                 String buttonURI = tokenizer.nextToken();
                 String label = "";
                 while (tokenizer.hasMoreElements()) {
@@ -84,6 +81,15 @@ public class PageContentFragment extends Fragment {
                 }
                 Button button = new Button(this.getContext());
                 button.setText(label);
+                String finalButtonURI = buttonURI;
+                PageContentFragment that = this;
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        System.out.println(finalButtonURI);
+                        that.ph.handlePageLoad(finalButtonURI);
+                    }
+                });
                 System.out.printf("label='%s' uri='%s'", label, buttonURI);
                 // TODO: add handler
                 contentColumn.addView(button);
