@@ -1,5 +1,6 @@
 package com.biglucas.demos;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -17,6 +18,7 @@ import com.google.android.material.resources.TextAppearance;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,22 +49,44 @@ public class PageContentFragment extends Fragment {
         contentColumn.removeAllViewsInLayout();
         TextView tv = new TextView(this.getContext());
         float textSizeBaseline = 14; //tv.getTextSize();
-        System.out.printf("Default text size: %f", tv.getTextSize());
+        System.out.printf("Default text size: %f\n", tv.getTextSize());
+        String monospaceText = null;
         for (String item : this.content) {
-            if (item.startsWith("=>")) { // TODO: arrumar esse regex cagado
-                Pattern pattern = Pattern.compile("=> *([^ ]*) *([^$]*)");
-                try {
-                    Matcher matcher = pattern.matcher(item);
-                    String url = matcher.group(1);
-                    String label = matcher.group(2);
-                    Button button = new Button(this.getContext());
-                    button.setText(label);
-                    // TODO: add handler
-                    contentColumn.addView(button);
-                } catch (IllegalStateException e) {
-                    e.printStackTrace();
-                    System.out.printf("failed: %s\n", item);
+            if (item.startsWith("```")) {
+                if (monospaceText != null) {
+                    TextView txt = new TextView(this.getContext());
+                    txt.setText(monospaceText);
+                    txt.setTypeface(Typeface.MONOSPACE);
+                    contentColumn.addView(txt);
+                    monospaceText = null;
+                } else {
+                    monospaceText = "";
                 }
+                continue;
+            }
+            if (monospaceText != null) {
+                monospaceText = String.format("%s\n%s", monospaceText, item);
+            }
+            if (item.startsWith("=>")) { // TODO: arrumar esse regex cagado
+                StringTokenizer tokenizer = new StringTokenizer(item);
+                String equalBigger = tokenizer.nextToken();
+                System.out.println(equalBigger);
+                assert equalBigger.startsWith("=>");
+                String buttonURI = tokenizer.nextToken();
+                String label = "";
+                while (tokenizer.hasMoreElements()) {
+                    label = String.format("%s %s", label, tokenizer.nextToken());
+                }
+                label = label.trim(); // remove spaces around
+                buttonURI = buttonURI.trim();
+                if (label.length() == 0) {
+                    label = buttonURI;
+                }
+                Button button = new Button(this.getContext());
+                button.setText(label);
+                System.out.printf("label='%s' uri='%s'", label, buttonURI);
+                // TODO: add handler
+                contentColumn.addView(button);
                 continue;
             }
             int headingLevels = 0;
@@ -84,8 +108,15 @@ public class PageContentFragment extends Fragment {
                 case 4: tv.setTextSize(textSizeBaseline * (12f/11f)); break;
                 default: tv.setTextSize(textSizeBaseline);
             }
+            if (item.startsWith("*")) {
+                cutoutLevels += 1;
+            }
+            String labelText = item.substring(cutoutLevels).trim();
+            if (item.startsWith("*")) {
+                labelText = String.format("○ %s", labelText);
+            }
+            tv.setText(labelText);
             System.out.println(tv.getTextSize());
-            tv.setText(item.substring(cutoutLevels));
             contentColumn.addView(tv);
             tv = new TextView(this.getContext());
         }
