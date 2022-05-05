@@ -1,13 +1,17 @@
 package com.biglucas.demos;
 
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
@@ -17,17 +21,20 @@ import java.util.StringTokenizer;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link PageContentFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class PageContentFragment extends Fragment {
 
     private final ArrayList<String> content;
-    private final URI oldURI;
+    private final Uri oldURI;
 
-    public PageContentFragment(ArrayList<String> list, URI oldURI) {
+    public PageContentFragment(ArrayList<String> list, Uri oldURI) {
         this.content = list;
         this.oldURI = oldURI;
+    }
+
+    public PageContentFragment() {
+        this(new ArrayList<>(), Uri.parse("gemini://example.com"));
     }
 
     @Override
@@ -56,29 +63,72 @@ public class PageContentFragment extends Fragment {
             }
             if (item.startsWith("=>")) { // TODO: arrumar esse regex cagado
                 StringTokenizer tokenizer = new StringTokenizer(item.substring(2));
-                String buttonURI = tokenizer.nextToken();
+                String buttonURI = tokenizer.nextToken().trim();
                 String label = "";
                 while (tokenizer.hasMoreElements()) {
                     label = String.format("%s %s", label, tokenizer.nextToken());
                 }
                 label = label.trim(); // remove spaces around
-                buttonURI = buttonURI.trim();
                 if (label.length() == 0) {
                     label = buttonURI;
                 }
                 Button button = new Button(this.getContext());
                 button.setText(label);
-                String finalButtonURI = buttonURI;
-                PageContentFragment that = this;
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        System.out.println(finalButtonURI);
-                        URI newURI = that.oldURI.resolve(URI.create(finalButtonURI));
+                button.setAllCaps(false);
 
-                        new Invoker(that.getActivity(), newURI.toString()).invoke();
-                    }
-                });
+                String oldURINormalized = this.oldURI.toString();
+                if (!oldURINormalized.endsWith("/")) {
+                    oldURINormalized = String.format("%s/", oldURINormalized);
+                }
+                PageContentFragment that = this;
+                String finalOldURINormalized = oldURINormalized.trim();
+                    button.setOnTouchListener(new View.OnTouchListener() {
+                        private Uri getFinalButtonURI() {
+                            try {
+                                System.out.print(buttonURI);
+                                Uri u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(buttonURI.trim()).toString());
+                                //System.out.println(u.toString());
+                                return u;
+                            } catch (IllegalArgumentException e) {
+                                System.out.printf("uri '%s' %d\n", finalOldURINormalized, finalOldURINormalized.charAt(0));
+                                System.out.println("wtf, man");
+                                e.printStackTrace();
+                                return Uri.parse(buttonURI.trim());
+                            }
+                        }
+                        private Invoker getInvoker() {
+                            return new Invoker(getActivity(), getFinalButtonURI());
+                        }
+                        private GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+                            @Override
+                            public boolean onDoubleTap(MotionEvent e) {
+                                getInvoker().invokeNewWindow();
+                                return super.onDoubleTap(e);
+                            }
+
+                            @Override
+                            public boolean onSingleTapConfirmed(MotionEvent e) {
+                                getInvoker().invoke();
+                                return super.onSingleTapConfirmed(e);
+                            }
+
+                            @Override
+                            public void onLongPress(MotionEvent e) {
+                                Toast.makeText(that.getContext(), getFinalButtonURI().toString(), Toast.LENGTH_SHORT)
+                                        .show();
+                                System.out.println("long press");
+                                super.onLongPress(e);
+                            }
+                        });
+
+                        @Override
+                        public boolean onTouch(View view, MotionEvent motionEvent) {
+                            gestureDetector.onTouchEvent(motionEvent);
+                            return true;
+                        }
+
+                    });
+
                 System.out.printf("label='%s' uri='%s'", label, buttonURI);
                 // TODO: add handler
                 contentColumn.addView(button);

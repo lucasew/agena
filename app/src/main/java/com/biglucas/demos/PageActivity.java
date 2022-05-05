@@ -15,13 +15,15 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class PageActivity extends AppCompatActivity {
-    private URI url;
+    private Uri url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.page_activity);
-        this.url = URI.create(this.getIntent().getData().toString());
+        String uriStr = this.getIntent().getData().toString();
+
+        this.url = Uri.parse(uriStr.trim());
         TextView urlText = findViewById(R.id.browser_url);
         urlText.setText(this.url.toString());
         handlePageReload(null);
@@ -30,7 +32,7 @@ public class PageActivity extends AppCompatActivity {
     public void handlePageGo(View view) { // this method is called from the XML
         TextView urlText = findViewById(R.id.browser_url);
         String urlToGoTo = urlText.getText().toString();
-        URI destURL = this.url.resolve(URI.create(urlToGoTo));
+        Uri destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo.trim()).toString());
         System.out.printf("scheme: '%s'", destURL.getScheme());
         new Invoker(this, destURL).invoke();
     }

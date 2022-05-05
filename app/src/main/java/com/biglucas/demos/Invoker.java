@@ -5,26 +5,19 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.view.Gravity;
-import android.widget.TextView;
 
-import java.net.URI;
 
 public class Invoker {
     private final Activity activity;
-    private final URI uri;
+    private final Uri uri;
 
-    public Invoker(Activity activity, URI uri) {
+    public Invoker(Activity activity, Uri uri) {
         this.activity = activity;
         this.uri = uri;
     }
 
-    public Invoker(Activity activity, Uri uri) {
-        this(activity, uri.toString());
-    }
-
     public Invoker(Activity activity, String uri) {
-        this(activity, URI.create(uri));
+        this(activity, Uri.parse(uri.trim()));
     }
 
     private void runIntent(Intent intent) {

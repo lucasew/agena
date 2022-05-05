@@ -1,11 +1,7 @@
 package com.biglucas.demos;
 
 import android.app.Activity;
-import android.graphics.drawable.Drawable;
-import android.icu.util.Output;
 import android.net.Uri;
-import android.os.Build;
-import android.renderscript.ScriptGroup;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,23 +13,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509TrustManager;
 
 public class Gemini {
     public Gemini() {}
 
-    public List<String> request(Activity activity, URI uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+    public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         System.out.printf("Requesting: '%s'\n", uri.toString());
         System.out.printf("scheme: '%s'", uri.getScheme());
         if (!uri.getScheme().equals("gemini")) {
@@ -112,7 +102,7 @@ public class Gemini {
             }
         }
         if (responseCode >= 30 && responseCode < 40) {
-            return this.request(activity, URI.create(meta));
+            return this.request(activity, Uri.parse(meta.trim()));
         }
         if (responseCode == 51) {
             throw new FailedGeminiRequestException.GeminiNotFound();
