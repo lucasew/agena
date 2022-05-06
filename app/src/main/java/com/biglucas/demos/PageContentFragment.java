@@ -17,7 +17,10 @@ import androidx.fragment.app.Fragment;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.IllegalFormatConversionException;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -82,22 +85,22 @@ public class PageContentFragment extends Fragment {
                 }
                 PageContentFragment that = this;
                 String finalOldURINormalized = oldURINormalized.trim();
+                Uri u = null;
+                try {
+                    try {
+                        u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(buttonURI.trim()).toString().trim());
+                    } catch (IllegalArgumentException e) {
+                        // Some sites screw up with links and i think it would be nice a fallback behaviour in these cases
+                        final String regex = "[^a-zA-Z0-9:\\/\\.-]*";
+                        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+                        final Matcher matcher = pattern.matcher(buttonURI);
+                        final String res = matcher.replaceAll("");
+                        u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(res).toString());
+                    }
+                    final Uri uri = u;
                     button.setOnTouchListener(new View.OnTouchListener() {
-                        private Uri getFinalButtonURI() {
-                            try {
-                                System.out.print(buttonURI);
-                                Uri u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(buttonURI.trim()).toString());
-                                //System.out.println(u.toString());
-                                return u;
-                            } catch (IllegalArgumentException e) {
-                                System.out.printf("uri '%s' %d\n", finalOldURINormalized, finalOldURINormalized.charAt(0));
-                                System.out.println("wtf, man");
-                                e.printStackTrace();
-                                return Uri.parse(buttonURI.trim());
-                            }
-                        }
                         private Invoker getInvoker() {
-                            return new Invoker(getActivity(), getFinalButtonURI());
+                            return new Invoker(getActivity(), uri);
                         }
                         private GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
                             @Override
@@ -114,7 +117,7 @@ public class PageContentFragment extends Fragment {
 
                             @Override
                             public void onLongPress(MotionEvent e) {
-                                Toast.makeText(that.getContext(), getFinalButtonURI().toString(), Toast.LENGTH_SHORT)
+                                Toast.makeText(that.getContext(), uri.toString(), Toast.LENGTH_SHORT)
                                         .show();
                                 System.out.println("long press");
                                 super.onLongPress(e);
@@ -129,9 +132,12 @@ public class PageContentFragment extends Fragment {
 
                     });
 
-                System.out.printf("label='%s' uri='%s'", label, buttonURI);
-                // TODO: add handler
-                contentColumn.addView(button);
+                    System.out.printf("label='%s' uri='%s'", label, buttonURI);
+                    // TODO: add handler
+                    contentColumn.addView(button);
+                } catch (IllegalFormatConversionException e) {
+                    e.printStackTrace();
+                }
                 continue;
             }
             int headingLevels = 0;
