@@ -3,13 +3,16 @@ package com.biglucas.demos;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Scroller;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,9 +54,15 @@ public class PageContentFragment extends Fragment {
         for (String item : this.content) {
             if (item.startsWith("```")) {
                 if (monospaceText != null) {
-                    TextView txt = new TextView(this.getContext());
+                    // TODO: Deixar as quebras de linha das ascii art certo
+                    EditText txt = new EditText(this.getContext());
                     txt.setText(monospaceText);
                     txt.setTypeface(Typeface.MONOSPACE);
+                    txt.setClickable(false);
+                    txt.setCursorVisible(false);
+                    txt.setFocusable(false);
+//                    txt.setMovementMethod(new ScrollingMovementMethod());
+//                    txt.setHorizontallyScrolling(true);
                     contentColumn.addView(txt);
                     monospaceText = null;
                 } else {
@@ -80,9 +89,9 @@ public class PageContentFragment extends Fragment {
                 button.setAllCaps(false);
 
                 String oldURINormalized = this.oldURI.toString();
-                if (!oldURINormalized.endsWith("/")) {
-                    oldURINormalized = String.format("%s/", oldURINormalized);
-                }
+//                if (!oldURINormalized.endsWith("/")) {
+//                    oldURINormalized = String.format("%s/", oldURINormalized);
+//                }
                 PageContentFragment that = this;
                 String finalOldURINormalized = oldURINormalized.trim();
                 Uri u = null;

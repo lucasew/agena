@@ -89,7 +89,7 @@ public class PageActivity extends AppCompatActivity {
             private ArrayList<String> list;
 
             @Override
-            protected ArrayList<String> doInBackground(String ..._) {
+            protected ArrayList<String> doInBackground(String ..._ignore) {
                 try {
                     System.out.println("* request na thread *");
                     this.list = (ArrayList<String>) GeminiSingleton.getGemini().request(that, that.url); // gambiarra alert
@@ -100,7 +100,7 @@ public class PageActivity extends AppCompatActivity {
             }
 
             @Override
-            protected void onPostExecute(ArrayList<String> _) {
+            protected void onPostExecute(ArrayList<String> _ignore) {
                 System.out.println("* post execute *");
                 if (list != null) {
                     for (String item : list) {
