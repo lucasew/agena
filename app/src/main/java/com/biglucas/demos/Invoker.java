@@ -27,7 +27,7 @@ public class Invoker {
             AlertDialog dialog = new AlertDialog.Builder(this.activity)
                     .setTitle(R.string.error_dont_know_how_to_handle_content_type)
                     .setPositiveButton("OK", null)
-                    .setMessage(intent.getData().toString())
+                    .setMessage(this.uri.toString())
                     .show();
             //new StacktraceDialogHandler(e).show(this.activity);
         }

@@ -55,12 +55,15 @@ public class PageActivity extends AppCompatActivity {
             errText = appctx.getResources().getString(R.string.error_connection_timeout);
         } else if (e instanceof  FailedGeminiRequestException.GeminiNotFound) {
             errText = appctx.getResources().getString(R.string.error_gemini_not_found);
+        } else if (e instanceof FailedGeminiRequestException.GeminiGone) {
+            errText = appctx.getResources().getString(R.string.error_gone);
         } else if (e instanceof FailedGeminiRequestException.GeminiInvalidResponse) {
             errText = appctx.getResources().getString(R.string.error_gemini_invalid_response);
         } else if (e instanceof FailedGeminiRequestException.GeminiUnimplementedCase) {
             errText = appctx.getResources().getString(R.string.error_gemini_unimplemented);
         } else  {
             errText = appctx.getResources().getString(R.string.error_generic);
+            e.printStackTrace();
         }
         if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()

@@ -19,4 +19,8 @@ public class FailedGeminiRequestException extends Exception {
             super("content not found");
         }
     }
+
+    public static class GeminiGone extends FailedGeminiRequestException {
+        public GeminiGone () { super("gone"); }
+    }
 }
