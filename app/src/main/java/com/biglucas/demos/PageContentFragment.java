@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
@@ -55,15 +56,17 @@ public class PageContentFragment extends Fragment {
             if (item.startsWith("```")) {
                 if (monospaceText != null) {
                     // TODO: Deixar as quebras de linha das ascii art certo
-                    EditText txt = new EditText(this.getContext());
+                    HorizontalScrollView horizontalScrollView = new HorizontalScrollView(getContext());
+                    TextView txt = new TextView(this.getContext());
                     txt.setText(monospaceText);
                     txt.setTypeface(Typeface.MONOSPACE);
                     txt.setClickable(false);
                     txt.setCursorVisible(false);
                     txt.setFocusable(false);
+                    horizontalScrollView.addView(txt);
 //                    txt.setMovementMethod(new ScrollingMovementMethod());
 //                    txt.setHorizontallyScrolling(true);
-                    contentColumn.addView(txt);
+                    contentColumn.addView(horizontalScrollView);
                     monospaceText = null;
                 } else {
                     monospaceText = "";
@@ -72,6 +75,7 @@ public class PageContentFragment extends Fragment {
             }
             if (monospaceText != null) {
                 monospaceText = String.format("%s\n%s", monospaceText, item);
+                continue;
             }
             if (item.startsWith("=>")) { // TODO: arrumar esse regex cagado
                 StringTokenizer tokenizer = new StringTokenizer(item.substring(2));
@@ -89,9 +93,10 @@ public class PageContentFragment extends Fragment {
                 button.setAllCaps(false);
 
                 String oldURINormalized = this.oldURI.toString();
-//                if (!oldURINormalized.endsWith("/")) {
-//                    oldURINormalized = String.format("%s/", oldURINormalized);
-//                }
+//                System.out.printf("Old path: '%s'\n", this.oldURI.getPath());
+                if (!this.oldURI.getPath().endsWith("/") && !this.oldURI.getPath().endsWith(".gmi")) {
+                    oldURINormalized = String.format("%s/", oldURINormalized);
+                }
                 PageContentFragment that = this;
                 String finalOldURINormalized = oldURINormalized.trim();
                 Uri u = null;
@@ -141,7 +146,7 @@ public class PageContentFragment extends Fragment {
 
                     });
 
-                    System.out.printf("label='%s' uri='%s'", label, buttonURI);
+//                    System.out.printf("label='%s' uri='%s'", label, buttonURI);
                     // TODO: add handler
                     contentColumn.addView(button);
                 } catch (IllegalFormatConversionException e) {
