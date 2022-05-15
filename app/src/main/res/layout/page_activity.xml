@@ -12,26 +12,27 @@
 
         <EditText
             android:id="@+id/browser_url"
-            android:layout_width="wrap_content"
-            android:layout_height="56dp"
+            android:layout_height="48dp"
+            android:layout_width="48dp"
             android:layout_weight="1"
             android:inputType="textPersonName" />
 
         <Button
             android:id="@+id/page_refresh"
             android:layout_width="48dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
             android:onClick="handlePageReload"
-            android:text="R" />
+            app:icon="@android:drawable/stat_notify_sync" />
 
         <Button
             android:id="@+id/page_go"
             android:layout_width="48dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
+            android:layout_height="48dp"
+            android:layout_margin="1dp"
             android:onClick="handlePageGo"
-            android:text=">" />
+            android:text=">"
+            app:icon="@android:drawable/ic_menu_send" />
     </LinearLayout>
 
     <androidx.fragment.app.FragmentContainerView

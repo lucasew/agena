@@ -2,7 +2,9 @@ package com.biglucas.demos.protocol.gemini;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Environment;
 import android.widget.Toast;
@@ -10,7 +12,7 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 
 import com.biglucas.demos.R;
-import com.biglucas.demos.protocol.gemini.FailedGeminiRequestException;
+import com.biglucas.demos.utils.DatabaseController;
 import com.biglucas.demos.utils.Invoker;
 import com.biglucas.demos.utils.PermissionAsker;
 import com.biglucas.demos.utils.SSLSocketFactorySingleton;
@@ -104,7 +106,6 @@ public class Gemini {
                         lines.add(l);
                     }
                 }
-
             } else {
                 if (PermissionAsker.ensurePermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.explain_permission_storage)) {
                     File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
@@ -125,6 +126,8 @@ public class Gemini {
                 }
             }
             outputStream.close();
+            new DatabaseController(activity.openOrCreateDatabase("history", Context.MODE_PRIVATE, null))
+                .addHistoryEntry(uri);
             return lines;
         }
         if (responseCode >= 30 && responseCode < 40) {

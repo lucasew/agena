@@ -31,4 +31,5 @@
     <string name="please_repeat_action">Permission state has changed. Please retry the operation.</string>
     <string name="please_wait">Please wait</string>
     <string name="error_gone">Gone</string>
+    <string name="historic">Historic</string>
 </resources>
