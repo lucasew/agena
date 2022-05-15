@@ -1,31 +1,23 @@
 <resources>
-    <string name="app_name">AGENA</string>
-    <string name="app_description">Gemini Browser</string>
+    <string name="app_name" translatable="false">AGENA</string>
+    <string name="app_description">Gemini browser</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="start_navigating">Start Navigating</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="title_activity_page">PageActivity</string>
-
     <string name="warning_icon">Just a warning icon to make it explicit that something unexpected happened</string>
     <string name="more_information">More information</string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
     <!-- Errors -->
     <string name="error_generic">Generic unspecified/unhandled error</string>
     <string name="error_unable_to_resolve_host">Unable to resolve host. It wasn\'t found by DNS.</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="error_connection_timeout">Timeout while connecting to the server. Is really there a Gemini server?</string>
     <string name="error_gemini_not_found">Content not found</string>
     <string name="error_gemini_invalid_response">Server returned an invalid response</string>
-    <string name="error_gemini_unimplemented">Gemini protocol detail not implemented</string>
+    <string name="error_gemini_unimplemented">Gemini protocol detail not implemented (yet)</string>
     <string name="error_dont_know_how_to_handle_content_type">I don\'t know how to handle this content</string>
     <string name="explain_permission_storage">I need storage permission to store downloaded files from sites, like images.</string>
     <string name="please_repeat_action">Permission state has changed. Please retry the operation.</string>

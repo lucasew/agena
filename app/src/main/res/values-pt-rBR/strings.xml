@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AGENA</string>
+    <string name="action_settings">Configurações</string>
+    <string name="next">Próximo</string>
+    <string name="previous">Anterior</string>
+    <string name="start_navigating">Iniciar Navegação</string>
+    <string name="warning_icon">Apenas um ícone de aviso para deixar explícito que algo inesperado aconteceu</string>
+    <string name="more_information">Mais infomações</string>
+    <string name="error_generic">Erro genérico não especificado/tratado</string>
+    <string name="error_unable_to_resolve_host">Não foi possível resolver o host. Não foi encontrado pelo DNS.</string>
+    <string name="error_connection_timeout">Tempo limite expirado conectando ao servidor. Existe realmente um servidor Gemini ali?</string>
+    <string name="error_gemini_not_found">Conteúdo não encontrado</string>
+    <string name="error_gemini_invalid_response">Servidor retornou uma resposta inválida</string>
+    <string name="error_gemini_unimplemented">Detalhe do protocolo Gemini não implementado (ainda)</string>
+    <string name="error_dont_know_how_to_handle_content_type">Eu não sei como tratar este conteúdo</string>
+    <string name="explain_permission_storage">Eu preciso de permissão de armazenamento para salvar arquivos baixados de sites, como imagens.</string>
+    <string name="please_repeat_action">Estado das permissões alterado. Por favor tente esta operação novamente.</string>
+    <string name="please_wait">Por favor espere</string>
+    <string name="error_gone">Sumiu</string>
+    <string name="historic">Histórico</string>
+    <string name="app_description">Navegador gemini</string>
+</resources>
