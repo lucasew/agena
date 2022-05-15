@@ -1,14 +1,11 @@
 package com.biglucas.demos.utils;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import java.security.Permission;
 
 public class PermissionAsker {
     public static boolean ensurePermission(Activity activity, String permission, int reason) {

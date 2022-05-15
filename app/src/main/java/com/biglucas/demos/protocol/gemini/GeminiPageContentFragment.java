@@ -16,8 +16,8 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-import com.biglucas.demos.utils.Invoker;
 import com.biglucas.demos.R;
+import com.biglucas.demos.utils.Invoker;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -63,8 +63,6 @@ public class GeminiPageContentFragment extends Fragment {
                     txt.setCursorVisible(false);
                     txt.setFocusable(false);
                     horizontalScrollView.addView(txt);
-//                    txt.setMovementMethod(new ScrollingMovementMethod());
-//                    txt.setHorizontallyScrolling(true);
                     contentColumn.addView(horizontalScrollView);
                     monospaceText = null;
                 } else {
@@ -92,7 +90,6 @@ public class GeminiPageContentFragment extends Fragment {
                 button.setAllCaps(false);
 
                 String oldURINormalized = this.oldURI.toString();
-//                System.out.printf("Old path: '%s'\n", this.oldURI.getPath());
                 if (!this.oldURI.getPath().endsWith("/") && !this.oldURI.getPath().endsWith(".gmi")) {
                     oldURINormalized = String.format("%s/", oldURINormalized);
                 }
@@ -115,7 +112,7 @@ public class GeminiPageContentFragment extends Fragment {
                         private Invoker getInvoker() {
                             return new Invoker(getActivity(), uri);
                         }
-                        private GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+                        private final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
                             @Override
                             public boolean onDoubleTap(MotionEvent e) {
                                 getInvoker().invokeNewWindow();

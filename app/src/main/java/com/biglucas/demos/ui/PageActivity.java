@@ -9,11 +9,11 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.biglucas.demos.R;
 import com.biglucas.demos.protocol.gemini.FailedGeminiRequestException;
 import com.biglucas.demos.protocol.gemini.GeminiPageContentFragment;
 import com.biglucas.demos.protocol.gemini.GeminiSingleton;
 import com.biglucas.demos.utils.Invoker;
-import com.biglucas.demos.R;
 
 import java.net.SocketTimeoutException;
 import java.net.URI;

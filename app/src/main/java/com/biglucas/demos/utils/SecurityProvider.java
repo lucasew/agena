@@ -1,7 +1,8 @@
 package com.biglucas.demos.utils;
 
-import java.security.Security;
 import org.conscrypt.Conscrypt;
+
+import java.security.Security;
 
 public class SecurityProvider {
     public static void addConscryptIfAvailable() {

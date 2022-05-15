@@ -22,9 +22,9 @@ public class DatabaseController {
         while (cursor.moveToNext()) {
             String uri = cursor.getString(cursor.getColumnIndex("url"));
             String timestamp = cursor.getString(cursor.getColumnIndex("accessed"));
-            String toAddd = String.format("=> %s %s %s", uri, timestamp, uri);
-            System.out.println(toAddd);
-            list.add(toAddd);
+            String toAdd = String.format("=> %s %s %s", uri, timestamp, uri);
+            System.out.println(toAdd);
+            list.add(toAdd);
         }
         cursor.close();
         return list;
