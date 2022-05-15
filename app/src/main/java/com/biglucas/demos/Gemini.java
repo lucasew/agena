@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Environment;
 import android.widget.Toast;
 
@@ -13,26 +12,15 @@ import androidx.core.content.FileProvider;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +30,7 @@ public class Gemini {
     public Gemini() {}
 
     private String readLineFromStream(InputStream input) throws IOException {
-        ArrayList<Byte> bytes = new ArrayList<Byte>();
+        ArrayList<Byte> bytes = new ArrayList<>();
         int b = input.read();
         if (b == -1) {
             return null;
@@ -97,7 +85,7 @@ public class Gemini {
         String meta = headerline.substring(headerline.indexOf(" ")).trim();
         System.out.printf("response_code=%d,meta=%s\n", responseCode, meta);
         if (responseCode >= 20 && responseCode < 30) {
-            List<String> lines = new ArrayList<String>();
+            List<String> lines = new ArrayList<>();
             if (meta.startsWith("text/gemini")) {
                 while (true) {
                     String line = readLineFromStream(inputStream);
@@ -105,12 +93,11 @@ public class Gemini {
                         break;
                     }
                     for (String l : line.split("\n")) {
-                        lines.add(line);
+                        lines.add(l);
                     }
                 }
 
             } else {
-                char v = '\n';
                 File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
                 Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
                 ActivityCompat.requestPermissions(activity, new String[]{
@@ -126,7 +113,6 @@ public class Gemini {
                 intent.setDataAndType(fileUri, meta);
                 activity.startActivity(intent);
             }
-//            inputStream.close();
             outputStream.close();
             return lines;
         }
