@@ -1,16 +1,16 @@
-package com.biglucas.demos;
-
-import androidx.appcompat.app.AppCompatActivity;
+package com.biglucas.demos.ui;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.biglucas.demos.R;
+import com.biglucas.demos.protocol.gemini.GeminiPageContentFragment;
+
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ContentActivity extends AppCompatActivity {
 
@@ -25,11 +25,6 @@ public class ContentActivity extends AppCompatActivity {
         try {
             System.out.println(getIntent().getData());
             InputStream inputStream = getContentResolver().openInputStream(getIntent().getData());
-//            if (inputStream == null) {
-//                // TODO: mostrar algo mais palpável
-//                return;
-//            }
-            //        int size = inputStream.available();
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader dis = new BufferedReader(inputStreamReader);
             ArrayList<String> lines = new ArrayList<>();
@@ -43,7 +38,7 @@ public class ContentActivity extends AppCompatActivity {
             }
             this.getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.browser_content, new PageContentFragment(lines, this.getIntent().getData()))
+                    .replace(R.id.browser_content, new GeminiPageContentFragment(lines, this.getIntent().getData()))
                     .commit();
         } catch (Exception e) {
             e.printStackTrace();

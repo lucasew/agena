@@ -1,23 +1,23 @@
-package com.biglucas.demos;
+package com.biglucas.demos.protocol.gemini;
 
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
-import android.widget.Scroller;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+
+import com.biglucas.demos.utils.Invoker;
+import com.biglucas.demos.R;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,17 +30,17 @@ import java.util.regex.Pattern;
  * A simple {@link Fragment} subclass.
  * create an instance of this fragment.
  */
-public class PageContentFragment extends Fragment {
+public class GeminiPageContentFragment extends Fragment {
 
     private final ArrayList<String> content;
     private final Uri oldURI;
 
-    public PageContentFragment(ArrayList<String> list, Uri oldURI) {
+    public GeminiPageContentFragment(ArrayList<String> list, Uri oldURI) {
         this.content = list;
         this.oldURI = oldURI;
     }
 
-    public PageContentFragment() {
+    public GeminiPageContentFragment() {
         this(new ArrayList<>(), Uri.parse("gemini://example.com"));
     }
 
@@ -55,7 +55,6 @@ public class PageContentFragment extends Fragment {
         for (String item : this.content) {
             if (item.startsWith("```")) {
                 if (monospaceText != null) {
-                    // TODO: Deixar as quebras de linha das ascii art certo
                     HorizontalScrollView horizontalScrollView = new HorizontalScrollView(getContext());
                     TextView txt = new TextView(this.getContext());
                     txt.setText(monospaceText);
@@ -77,7 +76,7 @@ public class PageContentFragment extends Fragment {
                 monospaceText = String.format("%s\n%s", monospaceText, item);
                 continue;
             }
-            if (item.startsWith("=>")) { // TODO: arrumar esse regex cagado
+            if (item.startsWith("=>")) {
                 StringTokenizer tokenizer = new StringTokenizer(item.substring(2));
                 String buttonURI = tokenizer.nextToken().trim();
                 String label = "";
@@ -97,7 +96,7 @@ public class PageContentFragment extends Fragment {
                 if (!this.oldURI.getPath().endsWith("/") && !this.oldURI.getPath().endsWith(".gmi")) {
                     oldURINormalized = String.format("%s/", oldURINormalized);
                 }
-                PageContentFragment that = this;
+                GeminiPageContentFragment that = this;
                 String finalOldURINormalized = oldURINormalized.trim();
                 Uri u = null;
                 try {
@@ -145,9 +144,6 @@ public class PageContentFragment extends Fragment {
                         }
 
                     });
-
-//                    System.out.printf("label='%s' uri='%s'", label, buttonURI);
-                    // TODO: add handler
                     contentColumn.addView(button);
                 } catch (IllegalFormatConversionException e) {
                     e.printStackTrace();

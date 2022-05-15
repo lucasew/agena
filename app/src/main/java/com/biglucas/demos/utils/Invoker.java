@@ -1,10 +1,12 @@
-package com.biglucas.demos;
+package com.biglucas.demos.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+
+import com.biglucas.demos.R;
 
 
 public class Invoker {

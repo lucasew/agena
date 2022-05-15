@@ -1,4 +1,4 @@
-package com.biglucas.demos;
+package com.biglucas.demos.utils;
 
 import android.app.Activity;
 import android.content.Context;

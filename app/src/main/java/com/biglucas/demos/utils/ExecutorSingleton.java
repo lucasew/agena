@@ -1,6 +1,4 @@
-package com.biglucas.demos;
-
-import android.os.Looper;
+package com.biglucas.demos.utils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

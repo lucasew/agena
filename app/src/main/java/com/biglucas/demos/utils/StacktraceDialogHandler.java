@@ -1,4 +1,4 @@
-package com.biglucas.demos;
+package com.biglucas.demos.utils;
 
 import android.app.AlertDialog;
 import android.content.Context;

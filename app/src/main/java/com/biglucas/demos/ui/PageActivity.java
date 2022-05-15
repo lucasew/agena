@@ -1,4 +1,4 @@
-package com.biglucas.demos;
+package com.biglucas.demos.ui;
 
 import android.content.Context;
 import android.net.Uri;
@@ -8,6 +8,12 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.biglucas.demos.protocol.gemini.FailedGeminiRequestException;
+import com.biglucas.demos.protocol.gemini.GeminiPageContentFragment;
+import com.biglucas.demos.protocol.gemini.GeminiSingleton;
+import com.biglucas.demos.utils.Invoker;
+import com.biglucas.demos.R;
 
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -43,7 +49,7 @@ public class PageActivity extends AppCompatActivity {
         if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.browser_content, new PageContentFragment(content, this.url))
+                .replace(R.id.browser_content, new GeminiPageContentFragment(content, this.url))
                 .commit();
     }
     private void handleLoad(Exception e) {
@@ -53,7 +59,7 @@ public class PageActivity extends AppCompatActivity {
             errText = appctx.getString(R.string.error_unable_to_resolve_host);
         } else if (e instanceof SocketTimeoutException) {
             errText = appctx.getResources().getString(R.string.error_connection_timeout);
-        } else if (e instanceof  FailedGeminiRequestException.GeminiNotFound) {
+        } else if (e instanceof FailedGeminiRequestException.GeminiNotFound) {
             errText = appctx.getResources().getString(R.string.error_gemini_not_found);
         } else if (e instanceof FailedGeminiRequestException.GeminiGone) {
             errText = appctx.getResources().getString(R.string.error_gone);
@@ -86,7 +92,6 @@ public class PageActivity extends AppCompatActivity {
         System.out.println(uri.toString());
         ((TextView)this.findViewById(R.id.browser_url)).setText(uri.toString());
         PageActivity that = this;
-        // TODO: fetch and rendering
         AsyncTask<String, Integer, ArrayList<String>> task = new AsyncTask<String, Integer, ArrayList<String>>() {
             private Exception exception;
             private ArrayList<String> list;

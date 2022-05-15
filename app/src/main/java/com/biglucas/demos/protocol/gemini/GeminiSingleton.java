@@ -1,4 +1,4 @@
-package com.biglucas.demos;
+package com.biglucas.demos.protocol.gemini;
 
 public class GeminiSingleton {
     private static Gemini gemini;

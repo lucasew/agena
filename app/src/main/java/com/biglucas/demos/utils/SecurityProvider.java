@@ -1,4 +1,4 @@
-package com.biglucas.demos;
+package com.biglucas.demos.utils;
 
 import java.security.Security;
 import org.conscrypt.Conscrypt;

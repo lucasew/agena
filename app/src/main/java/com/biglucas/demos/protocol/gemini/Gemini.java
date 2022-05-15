@@ -1,15 +1,19 @@
-package com.biglucas.demos;
+package com.biglucas.demos.protocol.gemini;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.FileUtils;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+
+import com.biglucas.demos.R;
+import com.biglucas.demos.protocol.gemini.FailedGeminiRequestException;
+import com.biglucas.demos.utils.Invoker;
+import com.biglucas.demos.utils.PermissionAsker;
+import com.biglucas.demos.utils.SSLSocketFactorySingleton;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -20,16 +24,13 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.security.DigestException;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import javax.net.ssl.SSLSocket;
 
