@@ -1,10 +1,9 @@
 package com.biglucas.demos.utils;
 
-import android.os.Build;
+import android.annotation.SuppressLint;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
@@ -18,9 +17,7 @@ public class SSLSocketFactorySingleton {
         if (factory != null) {
             return factory;
         }
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-            SecurityProvider.addConscryptIfAvailable();
-        }
+        SecurityProvider.addConscryptIfAvailable();
         SSLContext sslContext = SSLContext.getInstance("TLS");
         X509TrustManager[] trustManagers = {new SSLSocketFactorySingleton.DummyTrustManager()};
         sslContext.init(null, trustManagers, null);
@@ -28,13 +25,16 @@ public class SSLSocketFactorySingleton {
         return factory;
     }
 
+    @SuppressLint("CustomX509TrustManager")
     private static class DummyTrustManager implements X509TrustManager {
+        @SuppressLint("TrustAllX509TrustManager")
         @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
         }
 
+        @SuppressLint("TrustAllX509TrustManager")
         @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
         }
 
         @Override

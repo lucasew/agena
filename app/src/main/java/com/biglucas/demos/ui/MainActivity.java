@@ -1,6 +1,7 @@
 package com.biglucas.demos.ui;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -18,7 +19,9 @@ public class MainActivity extends AppCompatActivity {
     }
     public void onClickHistory(View view) {
         Intent intent = new Intent(this, HistoricActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        }
         startActivity(intent);
     }
     public void onClickEnter(View view) {

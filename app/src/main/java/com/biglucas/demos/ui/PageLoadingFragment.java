@@ -15,11 +15,6 @@ public class PageLoadingFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static PageLoadingFragment newInstance(String param1, String param2) {
-        PageLoadingFragment fragment = new PageLoadingFragment();
-        return fragment;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

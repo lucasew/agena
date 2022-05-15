@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
 
@@ -26,11 +27,11 @@ import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.security.DigestException;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.net.ssl.SSLSocket;
@@ -55,7 +56,7 @@ public class Gemini {
         return Charset.defaultCharset().decode(ByteBuffer.wrap(buf)).toString();
     }
 
-    public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException, DigestException {
+    public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         System.out.printf("Requesting: '%s'\n", uri.toString());
         System.out.printf("scheme: '%s'", uri.getScheme());
         if (!uri.getScheme().equals("gemini")) {
@@ -83,15 +84,15 @@ public class Gemini {
         outputStream.flush();
 
         InputStream inputStream = new BufferedInputStream(socket.getInputStream());
-        String headerline = readLineFromStream(inputStream);
-        if (headerline == null) {
+        String headerLine = readLineFromStream(inputStream);
+        if (headerLine == null) {
             System.out.println("Servidor n respondeu com uma header gemini");
             inputStream.close();
             outputStream.close();
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
         }
-        int responseCode = Integer.parseInt(headerline.substring(0, headerline.indexOf(" ")));
-        String meta = headerline.substring(headerline.indexOf(" ")).trim();
+        int responseCode = Integer.parseInt(headerLine.substring(0, headerLine.indexOf(" ")));
+        String meta = headerLine.substring(headerLine.indexOf(" ")).trim();
         System.out.printf("response_code=%d,meta=%s\n", responseCode, meta);
         if (responseCode >= 20 && responseCode < 30) {
             List<String> lines = new ArrayList<>();
@@ -101,27 +102,23 @@ public class Gemini {
                     if (line == null) {
                         break;
                     }
-                    for (String l : line.split("\n")) {
-                        lines.add(l);
-                    }
+                    Collections.addAll(lines, line.split("\n"));
                 }
             } else {
                 if (PermissionAsker.ensurePermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.explain_permission_storage)) {
                     File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
                     Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
-                    activity.runOnUiThread(() -> {
-                        Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-                    });
+                    activity.runOnUiThread(() -> Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show());
                     Intent intent = new Intent();
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                    }
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.setDataAndType(fileUri, meta);
                     activity.startActivity(intent);
                 } else {
-                    activity.runOnUiThread(() -> {
-                        Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show();
-                    });
+                    activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
                 }
             }
             outputStream.close();
@@ -135,7 +132,7 @@ public class Gemini {
         if (responseCode == 51) {
             throw new FailedGeminiRequestException.GeminiNotFound();
         }
-        System.out.printf("server header: %s\n", headerline);
+        System.out.printf("server header: %s\n", headerLine);
         System.out.printf("meta: %s\n", meta);
         String line;
         while ((line = readLineFromStream(inputStream)) != null) {
@@ -150,24 +147,19 @@ public class Gemini {
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
-    private File download(InputStream inputStream, Uri uriFile) throws IOException, DigestException, NoSuchAlgorithmException {
+    private File download(InputStream inputStream, Uri uriFile) throws IOException, NoSuchAlgorithmException {
         String uriString = uriFile.toString();
-        String extension = "dat";
         if (uriString.endsWith("/")) {
-            uriString.substring(0, uriString.length() - 1);
+            uriString = uriString.substring(0, uriString.length() - 1);
         }
         System.out.println(uriString);
         String[] sectors = uriString.split("\\.");
-        System.out.println(sectors.toString());
-        System.out.println(sectors.length);
-        extension = sectors[sectors.length - 1];
+        String extension = sectors[sectors.length - 1];
 
         File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AGENA");
-        agenaPath.mkdirs();
+        if (!agenaPath.mkdirs()) System.out.printf("Creating missing directory: '%s'\n", agenaPath.getAbsolutePath());
         File tempPath = File.createTempFile("agena", String.format(".%s", extension), agenaPath);
-        tempPath.createNewFile();
-        tempPath.setWritable(true);
-        tempPath.setReadable(true);
+        if (!tempPath.createNewFile()) System.out.printf("Creating file: '%s'\n", tempPath.getAbsolutePath());
         BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath));
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] buffer = new byte[4096];

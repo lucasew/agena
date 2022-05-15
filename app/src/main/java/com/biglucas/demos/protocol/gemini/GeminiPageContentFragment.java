@@ -1,5 +1,6 @@
 package com.biglucas.demos.protocol.gemini;
 
+import android.annotation.SuppressLint;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -95,13 +96,13 @@ public class GeminiPageContentFragment extends Fragment {
                 }
                 GeminiPageContentFragment that = this;
                 String finalOldURINormalized = oldURINormalized.trim();
-                Uri u = null;
+                Uri u;
                 try {
                     try {
                         u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(buttonURI.trim()).toString().trim());
                     } catch (IllegalArgumentException e) {
                         // Some sites screw up with links and i think it would be nice a fallback behaviour in these cases
-                        final String regex = "[^a-zA-Z0-9:\\/\\.-]*";
+                        final String regex = "[^a-zA-Z0-9:/.-]*";
                         final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
                         final Matcher matcher = pattern.matcher(buttonURI);
                         final String res = matcher.replaceAll("");
@@ -136,6 +137,7 @@ public class GeminiPageContentFragment extends Fragment {
 
                         @Override
                         public boolean onTouch(View view, MotionEvent motionEvent) {
+                            view.performClick();
                             gestureDetector.onTouchEvent(motionEvent);
                             return true;
                         }

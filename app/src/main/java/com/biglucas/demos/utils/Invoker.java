@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 
 import com.biglucas.demos.R;
 
@@ -26,7 +27,7 @@ public class Invoker {
         try {
             this.activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            AlertDialog dialog = new AlertDialog.Builder(this.activity)
+            new AlertDialog.Builder(this.activity)
                     .setTitle(R.string.error_dont_know_how_to_handle_content_type)
                     .setPositiveButton("OK", null)
                     .setMessage(this.uri.toString())
@@ -47,7 +48,9 @@ public class Invoker {
 
     public void invokeNewWindow() {
         Intent intent = getBaseIntent();
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        }
         runIntent(intent);
     }
 }
