@@ -1,20 +1,38 @@
 package com.biglucas.demos;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +40,23 @@ import javax.net.ssl.SSLSocket;
 
 public class Gemini {
     public Gemini() {}
+
+    private String readLineFromStream(InputStream input) throws IOException {
+        ArrayList<Byte> bytes = new ArrayList<Byte>();
+        int b = input.read();
+        if (b == -1) {
+            return null;
+        }
+        while (b != -1 && b != 0xA) {
+            bytes.add((byte) b);
+            b = input.read();
+        }
+        byte[] buf = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            buf[i] = bytes.get(i);
+        }
+        return Charset.defaultCharset().decode(ByteBuffer.wrap(buf)).toString();
+    }
 
     public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         System.out.printf("Requesting: '%s'\n", uri.toString());
@@ -42,38 +77,30 @@ public class Gemini {
         socket.setSoTimeout(5*1000);
         socket.startHandshake();
 
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
-        BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-        PrintWriter outWriter = new PrintWriter(bufferedWriter);
+        BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
 
         String cleanedEntity = uri.toString().replace("%2F", "/").trim();
         String requestEntity = cleanedEntity + "\r\n";
 
-        outWriter.print(requestEntity);
-        outWriter.flush();
+        outputStream.write(requestEntity.getBytes());
+        outputStream.flush();
 
-        InputStream inputStream = socket.getInputStream();
-        InputStreamReader headInputStreamReader = new InputStreamReader(inputStream);
-        BufferedReader bufferedReader = new BufferedReader(headInputStreamReader);
-        String headerline = bufferedReader.readLine();
+        InputStream inputStream = new BufferedInputStream(socket.getInputStream());
+        String headerline = readLineFromStream(inputStream);
         if (headerline == null) {
             System.out.println("Servidor n respondeu com uma header gemini");
-            bufferedReader.close();
-            headInputStreamReader.close();
             inputStream.close();
-            outWriter.close();
-            bufferedReader.close();
-            outputStreamWriter.close();
+            outputStream.close();
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
         }
         int responseCode = Integer.parseInt(headerline.substring(0, headerline.indexOf(" ")));
         String meta = headerline.substring(headerline.indexOf(" ")).trim();
         System.out.printf("response_code=%d,meta=%s\n", responseCode, meta);
         if (responseCode >= 20 && responseCode < 30) {
+            List<String> lines = new ArrayList<String>();
             if (meta.startsWith("text/gemini")) {
-                List<String> lines = new ArrayList<String>();
                 while (true) {
-                    String line = bufferedReader.readLine();
+                    String line = readLineFromStream(inputStream);
                     if (line == null) {
                         break;
                     }
@@ -81,25 +108,27 @@ public class Gemini {
                         lines.add(line);
                     }
                 }
-                bufferedReader.close();
-                headInputStreamReader.close();
-                inputStream.close();
-                outWriter.close();
-                bufferedReader.close();
-                outputStreamWriter.close();
-                return lines;
+
+            } else {
+                char v = '\n';
+                File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
+                Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
+                ActivityCompat.requestPermissions(activity, new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                }, 0);
+                activity.runOnUiThread(() -> {
+                    Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                });
+                Intent intent = new Intent();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(fileUri, meta);
+                activity.startActivity(intent);
             }
-            if (meta.startsWith("image/")) {
-                File cachedImage = saveFileToCache(socket, Uri.parse(cleanedEntity), activity.getCacheDir());
-                bufferedReader.close();
-                headInputStreamReader.close();
-                inputStream.close();
-                outWriter.close();
-                bufferedReader.close();
-                outputStreamWriter.close();
-                new Invoker(activity, cachedImage.toURI().toString()).invokeNewWindow();
-                return new ArrayList<String>();
-            }
+//            inputStream.close();
+            outputStream.close();
+            return lines;
         }
         if (responseCode >= 30 && responseCode < 40) {
             return this.request(activity, Uri.parse(meta.trim()));
@@ -110,7 +139,7 @@ public class Gemini {
         System.out.printf("server header: %s\n", headerline);
         System.out.printf("meta: %s\n", meta);
         String line;
-        while ((line = bufferedReader.readLine()) != null) {
+        while ((line = readLineFromStream(inputStream)) != null) {
             System.out.printf("server return: %s\n", line);
         }
         System.out.flush();
@@ -122,23 +151,19 @@ public class Gemini {
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
-    private File saveFileToCache(SSLSocket socket, Uri uri, File cacheDir) throws IOException {
-        return download(socket, uri, cacheDir);
-    }
-
-    private File download(SSLSocket socket, Uri uri, File cacheDir) throws IOException {
-        String filename = uri.getLastPathSegment();
-        File downloadFile = new File(cacheDir, filename);
+    private File download(InputStream inputStream, Uri uriFile) throws IOException {
+        File agenaPath = new File(Environment.getExternalStorageDirectory(), "Download/AGENA");
+        File downloadFile = new File(agenaPath, uriFile.getLastPathSegment());
         if (downloadFile.exists()) downloadFile.delete();
         downloadFile.createNewFile();
-        FileOutputStream outputStream = new FileOutputStream(downloadFile);
+        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadFile));
         byte[] buffer = new byte[4096];
-        int len = socket.getInputStream().read(buffer);
-        while (len != -1) {
+        int len;
+        while ((len = inputStream.read(buffer)) != -1) {
             outputStream.write(buffer, 0, len);
-            len = socket.getInputStream().read(buffer);
         }
-        socket.close();
+        outputStream.flush();
+        outputStream.close();
         return downloadFile;
     }
 }
