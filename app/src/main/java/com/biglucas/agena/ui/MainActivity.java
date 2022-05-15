@@ -1,4 +1,4 @@
-package com.biglucas.demos.ui;
+package com.biglucas.agena.ui;
 
 import android.content.Intent;
 import android.os.Build;
@@ -8,8 +8,8 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.biglucas.demos.R;
-import com.biglucas.demos.utils.Invoker;
+import com.biglucas.agena.R;
+import com.biglucas.agena.utils.Invoker;
 
 public class MainActivity extends AppCompatActivity {
     @Override

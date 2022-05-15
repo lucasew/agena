@@ -1,4 +1,4 @@
-package com.biglucas.demos.ui;
+package com.biglucas.agena.ui;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,8 +9,8 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
-import com.biglucas.demos.R;
-import com.biglucas.demos.utils.StacktraceDialogHandler;
+import com.biglucas.agena.R;
+import com.biglucas.agena.utils.StacktraceDialogHandler;
 
 public class PageErrorFragment extends Fragment {
 

@@ -1,4 +1,4 @@
-package com.biglucas.demos.protocol.gemini;
+package com.biglucas.agena.protocol.gemini;
 
 import android.Manifest;
 import android.app.Activity;
@@ -11,11 +11,11 @@ import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 
-import com.biglucas.demos.R;
-import com.biglucas.demos.utils.DatabaseController;
-import com.biglucas.demos.utils.Invoker;
-import com.biglucas.demos.utils.PermissionAsker;
-import com.biglucas.demos.utils.SSLSocketFactorySingleton;
+import com.biglucas.agena.R;
+import com.biglucas.agena.utils.DatabaseController;
+import com.biglucas.agena.utils.Invoker;
+import com.biglucas.agena.utils.PermissionAsker;
+import com.biglucas.agena.utils.SSLSocketFactorySingleton;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

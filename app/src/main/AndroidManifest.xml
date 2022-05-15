@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.biglucas.demos" >
+    package="com.biglucas.agena" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidDemos.NoActionBar" >
         <activity
-            android:name=".ui.HistoricActivity"
+            android:name="com.biglucas.agena.ui.HistoricActivity"
             android:exported="false"
         />
 
@@ -27,7 +27,7 @@
         </provider>
 
         <activity
-            android:name=".ui.ContentActivity"
+            android:name="com.biglucas.agena.ui.ContentActivity"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -41,7 +41,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.MainActivity"
+            android:name="com.biglucas.agena.ui.MainActivity"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -50,7 +50,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.PageActivity"
+            android:name="com.biglucas.agena.ui.PageActivity"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

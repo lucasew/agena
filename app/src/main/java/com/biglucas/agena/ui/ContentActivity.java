@@ -1,16 +1,17 @@
-package com.biglucas.demos.ui;
+package com.biglucas.agena.ui;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.biglucas.demos.R;
-import com.biglucas.demos.protocol.gemini.GeminiPageContentFragment;
+import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+
+import com.biglucas.agena.R;
 
 public class ContentActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package com.biglucas.demos;
+package com.biglucas.agena;
 
 import org.junit.Test;
 

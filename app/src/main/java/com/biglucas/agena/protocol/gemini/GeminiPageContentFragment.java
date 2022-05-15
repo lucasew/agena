@@ -1,6 +1,5 @@
-package com.biglucas.demos.protocol.gemini;
+package com.biglucas.agena.protocol.gemini;
 
-import android.annotation.SuppressLint;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,8 +16,8 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-import com.biglucas.demos.R;
-import com.biglucas.demos.utils.Invoker;
+import com.biglucas.agena.R;
+import com.biglucas.agena.utils.Invoker;
 
 import java.net.URI;
 import java.util.ArrayList;

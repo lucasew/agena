@@ -1,4 +1,4 @@
-package com.biglucas.demos.utils;
+package com.biglucas.agena.utils;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;

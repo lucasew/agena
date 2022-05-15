@@ -1,4 +1,4 @@
-package com.biglucas.demos.utils;
+package com.biglucas.agena.utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 
-import com.biglucas.demos.R;
+import com.biglucas.agena.R;
 
 
 public class Invoker {

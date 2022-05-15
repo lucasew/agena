@@ -1,4 +1,4 @@
-package com.biglucas.demos.ui;
+package com.biglucas.agena.ui;
 
 import android.content.Context;
 import android.net.Uri;
@@ -9,11 +9,11 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.biglucas.demos.R;
-import com.biglucas.demos.protocol.gemini.FailedGeminiRequestException;
-import com.biglucas.demos.protocol.gemini.GeminiPageContentFragment;
-import com.biglucas.demos.protocol.gemini.GeminiSingleton;
-import com.biglucas.demos.utils.Invoker;
+import com.biglucas.agena.R;
+import com.biglucas.agena.protocol.gemini.FailedGeminiRequestException;
+import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
+import com.biglucas.agena.protocol.gemini.GeminiSingleton;
+import com.biglucas.agena.utils.Invoker;
 
 import java.net.SocketTimeoutException;
 import java.net.URI;
