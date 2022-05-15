@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
@@ -16,13 +17,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.security.DigestException;
 import java.security.KeyManagementException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.net.ssl.SSLSocket;
 
@@ -46,7 +53,7 @@ public class Gemini {
         return Charset.defaultCharset().decode(ByteBuffer.wrap(buf)).toString();
     }
 
-    public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+    public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException, DigestException {
         System.out.printf("Requesting: '%s'\n", uri.toString());
         System.out.printf("scheme: '%s'", uri.getScheme());
         if (!uri.getScheme().equals("gemini")) {
@@ -98,20 +105,23 @@ public class Gemini {
                 }
 
             } else {
-                File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
-                Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
-                ActivityCompat.requestPermissions(activity, new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                }, 0);
-                activity.runOnUiThread(() -> {
-                    Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-                });
-                Intent intent = new Intent();
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(fileUri, meta);
-                activity.startActivity(intent);
+                if (PermissionAsker.ensurePermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.explain_permission_storage)) {
+                    File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
+                    Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
+                    activity.runOnUiThread(() -> {
+                        Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                    });
+                    Intent intent = new Intent();
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.setAction(Intent.ACTION_VIEW);
+                    intent.setDataAndType(fileUri, meta);
+                    activity.startActivity(intent);
+                } else {
+                    activity.runOnUiThread(() -> {
+                        Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show();
+                    });
+                }
             }
             outputStream.close();
             return lines;
@@ -137,19 +147,40 @@ public class Gemini {
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
-    private File download(InputStream inputStream, Uri uriFile) throws IOException {
-        File agenaPath = new File(Environment.getExternalStorageDirectory(), "Download/AGENA");
-        File downloadFile = new File(agenaPath, uriFile.getLastPathSegment());
-        if (downloadFile.exists()) downloadFile.delete();
-        downloadFile.createNewFile();
-        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadFile));
+    private File download(InputStream inputStream, Uri uriFile) throws IOException, DigestException, NoSuchAlgorithmException {
+        String uriString = uriFile.toString();
+        String extension = "dat";
+        if (uriString.endsWith("/")) {
+            uriString.substring(0, uriString.length() - 1);
+        }
+        System.out.println(uriString);
+        String[] sectors = uriString.split("\\.");
+        System.out.println(sectors.toString());
+        System.out.println(sectors.length);
+        extension = sectors[sectors.length - 1];
+
+        File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AGENA");
+        agenaPath.mkdirs();
+        File tempPath = File.createTempFile("agena", String.format(".%s", extension), agenaPath);
+        tempPath.createNewFile();
+        tempPath.setWritable(true);
+        tempPath.setReadable(true);
+        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath));
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] buffer = new byte[4096];
         int len;
         while ((len = inputStream.read(buffer)) != -1) {
             outputStream.write(buffer, 0, len);
+            digest.update(buffer, 0, len);
         }
+        String hash = new BigInteger(1, digest.digest()).toString(16);
         outputStream.flush();
         outputStream.close();
-        return downloadFile;
+        File outFile = new File(agenaPath, String.format("%s.%s", hash, extension));
+        if (tempPath.renameTo(outFile)) {
+            return outFile;
+        } else {
+            return tempPath;
+        }
     }
 }

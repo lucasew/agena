@@ -27,6 +27,8 @@
     <string name="error_gemini_invalid_response">Server returned an invalid response</string>
     <string name="error_gemini_unimplemented">Gemini protocol detail not implemented</string>
     <string name="error_dont_know_how_to_handle_content_type">I don\'t know how to handle this content</string>
+    <string name="explain_permission_storage">I need storage permission to store downloaded files from sites, like images.</string>
+    <string name="please_repeat_action">Permission state has changed. Please retry the operation.</string>
     <string name="please_wait">Please wait</string>
     <string name="error_gone">Gone</string>
 </resources>
