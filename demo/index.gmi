@@ -1,0 +1,38 @@
+```
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░█▀█░█▀▀░█▀▀░█▀█░█▀█░░░░░░░░░░░░
+░░░░░░░░░░░░░█▀█░█░█░█▀▀░█░█░█▀█░░░░░░░░░░░░
+░░░░░░░░░░░░░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+Gemini Browser
+by lucasew
+```
+
+=> https://github.com/lucasew/agena Download - Android 4.1>
+
+# Apresentação
+- Implementação de um browser para o protocolo Gemini em Java para Android com direito a renderização de gemtext e delegação de responsabilidade.
+- Se o navegador não sabe como tratar um tipo de dado ele baixa e abre o arquivo.
+- Funciona em celulares degooglados. Os testes iniciais foram realizados em um executando LineageOS sem gapps.
+- Suporte a TLS através da biblioteca conscrypt [1].
+- Executa em Android 4.1 ou superior (SDK level 16).
+- Usa o mecanismo de pilha de activities do Android para implementar página anterior.
+- Roda tranquilo até em um Galaxy Pocket Neo de 512MB de RAM e um tablet whitelabel fuleira.
+
+=> https://github.com/google/conscrypt [1] Conscrypt
+
+# Features
+=> img.jpg Imagens
+=> text.gmi Textos grandes
+=> https://www.youtube.com/watch?v=dQw4w9WgXcQ Links HTTP com deeplink
+=> gemini://g.mikf.pl/gemlog/ Acesso a gemlogs
+## Headings
+### Headings
+#### Headings
+##### Headings
+###### Headings
+- Listas
+    - Listas
