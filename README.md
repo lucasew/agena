@@ -19,6 +19,7 @@ by lucasew
 * Works with Android 4.1 (SDK level 16) or superior.
 * It uses the Android's activity stack to implement previous page.
 * Works fine and fast even on a 512MB Galaxy Pocket Neo and a very slow whitelabel tablet.
+* Allows seeing the full stacktrace if it finds an unhandled error.
 
 # Features
 * Images
@@ -31,3 +32,8 @@ by lucasew
 # TODO
 - [ ] Certificates (6X)
 - [ ] Prompts (Status 1X)
+
+# Screenshots
+![Main view](./demo/1.jpg)
+![Historic page](./demo/2.jpg)
+![Browser view](./demo/3.jpg)
