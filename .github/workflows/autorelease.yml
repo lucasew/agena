@@ -112,8 +112,7 @@ jobs:
       run: |
         gh release create "$TAG" \
           --title "$TITLE" \
-          --generate-notes \
-          --notes-start-tag $(gh release list --limit 1 --json tagName -q .[].tagName || echo "")
+          --generate-notes
 
     # Upload release APK
     - name: Upload release artifacts
