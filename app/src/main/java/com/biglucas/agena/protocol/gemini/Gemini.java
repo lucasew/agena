@@ -1,6 +1,5 @@
 package com.biglucas.agena.protocol.gemini;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import androidx.core.content.FileProvider;
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.Invoker;
-import com.biglucas.agena.utils.PermissionAsker;
 import com.biglucas.agena.utils.SSLSocketFactorySingleton;
 
 import java.io.BufferedInputStream;
@@ -208,21 +206,18 @@ public class Gemini {
                     Collections.addAll(lines, line.split("\n"));
                 }
             } else {
-                if (PermissionAsker.ensurePermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.explain_permission_storage)) {
-                    File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
-                    Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
-                    activity.runOnUiThread(() -> Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show());
-                    Intent intent = new Intent();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                    }
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.setDataAndType(fileUri, meta);
-                    activity.startActivity(intent);
-                } else {
-                    activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
+                // Download to app's private storage (no permissions needed on modern Android)
+                File cachedImage = download(activity, inputStream, Uri.parse(cleanedEntity));
+                Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
+                activity.runOnUiThread(() -> Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show());
+                Intent intent = new Intent();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                 }
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(fileUri, meta);
+                activity.startActivity(intent);
             }
             new DatabaseController(activity.openOrCreateDatabase("history", Context.MODE_PRIVATE, null))
                     .addHistoryEntry(uri);
@@ -294,7 +289,7 @@ public class Gemini {
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
-    private File download(InputStream inputStream, Uri uriFile) throws IOException, NoSuchAlgorithmException {
+    private File download(Activity activity, InputStream inputStream, Uri uriFile) throws IOException, NoSuchAlgorithmException {
         String uriString = uriFile.toString();
         if (uriString.endsWith("/")) {
             uriString = uriString.substring(0, uriString.length() - 1);
@@ -303,8 +298,12 @@ public class Gemini {
         String[] sectors = uriString.split("\\.");
         String extension = sectors[sectors.length - 1];
 
-        File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AGENA");
-        if (!agenaPath.mkdirs()) System.out.printf("Creating missing directory: '%s'\n", agenaPath.getAbsolutePath());
+        // Use app's private external storage directory (no permissions needed)
+        File agenaPath = new File(activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "AGENA");
+        if (!agenaPath.exists()) {
+            agenaPath.mkdirs();
+            System.out.printf("Creating directory: '%s'\n", agenaPath.getAbsolutePath());
+        }
         File tempPath = File.createTempFile("agena", String.format(".%s", extension), agenaPath);
         if (!tempPath.createNewFile()) System.out.printf("Creating file: '%s'\n", tempPath.getAbsolutePath());
         BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath));
