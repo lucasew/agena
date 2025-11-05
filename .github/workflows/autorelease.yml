@@ -79,7 +79,7 @@ jobs:
       run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload debug APK artifact
-      if: github.event_name == 'pull_request' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/'))
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: debug-apk
@@ -101,6 +101,13 @@ jobs:
     - name: Build release APK
       if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
       run: ./gradlew assembleRelease --stacktrace
+
+    - name: Upload release APK artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: app/build/outputs/apk/release/*.apk
 
     # Create GitHub release
     - name: Create release
