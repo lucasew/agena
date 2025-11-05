@@ -11,7 +11,7 @@ Minimalistic Gemini Browser
 by lucasew
 ```
 
-[![Android CI Tests](https://github.com/lucasew/agena/actions/workflows/test.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/test.yml)
+[![Build, Test and Auto-Release](https://github.com/lucasew/agena/actions/workflows/autorelease.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/autorelease.yml)
 [Download](https://github.com/lucasew/agena) (>Android 4.1)
 
 * Gemini browser implementation made in Java for Android that can render gemtext as native components.
