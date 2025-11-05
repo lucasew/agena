@@ -1,11 +1,15 @@
 package com.biglucas.agena.protocol.gemini;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
@@ -13,6 +17,7 @@ import androidx.core.content.FileProvider;
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.Invoker;
+import com.biglucas.agena.utils.PermissionAsker;
 import com.biglucas.agena.utils.SSLSocketFactorySingleton;
 
 import java.io.BufferedInputStream;
@@ -21,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -36,6 +42,19 @@ import javax.net.ssl.SSLSocket;
 
 public class Gemini {
     public Gemini() {}
+
+    /**
+     * Result of a download operation containing URI and display path
+     */
+    private static class DownloadResult {
+        final Uri uri;
+        final String displayPath;
+
+        DownloadResult(Uri uri, String displayPath) {
+            this.uri = uri;
+            this.displayPath = displayPath;
+        }
+    }
 
     private String readLineFromStream(InputStream input) throws IOException {
         ArrayList<Byte> bytes = new ArrayList<>();
@@ -206,18 +225,22 @@ public class Gemini {
                     Collections.addAll(lines, line.split("\n"));
                 }
             } else {
-                // Download to app's private storage (no permissions needed on modern Android)
-                File cachedImage = download(activity, inputStream, Uri.parse(cleanedEntity));
-                Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
-                activity.runOnUiThread(() -> Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show());
-                Intent intent = new Intent();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                // Download to public Downloads folder
+                DownloadResult result = download(activity, inputStream, Uri.parse(cleanedEntity), meta);
+                if (result != null) {
+                    activity.runOnUiThread(() -> Toast.makeText(activity, result.displayPath, Toast.LENGTH_SHORT).show());
+                    Intent intent = new Intent();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                    }
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.setAction(Intent.ACTION_VIEW);
+                    intent.setDataAndType(result.uri, meta);
+                    activity.startActivity(intent);
+                } else {
+                    // Permission was denied, show retry message
+                    activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
                 }
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(fileUri, meta);
-                activity.startActivity(intent);
             }
             new DatabaseController(activity.openOrCreateDatabase("history", Context.MODE_PRIVATE, null))
                     .addHistoryEntry(uri);
@@ -289,39 +312,107 @@ public class Gemini {
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
-    private File download(Activity activity, InputStream inputStream, Uri uriFile) throws IOException, NoSuchAlgorithmException {
+    /**
+     * Downloads a file to the public Downloads folder
+     * Uses MediaStore API for Android 10+ (no permissions needed)
+     * Uses legacy method for Android 9 and below (requires WRITE_EXTERNAL_STORAGE permission)
+     */
+    private DownloadResult download(Activity activity, InputStream inputStream, Uri uriFile, String mimeType) throws IOException, NoSuchAlgorithmException {
         String uriString = uriFile.toString();
         if (uriString.endsWith("/")) {
             uriString = uriString.substring(0, uriString.length() - 1);
         }
-        System.out.println(uriString);
-        String[] sectors = uriString.split("\\.");
-        String extension = sectors[sectors.length - 1];
+        System.out.println("Downloading: " + uriString);
 
-        // Use app's private external storage directory (no permissions needed)
-        File agenaPath = new File(activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "AGENA");
-        if (!agenaPath.exists()) {
-            agenaPath.mkdirs();
-            System.out.printf("Creating directory: '%s'\n", agenaPath.getAbsolutePath());
-        }
-        File tempPath = File.createTempFile("agena", String.format(".%s", extension), agenaPath);
-        if (!tempPath.createNewFile()) System.out.printf("Creating file: '%s'\n", tempPath.getAbsolutePath());
-        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath));
+        String[] sectors = uriString.split("\\.");
+        String extension = sectors.length > 0 ? sectors[sectors.length - 1] : "bin";
+
+        // Calculate hash while downloading
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] buffer = new byte[4096];
-        int len;
-        while ((len = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, len);
-            digest.update(buffer, 0, len);
-        }
-        String hash = new BigInteger(1, digest.digest()).toString(16);
-        outputStream.flush();
-        outputStream.close();
-        File outFile = new File(agenaPath, String.format("%s.%s", hash, extension));
-        if (tempPath.renameTo(outFile)) {
-            return outFile;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10+ (API 29+): Use MediaStore API (no permissions needed)
+            return downloadViaMediaStore(activity, inputStream, extension, mimeType, digest, buffer);
         } else {
-            return tempPath;
+            // Android 9 and below: Use legacy method (requires permission)
+            return downloadLegacy(activity, inputStream, extension, digest, buffer);
         }
+    }
+
+    /**
+     * Download using MediaStore API for Android 10+ (no permissions needed)
+     */
+    private DownloadResult downloadViaMediaStore(Activity activity, InputStream inputStream,
+                                                 String extension, String mimeType,
+                                                 MessageDigest digest, byte[] buffer) throws IOException {
+        ContentResolver resolver = activity.getContentResolver();
+        ContentValues values = new ContentValues();
+
+        // Generate filename with timestamp
+        String filename = "agena_" + System.currentTimeMillis() + "." + extension;
+        values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
+        values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/AGENA");
+
+        Uri downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (downloadUri == null) {
+            throw new IOException("Failed to create MediaStore entry");
+        }
+
+        try (OutputStream outputStream = resolver.openOutputStream(downloadUri)) {
+            if (outputStream == null) {
+                throw new IOException("Failed to open output stream");
+            }
+
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+                digest.update(buffer, 0, len);
+            }
+            outputStream.flush();
+        }
+
+        String hash = new BigInteger(1, digest.digest()).toString(16);
+        String displayPath = Environment.DIRECTORY_DOWNLOADS + "/AGENA/" + filename;
+        System.out.println("Downloaded to: " + displayPath + " (hash: " + hash + ")");
+
+        return new DownloadResult(downloadUri, displayPath);
+    }
+
+    /**
+     * Legacy download method for Android 9 and below (requires WRITE_EXTERNAL_STORAGE permission)
+     */
+    private DownloadResult downloadLegacy(Activity activity, InputStream inputStream,
+                                         String extension, MessageDigest digest, byte[] buffer) throws IOException {
+        // Check permission for Android 9 and below
+        if (!PermissionAsker.ensurePermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.explain_permission_storage)) {
+            return null; // Permission denied
+        }
+
+        File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AGENA");
+        if (!agenaPath.exists() && !agenaPath.mkdirs()) {
+            throw new IOException("Failed to create directory: " + agenaPath.getAbsolutePath());
+        }
+
+        File tempPath = File.createTempFile("agena", "." + extension, agenaPath);
+
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath))) {
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+                digest.update(buffer, 0, len);
+            }
+            outputStream.flush();
+        }
+
+        String hash = new BigInteger(1, digest.digest()).toString(16);
+        File outFile = new File(agenaPath, hash + "." + extension);
+
+        File finalFile = tempPath.renameTo(outFile) ? outFile : tempPath;
+        Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), finalFile);
+
+        System.out.println("Downloaded to: " + finalFile.getAbsolutePath());
+        return new DownloadResult(fileUri, finalFile.getAbsolutePath());
     }
 }
