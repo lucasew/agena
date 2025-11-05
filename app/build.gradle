@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'com.biglucas.agena'
-    compileSdk 32
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.biglucas.agena"
         minSdk 16
-        targetSdk 32
+        targetSdk 34
         versionCode 100
         versionName "0.1.0"
 
