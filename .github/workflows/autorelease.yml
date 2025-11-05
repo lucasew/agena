@@ -42,9 +42,7 @@ jobs:
         fetch-depth: 0
 
     - name: Setup mise
-      uses: jdx/mise-action@v2
-      with:
-        experimental: true
+      uses: jdx/mise-action@v3
 
     - name: Grant execute permissions
       run: |
@@ -69,9 +67,9 @@ jobs:
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         echo "Current version: $VERSION"
 
-    # Test steps (always run)
-    - name: Run unit tests
-      run: mise run test
+    # CI steps (test + build)
+    - name: Run CI (test + build)
+      run: mise ci
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -91,14 +89,10 @@ jobs:
         reporter: java-junit
         fail-on-error: true
 
-    # Build steps (always run)
+    # Build release APK for tags
     - name: Build release APK
       if: startsWith(github.ref, 'refs/tags/v')
       run: mise run build:release
-
-    - name: Build debug APK
-      if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-      run: mise run build
 
     # Upload APK as artifact (always run)
     - name: Upload release APK artifact
