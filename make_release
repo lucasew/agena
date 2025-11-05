@@ -7,7 +7,8 @@ else
 	exit 1
 fi
 
-CURRENT_VERSION=($(cat version.txt | sed 's;\.;.;g'))
+# Read current version from build.gradle
+CURRENT_VERSION=($(grep 'versionName' app/build.gradle | sed 's/.*"\(.*\)".*/\1/' | sed 's;\.;.;g'))
 
 case "$VERSION" in
 	patch)
@@ -21,13 +22,11 @@ case "$VERSION" in
 	;;
 esac
 
-printf "%s" "$VERSION" > version.txt
-
 # Calculate versionCode (major*10000 + minor*100 + patch)
 IFS='.' read -ra PARTS <<< "$VERSION"
 VERSION_CODE=$((${PARTS[0]}*10000 + ${PARTS[1]}*100 + ${PARTS[2]}))
 
-# Update build.gradle with new version
+# Update build.gradle
 sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" app/build.gradle
 sed -i "s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" app/build.gradle
 

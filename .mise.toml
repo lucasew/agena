@@ -1,46 +1,35 @@
 [tools]
-# Android SDK is available through system configuration
 
 [tasks.gen]
 description = "Generate code (placeholder for future codegen)"
 run = """
 echo "No codegen configured yet - this is a placeholder task"
-echo "In the future, add your code generation steps here"
 """
 
 [tasks.build]
 description = "Build the Android app"
 run = """
-echo "Building Android app..."
 ./gradlew assembleRelease
-echo "Build artifacts:"
-find app/build/outputs/apk -name "*.apk" -type f
-"""
-
-[tasks.run]
-description = "Install and run the app on a connected device"
-run = """
-echo "Installing app on device..."
-./gradlew installRelease
-echo "App installed successfully!"
-echo "Note: Launch the app manually from your device"
 """
 
 [tasks.test]
 description = "Run tests"
 run = """
-echo "Running tests..."
 ./gradlew test
 """
 
-[tasks.ci]
-description = "Run CI checks (build + test)"
+[tasks.run]
+description = "Install and run the app on a connected device"
 run = """
-echo "Running CI checks..."
+./gradlew installRelease
+"""
+
+[tasks.ci]
+description = "Run CI checks (gen + test + build)"
+run = """
 mise run gen
 mise run test
 mise run build
-echo "CI checks completed successfully!"
 """
 
 [tasks.clean]
