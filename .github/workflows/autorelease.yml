@@ -32,6 +32,7 @@ jobs:
       attestations: write
       id-token: write
       pull-requests: write
+      checks: write
 
     steps:
     # Setup steps (always run)
