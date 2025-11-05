@@ -1,124 +1,85 @@
-name: Auto Release
+name: autorelease
 
 on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
   workflow_dispatch:
     inputs:
-      bump_type:
-        description: 'Version bump type'
-        required: true
+      version:
+        description: 'Version to release (patch, minor, major, or explicit version)'
+        required: false
         default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
 
 jobs:
-  # First CI run - test build before making release
-  pre-release-ci:
-    name: Pre-release CI check
-    uses: ./.github/workflows/ci.yml
-
-  # Bump version and create release
-  release:
-    name: Create release
-    needs: pre-release-ci
+  autorelease:
     runs-on: ubuntu-latest
-    outputs:
-      new-version: ${{ steps.bump.outputs.new-version }}
-      tag: ${{ steps.bump.outputs.tag }}
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+      pull-requests: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Configure Git
+      - name: Setup git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump version
-        id: bump
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+        with:
+          install: true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run CI before release
+        run: mise run ci
+
+      - name: Make release
+        if: github.event_name != 'pull_request'
+        env:
+          NO_TAG: 1
         run: |
           chmod +x make_release
-          NEW_VERSION=$(./make_release ${{ inputs.bump_type }})
-          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Released version: $NEW_VERSION"
+          ./make_release ${{ github.event.inputs.version || 'patch' }}
+          echo "RELEASE_VERSION=$(cat version.txt)" >> $GITHUB_ENV
 
-      - name: Commit version bump
-        run: |
-          git add app/build.gradle
-          git commit -m "chore: bump version to ${{ steps.bump.outputs.new-version }}"
-          git tag "${{ steps.bump.outputs.tag }}"
-
-      - name: Push changes
-        run: |
-          git push origin HEAD:${{ github.ref_name }}
-          git push origin "${{ steps.bump.outputs.tag }}"
-
-  # Second CI run - build with new version
-  post-release-ci:
-    name: Post-release CI build
-    needs: release
-    uses: ./.github/workflows/ci.yml
-
-  # Create GitHub release with APKs
-  create-github-release:
-    name: Create GitHub release
-    needs: [release, post-release-ci]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.release.outputs.tag }}
-
-      - name: Download APK artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: app-release-apk
-          path: ./apks
-
-      - name: List downloaded APKs
-        run: |
-          echo "Downloaded APKs:"
-          ls -lh ./apks/
+      - name: Run CI after version bump
+        if: env.RELEASE_VERSION != ''
+        run: mise run ci
 
       - name: Create GitHub Release
+        if: env.RELEASE_VERSION != ''
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.release.outputs.tag }}
-          name: Release ${{ needs.release.outputs.new-version }}
-          body: |
-            ## Agena ${{ needs.release.outputs.new-version }}
-
-            ### Changes
-            This release was automatically created.
-
-            ### Downloads
-            - **APK**: Download the Android APK from the assets below
-
-            ### Installation
-            1. Download the APK file
-            2. Enable "Install from Unknown Sources" on your Android device
-            3. Install the APK
-
-            ---
-            *Built with ❤️ by the autorelease workflow*
-          files: |
-            ./apks/*.apk
-          draft: false
-          prerelease: false
+          tag_name: ${{ env.RELEASE_VERSION }}
+          name: ${{ env.RELEASE_VERSION }}
           generate_release_notes: true
+          files: |
+            app/build/outputs/apk/release/*.apk
 
-      - name: Upload release APKs as workflow artifacts
+      - name: Upload APK artifacts
+        if: env.RELEASE_VERSION != ''
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk-${{ needs.release.outputs.new-version }}
-          path: ./apks/*.apk
+          name: app-release-${{ env.RELEASE_VERSION }}
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 90
