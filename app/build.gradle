@@ -3,14 +3,15 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    namespace 'com.biglucas.agena'
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.biglucas.agena"
-        minSdk 16
-        targetSdk 32
-        versionCode 1
-        versionName "0.1"
+        minSdk 21
+        targetSdk 34
+        versionCode 100
+        versionName "0.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

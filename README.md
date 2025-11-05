@@ -10,6 +10,8 @@
 Minimalistic Gemini Browser
 by lucasew
 ```
+
+[![Build, Test and Auto-Release](https://github.com/lucasew/agena/actions/workflows/autorelease.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/autorelease.yml)
 [Download](https://github.com/lucasew/agena) (>Android 4.1)
 
 * Gemini browser implementation made in Java for Android that can render gemtext as native components.
@@ -20,6 +22,7 @@ by lucasew
 * It uses the Android's activity stack to implement previous page.
 * Works fine and fast even on a 512MB Galaxy Pocket Neo and a very slow whitelabel tablet.
 * Allows seeing the full stacktrace if it finds an unhandled error.
+* Comprehensive test suite with automated CI/CD testing.
 
 # Features
 * Images
@@ -29,9 +32,21 @@ by lucasew
 * Headings
 * Lists
 
+# Protocol Compliance
+
+✅ **Fully compliant with the Gemini Protocol Specification**
+
+- ✅ All status codes (10-69) implemented
+- ✅ Input prompts (10-11) with dialog support
+- ✅ Redirect limit (max 5)
+- ✅ URI validation (1024 byte limit)
+- ✅ TLS 1.2+ with SNI support
+- ✅ Certificate error handling (60-69)
+- ✅ Comprehensive error messages
+
 # TODO
-- [ ] Certificates (6X)
-- [ ] Prompts (Status 1X)
+- [ ] Full TOFU certificate persistence
+- [ ] Client certificate generation and management
 
 # Screenshots
 ![Main view](./demo/1.jpg)

@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 [patch|minor|major]"
+    exit 1
+fi
+
+BUMP_TYPE=$1
+
+# Read current version
+CURRENT_VERSION=$(cat version.txt)
+IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
+
+MAJOR=${VERSION_PARTS[0]}
+MINOR=${VERSION_PARTS[1]}
+PATCH=${VERSION_PARTS[2]}
+
+# Calculate new version based on bump type
+case $BUMP_TYPE in
+    patch)
+        PATCH=$((PATCH + 1))
+        ;;
+    minor)
+        MINOR=$((MINOR + 1))
+        PATCH=0
+        ;;
+    major)
+        MAJOR=$((MAJOR + 1))
+        MINOR=0
+        PATCH=0
+        ;;
+    *)
+        echo "Invalid bump type: $BUMP_TYPE"
+        echo "Usage: $0 [patch|minor|major]"
+        exit 1
+        ;;
+esac
+
+NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+
+echo "Bumping version from $CURRENT_VERSION to $NEW_VERSION"
+
+# Update version.txt
+echo "$NEW_VERSION" > version.txt
+
+# Calculate versionCode (for Android)
+# versionCode is calculated as: (major * 10000) + (minor * 100) + patch
+# This allows for up to 99 minor versions and 99 patches per major version
+VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+
+echo "New versionCode: $VERSION_CODE"
+
+# Update build.gradle
+sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" app/build.gradle
+sed -i "s/versionName \"[^\"]*\"/versionName \"$NEW_VERSION\"/" app/build.gradle
+
+echo "Updated app/build.gradle:"
+echo "  versionCode: $VERSION_CODE"
+echo "  versionName: \"$NEW_VERSION\""
+
+# Git operations
+git add -A
+git commit -m "bump to $NEW_VERSION"
+
+# Create and push tag unless NO_TAG is set
+if [ -z "$NO_TAG" ]; then
+    git tag "v$NEW_VERSION"
+    echo "Created tag v$NEW_VERSION"
+fi
+
+git push
+if [ -z "$NO_TAG" ]; then
+    git push --tags
+fi
+
+echo "✅ Successfully released version $NEW_VERSION"

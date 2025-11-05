@@ -13,15 +13,43 @@
     <!-- Errors -->
     <string name="error_generic">Generic unspecified/unhandled error</string>
     <string name="error_unable_to_resolve_host">Unable to resolve host. It wasn\'t found by DNS.</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="error_connection_timeout">Timeout while connecting to the server. Is really there a Gemini server?</string>
     <string name="error_gemini_not_found">Content not found</string>
     <string name="error_gemini_invalid_response">Server returned an invalid response</string>
     <string name="error_gemini_unimplemented">Gemini protocol detail not implemented (yet)</string>
     <string name="error_dont_know_how_to_handle_content_type">I don\'t know how to handle this content</string>
+    <string name="error_gone">Gone</string>
+
+    <!-- Temporary failures (40-49) -->
+    <string name="error_temporary_failure">Temporary server failure. Try again later.</string>
+    <string name="error_server_unavailable">Server unavailable. Try again later.</string>
+    <string name="error_cgi_error">Server CGI error</string>
+    <string name="error_proxy_error">Proxy error</string>
+    <string name="error_slow_down">Rate limited. Please slow down.</string>
+
+    <!-- Permanent failures (50-59) -->
+    <string name="error_permanent_failure">Permanent failure</string>
+    <string name="error_proxy_request_refused">Proxy request refused</string>
+    <string name="error_bad_request">Bad request</string>
+
+    <!-- Client certificate errors (60-69) -->
+    <string name="error_client_certificate_required">Client certificate required</string>
+    <string name="error_certificate_not_authorized">Certificate not authorized</string>
+    <string name="error_certificate_not_valid">Certificate not valid</string>
+
+    <!-- Redirects -->
+    <string name="error_too_many_redirects">Too many redirects (maximum 5)</string>
+
+    <!-- URI validation -->
+    <string name="error_invalid_uri">Invalid URI</string>
+
+    <!-- Input prompts -->
+    <string name="input_prompt_title">Input Required</string>
+    <string name="input_prompt_ok">OK</string>
+    <string name="input_prompt_cancel">Cancel</string>
+
     <string name="explain_permission_storage">I need storage permission to store downloaded files from sites, like images.</string>
     <string name="please_repeat_action">Permission state has changed. Please retry the operation.</string>
     <string name="please_wait">Please wait</string>
-    <string name="error_gone">Gone</string>
     <string name="historic">Historic</string>
 </resources>

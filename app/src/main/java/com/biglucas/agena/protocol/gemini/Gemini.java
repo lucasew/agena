@@ -2,11 +2,14 @@ package com.biglucas.agena.protocol.gemini;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
@@ -23,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -38,6 +42,19 @@ import javax.net.ssl.SSLSocket;
 
 public class Gemini {
     public Gemini() {}
+
+    /**
+     * Result of a download operation containing URI and display path
+     */
+    private static class DownloadResult {
+        final Uri uri;
+        final String displayPath;
+
+        DownloadResult(Uri uri, String displayPath) {
+            this.uri = uri;
+            this.displayPath = displayPath;
+        }
+    }
 
     private String readLineFromStream(InputStream input) throws IOException {
         ArrayList<Byte> bytes = new ArrayList<>();
@@ -56,23 +73,75 @@ public class Gemini {
         return Charset.defaultCharset().decode(ByteBuffer.wrap(buf)).toString();
     }
 
+    /**
+     * Public request method that validates URI and delegates to internal request with redirect tracking
+     */
     public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
-        System.out.printf("Requesting: '%s'\n", uri.toString());
-        System.out.printf("scheme: '%s'", uri.getScheme());
+        // Validate URI according to Gemini spec
+        validateUri(uri);
+        // Start request with redirect counter at 0
+        return requestInternal(activity, uri, 0);
+    }
+
+    /**
+     * Validates URI according to Gemini protocol specification
+     */
+    private void validateUri(Uri uri) throws FailedGeminiRequestException {
+        String uriString = uri.toString();
+
+        // Check maximum URI length (1024 bytes as per spec)
+        if (uriString.getBytes().length > 1024) {
+            throw new FailedGeminiRequestException.GeminiInvalidUri("URI exceeds maximum length of 1024 bytes");
+        }
+
+        // Check for userinfo (not allowed in Gemini URIs)
+        if (uri.getUserInfo() != null && !uri.getUserInfo().isEmpty()) {
+            throw new FailedGeminiRequestException.GeminiInvalidUri("Userinfo not allowed in Gemini URIs");
+        }
+
+        // Validate scheme
+        if (!uri.getScheme().equals("gemini")) {
+            throw new FailedGeminiRequestException.GeminiInvalidUri("Invalid scheme: " + uri.getScheme());
+        }
+    }
+
+    /**
+     * Internal request method with redirect tracking
+     */
+    private List<String> requestInternal(Activity activity, Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+        System.out.printf("Requesting: '%s' (redirect count: %d)\n", uri.toString(), redirectCount);
+
+        // Check redirect limit (max 5 as per spec)
+        if (redirectCount > 5) {
+            throw new FailedGeminiRequestException.GeminiTooManyRedirects();
+        }
+
         if (!uri.getScheme().equals("gemini")) {
             new Invoker(activity, uri).invokeNewWindow();
             return new ArrayList<>();
         }
+
         int port = uri.getPort();
         if (port == -1) {
             port = 1965;
         }
+
         SSLSocket socket = (SSLSocket) SSLSocketFactorySingleton
                 .getSSLSocketFactory()
                 .createSocket();
+
+        // Enable SNI (Server Name Indication) as required by Gemini spec
+        // This is enabled by default on Android, but we set it explicitly to be certain
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            javax.net.ssl.SNIHostName serverName = new javax.net.ssl.SNIHostName(uri.getHost());
+            javax.net.ssl.SSLParameters params = socket.getSSLParameters();
+            params.setServerNames(java.util.Collections.singletonList(serverName));
+            socket.setSSLParameters(params);
+        }
+
         // TODO: configurable timeout
         socket.connect(new InetSocketAddress(uri.getHost(), port), 5 * 1000);
-        socket.setSoTimeout(5*1000);
+        socket.setSoTimeout(5 * 1000);
         socket.startHandshake();
 
         BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
@@ -86,14 +155,65 @@ public class Gemini {
         InputStream inputStream = new BufferedInputStream(socket.getInputStream());
         String headerLine = readLineFromStream(inputStream);
         if (headerLine == null) {
-            System.out.println("Servidor n respondeu com uma header gemini");
+            System.out.println("Server did not respond with a Gemini header");
             inputStream.close();
             outputStream.close();
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
         }
-        int responseCode = Integer.parseInt(headerLine.substring(0, headerLine.indexOf(" ")));
-        String meta = headerLine.substring(headerLine.indexOf(" ")).trim();
-        System.out.printf("response_code=%d,meta=%s\n", responseCode, meta);
+
+        // Parse response code and meta
+        int responseCode;
+        String meta;
+        try {
+            int spaceIndex = headerLine.indexOf(" ");
+            if (spaceIndex == -1) {
+                // No meta field, just status code
+                responseCode = Integer.parseInt(headerLine.trim());
+                meta = "";
+            } else {
+                responseCode = Integer.parseInt(headerLine.substring(0, spaceIndex));
+                meta = headerLine.substring(spaceIndex).trim();
+            }
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            inputStream.close();
+            outputStream.close();
+            throw new FailedGeminiRequestException.GeminiInvalidResponse();
+        }
+
+        System.out.printf("response_code=%d, meta=%s\n", responseCode, meta);
+
+        // Handle response based on status code ranges
+        try {
+            return handleResponse(activity, uri, inputStream, outputStream, responseCode, meta, cleanedEntity, redirectCount);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                // Ignore close errors
+            }
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                // Ignore close errors
+            }
+        }
+    }
+
+    /**
+     * Handles the response based on status code
+     */
+    private List<String> handleResponse(Activity activity, Uri uri, InputStream inputStream,
+                                        BufferedOutputStream outputStream, int responseCode,
+                                        String meta, String cleanedEntity, int redirectCount)
+            throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+
+        // Input required (10-19)
+        if (responseCode >= 10 && responseCode < 20) {
+            boolean sensitive = (responseCode == 11);
+            throw new FailedGeminiRequestException.GeminiInputRequired(meta, sensitive);
+        }
+
+        // Success (20-29)
         if (responseCode >= 20 && responseCode < 30) {
             List<String> lines = new ArrayList<>();
             if (meta.startsWith("text/gemini")) {
@@ -105,77 +225,194 @@ public class Gemini {
                     Collections.addAll(lines, line.split("\n"));
                 }
             } else {
-                if (PermissionAsker.ensurePermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.explain_permission_storage)) {
-                    File cachedImage = download(inputStream, Uri.parse(cleanedEntity));
-                    Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), cachedImage);
-                    activity.runOnUiThread(() -> Toast.makeText(activity, cachedImage.getAbsolutePath(), Toast.LENGTH_SHORT).show());
+                // Download to public Downloads folder
+                DownloadResult result = download(activity, inputStream, Uri.parse(cleanedEntity), meta);
+                if (result != null) {
+                    activity.runOnUiThread(() -> Toast.makeText(activity, result.displayPath, Toast.LENGTH_SHORT).show());
                     Intent intent = new Intent();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                     }
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     intent.setAction(Intent.ACTION_VIEW);
-                    intent.setDataAndType(fileUri, meta);
+                    intent.setDataAndType(result.uri, meta);
                     activity.startActivity(intent);
                 } else {
+                    // Permission was denied, show retry message
                     activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
                 }
             }
-            outputStream.close();
             new DatabaseController(activity.openOrCreateDatabase("history", Context.MODE_PRIVATE, null))
-                .addHistoryEntry(uri);
+                    .addHistoryEntry(uri);
             return lines;
         }
+
+        // Redirect (30-39)
         if (responseCode >= 30 && responseCode < 40) {
-            return this.request(activity, Uri.parse(meta.trim()));
+            if (meta.isEmpty()) {
+                throw new FailedGeminiRequestException.GeminiInvalidResponse();
+            }
+            Uri redirectUri = Uri.parse(meta.trim());
+            validateUri(redirectUri);
+            return requestInternal(activity, redirectUri, redirectCount + 1);
         }
-        if (responseCode == 51) {
-            throw new FailedGeminiRequestException.GeminiNotFound();
+
+        // Temporary failure (40-49)
+        if (responseCode >= 40 && responseCode < 50) {
+            switch (responseCode) {
+                case 40:
+                    throw new FailedGeminiRequestException.GeminiTemporaryFailure(meta);
+                case 41:
+                    throw new FailedGeminiRequestException.GeminiServerUnavailable(meta);
+                case 42:
+                    throw new FailedGeminiRequestException.GeminiCGIError(meta);
+                case 43:
+                    throw new FailedGeminiRequestException.GeminiProxyError(meta);
+                case 44:
+                    throw new FailedGeminiRequestException.GeminiSlowDown(meta);
+                default:
+                    throw new FailedGeminiRequestException.GeminiTemporaryFailure(meta);
+            }
         }
-        System.out.printf("server header: %s\n", headerLine);
-        System.out.printf("meta: %s\n", meta);
-        String line;
-        while ((line = readLineFromStream(inputStream)) != null) {
-            System.out.printf("server return: %s\n", line);
+
+        // Permanent failure (50-59)
+        if (responseCode >= 50 && responseCode < 60) {
+            switch (responseCode) {
+                case 50:
+                    throw new FailedGeminiRequestException.GeminiPermanentFailure(meta);
+                case 51:
+                    throw new FailedGeminiRequestException.GeminiNotFound();
+                case 52:
+                    throw new FailedGeminiRequestException.GeminiGone();
+                case 53:
+                    throw new FailedGeminiRequestException.GeminiProxyRequestRefused(meta);
+                case 59:
+                    throw new FailedGeminiRequestException.GeminiBadRequest(meta);
+                default:
+                    throw new FailedGeminiRequestException.GeminiPermanentFailure(meta);
+            }
         }
-        System.out.flush();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        // Client certificate required (60-69)
+        if (responseCode >= 60 && responseCode < 70) {
+            switch (responseCode) {
+                case 60:
+                    throw new FailedGeminiRequestException.GeminiClientCertificateRequired(meta);
+                case 61:
+                    throw new FailedGeminiRequestException.GeminiCertificateNotAuthorized(meta);
+                case 62:
+                    throw new FailedGeminiRequestException.GeminiCertificateNotValid(meta);
+                default:
+                    throw new FailedGeminiRequestException.GeminiClientCertificateRequired(meta);
+            }
         }
+
+        // Unknown status code
+        System.out.printf("Unknown response code: %d, meta: %s\n", responseCode, meta);
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
-    private File download(InputStream inputStream, Uri uriFile) throws IOException, NoSuchAlgorithmException {
+    /**
+     * Downloads a file to the public Downloads folder
+     * Uses MediaStore API for Android 10+ (no permissions needed)
+     * Uses legacy method for Android 9 and below (requires WRITE_EXTERNAL_STORAGE permission)
+     */
+    private DownloadResult download(Activity activity, InputStream inputStream, Uri uriFile, String mimeType) throws IOException, NoSuchAlgorithmException {
         String uriString = uriFile.toString();
         if (uriString.endsWith("/")) {
             uriString = uriString.substring(0, uriString.length() - 1);
         }
-        System.out.println(uriString);
-        String[] sectors = uriString.split("\\.");
-        String extension = sectors[sectors.length - 1];
+        System.out.println("Downloading: " + uriString);
 
-        File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AGENA");
-        if (!agenaPath.mkdirs()) System.out.printf("Creating missing directory: '%s'\n", agenaPath.getAbsolutePath());
-        File tempPath = File.createTempFile("agena", String.format(".%s", extension), agenaPath);
-        if (!tempPath.createNewFile()) System.out.printf("Creating file: '%s'\n", tempPath.getAbsolutePath());
-        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath));
+        String[] sectors = uriString.split("\\.");
+        String extension = sectors.length > 0 ? sectors[sectors.length - 1] : "bin";
+
+        // Calculate hash while downloading
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] buffer = new byte[4096];
-        int len;
-        while ((len = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, len);
-            digest.update(buffer, 0, len);
-        }
-        String hash = new BigInteger(1, digest.digest()).toString(16);
-        outputStream.flush();
-        outputStream.close();
-        File outFile = new File(agenaPath, String.format("%s.%s", hash, extension));
-        if (tempPath.renameTo(outFile)) {
-            return outFile;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10+ (API 29+): Use MediaStore API (no permissions needed)
+            return downloadViaMediaStore(activity, inputStream, extension, mimeType, digest, buffer);
         } else {
-            return tempPath;
+            // Android 9 and below: Use legacy method (requires permission)
+            return downloadLegacy(activity, inputStream, extension, digest, buffer);
         }
+    }
+
+    /**
+     * Download using MediaStore API for Android 10+ (no permissions needed)
+     */
+    private DownloadResult downloadViaMediaStore(Activity activity, InputStream inputStream,
+                                                 String extension, String mimeType,
+                                                 MessageDigest digest, byte[] buffer) throws IOException {
+        ContentResolver resolver = activity.getContentResolver();
+        ContentValues values = new ContentValues();
+
+        // Generate filename with timestamp
+        String filename = "agena_" + System.currentTimeMillis() + "." + extension;
+        values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
+        values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/AGENA");
+
+        Uri downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (downloadUri == null) {
+            throw new IOException("Failed to create MediaStore entry");
+        }
+
+        try (OutputStream outputStream = resolver.openOutputStream(downloadUri)) {
+            if (outputStream == null) {
+                throw new IOException("Failed to open output stream");
+            }
+
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+                digest.update(buffer, 0, len);
+            }
+            outputStream.flush();
+        }
+
+        String hash = new BigInteger(1, digest.digest()).toString(16);
+        String displayPath = Environment.DIRECTORY_DOWNLOADS + "/AGENA/" + filename;
+        System.out.println("Downloaded to: " + displayPath + " (hash: " + hash + ")");
+
+        return new DownloadResult(downloadUri, displayPath);
+    }
+
+    /**
+     * Legacy download method for Android 9 and below (requires WRITE_EXTERNAL_STORAGE permission)
+     */
+    private DownloadResult downloadLegacy(Activity activity, InputStream inputStream,
+                                         String extension, MessageDigest digest, byte[] buffer) throws IOException {
+        // Check permission for Android 9 and below
+        if (!PermissionAsker.ensurePermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, R.string.explain_permission_storage)) {
+            return null; // Permission denied
+        }
+
+        File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AGENA");
+        if (!agenaPath.exists() && !agenaPath.mkdirs()) {
+            throw new IOException("Failed to create directory: " + agenaPath.getAbsolutePath());
+        }
+
+        File tempPath = File.createTempFile("agena", "." + extension, agenaPath);
+
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath))) {
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, len);
+                digest.update(buffer, 0, len);
+            }
+            outputStream.flush();
+        }
+
+        String hash = new BigInteger(1, digest.digest()).toString(16);
+        File outFile = new File(agenaPath, hash + "." + extension);
+
+        File finalFile = tempPath.renameTo(outFile) ? outFile : tempPath;
+        Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), finalFile);
+
+        System.out.println("Downloaded to: " + finalFile.getAbsolutePath());
+        return new DownloadResult(fileUri, finalFile.getAbsolutePath());
     }
 }
