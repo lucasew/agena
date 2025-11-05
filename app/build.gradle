@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace 'com.biglucas.agena'
     compileSdk 32
 
     defaultConfig {
