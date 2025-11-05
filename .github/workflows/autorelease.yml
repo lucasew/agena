@@ -1,0 +1,124 @@
+name: Auto Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  # First CI run - test build before making release
+  pre-release-ci:
+    name: Pre-release CI check
+    uses: ./.github/workflows/ci.yml
+
+  # Bump version and create release
+  release:
+    name: Create release
+    needs: pre-release-ci
+    runs-on: ubuntu-latest
+    outputs:
+      new-version: ${{ steps.bump.outputs.new-version }}
+      tag: ${{ steps.bump.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        run: |
+          chmod +x make_release
+          NEW_VERSION=$(./make_release ${{ inputs.bump_type }})
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Released version: $NEW_VERSION"
+
+      - name: Commit version bump
+        run: |
+          git add app/build.gradle
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new-version }}"
+          git tag "${{ steps.bump.outputs.tag }}"
+
+      - name: Push changes
+        run: |
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin "${{ steps.bump.outputs.tag }}"
+
+  # Second CI run - build with new version
+  post-release-ci:
+    name: Post-release CI build
+    needs: release
+    uses: ./.github/workflows/ci.yml
+
+  # Create GitHub release with APKs
+  create-github-release:
+    name: Create GitHub release
+    needs: [release, post-release-ci]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Download APK artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release-apk
+          path: ./apks
+
+      - name: List downloaded APKs
+        run: |
+          echo "Downloaded APKs:"
+          ls -lh ./apks/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release.outputs.tag }}
+          name: Release ${{ needs.release.outputs.new-version }}
+          body: |
+            ## Agena ${{ needs.release.outputs.new-version }}
+
+            ### Changes
+            This release was automatically created.
+
+            ### Downloads
+            - **APK**: Download the Android APK from the assets below
+
+            ### Installation
+            1. Download the APK file
+            2. Enable "Install from Unknown Sources" on your Android device
+            3. Install the APK
+
+            ---
+            *Built with ❤️ by the autorelease workflow*
+          files: |
+            ./apks/*.apk
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+      - name: Upload release APKs as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk-${{ needs.release.outputs.new-version }}
+          path: ./apks/*.apk
+          retention-days: 90

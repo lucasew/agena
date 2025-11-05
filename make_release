@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+BUILD_GRADLE="app/build.gradle"
+
+# Function to print colored messages
+info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+error() {
+    echo -e "${RED}[ERROR]${NC} $1" >&2
+}
+
+warning() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+# Extract current version info
+get_version_code() {
+    grep "versionCode" "$BUILD_GRADLE" | awk '{print $2}'
+}
+
+get_version_name() {
+    grep "versionName" "$BUILD_GRADLE" | awk '{print $2}' | tr -d '"'
+}
+
+# Increment version
+increment_version() {
+    local version=$1
+    local bump_type=${2:-patch}
+
+    IFS='.' read -ra parts <<< "$version"
+    local major=${parts[0]:-0}
+    local minor=${parts[1]:-0}
+    local patch=${parts[2]:-0}
+
+    case $bump_type in
+        major)
+            major=$((major + 1))
+            minor=0
+            patch=0
+            ;;
+        minor)
+            minor=$((minor + 1))
+            patch=0
+            ;;
+        patch|*)
+            patch=$((patch + 1))
+            ;;
+    esac
+
+    echo "${major}.${minor}.${patch}"
+}
+
+# Main release process
+main() {
+    local bump_type=${1:-patch}
+
+    if [[ ! "$bump_type" =~ ^(major|minor|patch)$ ]]; then
+        error "Invalid bump type: $bump_type. Must be major, minor, or patch"
+        exit 1
+    fi
+
+    if [[ ! -f "$BUILD_GRADLE" ]]; then
+        error "build.gradle not found at $BUILD_GRADLE"
+        exit 1
+    fi
+
+    # Get current versions
+    local current_code=$(get_version_code)
+    local current_name=$(get_version_name)
+
+    info "Current version: $current_name (code: $current_code)"
+
+    # Calculate new versions
+    local new_code=$((current_code + 1))
+    local new_name=$(increment_version "$current_name" "$bump_type")
+
+    info "New version: $new_name (code: $new_code)"
+
+    # Backup the file
+    cp "$BUILD_GRADLE" "${BUILD_GRADLE}.bak"
+
+    # Update versionCode
+    sed -i "s/versionCode $current_code/versionCode $new_code/" "$BUILD_GRADLE"
+
+    # Update versionName
+    sed -i "s/versionName \"$current_name\"/versionName \"$new_name\"/" "$BUILD_GRADLE"
+
+    # Verify changes
+    local verify_code=$(get_version_code)
+    local verify_name=$(get_version_name)
+
+    if [[ "$verify_code" != "$new_code" ]] || [[ "$verify_name" != "$new_name" ]]; then
+        error "Version update failed! Restoring backup..."
+        mv "${BUILD_GRADLE}.bak" "$BUILD_GRADLE"
+        exit 1
+    fi
+
+    # Clean up backup
+    rm "${BUILD_GRADLE}.bak"
+
+    info "Version updated successfully!"
+    echo "$new_name"
+}
+
+# Show usage if requested
+if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
+    echo "Usage: $0 [major|minor|patch]"
+    echo ""
+    echo "Bumps the version in app/build.gradle"
+    echo ""
+    echo "Arguments:"
+    echo "  major    Bump major version (x.0.0)"
+    echo "  minor    Bump minor version (0.x.0)"
+    echo "  patch    Bump patch version (0.0.x) [default]"
+    exit 0
+fi
+
+main "${1:-patch}"
