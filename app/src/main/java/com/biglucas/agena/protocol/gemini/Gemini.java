@@ -56,23 +56,75 @@ public class Gemini {
         return Charset.defaultCharset().decode(ByteBuffer.wrap(buf)).toString();
     }
 
+    /**
+     * Public request method that validates URI and delegates to internal request with redirect tracking
+     */
     public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
-        System.out.printf("Requesting: '%s'\n", uri.toString());
-        System.out.printf("scheme: '%s'", uri.getScheme());
+        // Validate URI according to Gemini spec
+        validateUri(uri);
+        // Start request with redirect counter at 0
+        return requestInternal(activity, uri, 0);
+    }
+
+    /**
+     * Validates URI according to Gemini protocol specification
+     */
+    private void validateUri(Uri uri) throws FailedGeminiRequestException {
+        String uriString = uri.toString();
+
+        // Check maximum URI length (1024 bytes as per spec)
+        if (uriString.getBytes().length > 1024) {
+            throw new FailedGeminiRequestException.GeminiInvalidUri("URI exceeds maximum length of 1024 bytes");
+        }
+
+        // Check for userinfo (not allowed in Gemini URIs)
+        if (uri.getUserInfo() != null && !uri.getUserInfo().isEmpty()) {
+            throw new FailedGeminiRequestException.GeminiInvalidUri("Userinfo not allowed in Gemini URIs");
+        }
+
+        // Validate scheme
+        if (!uri.getScheme().equals("gemini")) {
+            throw new FailedGeminiRequestException.GeminiInvalidUri("Invalid scheme: " + uri.getScheme());
+        }
+    }
+
+    /**
+     * Internal request method with redirect tracking
+     */
+    private List<String> requestInternal(Activity activity, Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+        System.out.printf("Requesting: '%s' (redirect count: %d)\n", uri.toString(), redirectCount);
+
+        // Check redirect limit (max 5 as per spec)
+        if (redirectCount > 5) {
+            throw new FailedGeminiRequestException.GeminiTooManyRedirects();
+        }
+
         if (!uri.getScheme().equals("gemini")) {
             new Invoker(activity, uri).invokeNewWindow();
             return new ArrayList<>();
         }
+
         int port = uri.getPort();
         if (port == -1) {
             port = 1965;
         }
+
         SSLSocket socket = (SSLSocket) SSLSocketFactorySingleton
                 .getSSLSocketFactory()
                 .createSocket();
+
+        // Enable SNI (Server Name Indication) as required by Gemini spec
+        // This is enabled by default on Android, but we set it explicitly to be certain
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            javax.net.ssl.SNIHostName serverName = new javax.net.ssl.SNIHostName(uri.getHost());
+            javax.net.ssl.SSLParameters params = socket.getSSLParameters();
+            params.setServerNames(java.util.Collections.singletonList(serverName));
+            socket.setSSLParameters(params);
+        }
+
         // TODO: configurable timeout
         socket.connect(new InetSocketAddress(uri.getHost(), port), 5 * 1000);
-        socket.setSoTimeout(5*1000);
+        socket.setSoTimeout(5 * 1000);
         socket.startHandshake();
 
         BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
@@ -86,14 +138,65 @@ public class Gemini {
         InputStream inputStream = new BufferedInputStream(socket.getInputStream());
         String headerLine = readLineFromStream(inputStream);
         if (headerLine == null) {
-            System.out.println("Servidor n respondeu com uma header gemini");
+            System.out.println("Server did not respond with a Gemini header");
             inputStream.close();
             outputStream.close();
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
         }
-        int responseCode = Integer.parseInt(headerLine.substring(0, headerLine.indexOf(" ")));
-        String meta = headerLine.substring(headerLine.indexOf(" ")).trim();
-        System.out.printf("response_code=%d,meta=%s\n", responseCode, meta);
+
+        // Parse response code and meta
+        int responseCode;
+        String meta;
+        try {
+            int spaceIndex = headerLine.indexOf(" ");
+            if (spaceIndex == -1) {
+                // No meta field, just status code
+                responseCode = Integer.parseInt(headerLine.trim());
+                meta = "";
+            } else {
+                responseCode = Integer.parseInt(headerLine.substring(0, spaceIndex));
+                meta = headerLine.substring(spaceIndex).trim();
+            }
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            inputStream.close();
+            outputStream.close();
+            throw new FailedGeminiRequestException.GeminiInvalidResponse();
+        }
+
+        System.out.printf("response_code=%d, meta=%s\n", responseCode, meta);
+
+        // Handle response based on status code ranges
+        try {
+            return handleResponse(activity, uri, inputStream, outputStream, responseCode, meta, cleanedEntity, redirectCount);
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                // Ignore close errors
+            }
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                // Ignore close errors
+            }
+        }
+    }
+
+    /**
+     * Handles the response based on status code
+     */
+    private List<String> handleResponse(Activity activity, Uri uri, InputStream inputStream,
+                                        BufferedOutputStream outputStream, int responseCode,
+                                        String meta, String cleanedEntity, int redirectCount)
+            throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+
+        // Input required (10-19)
+        if (responseCode >= 10 && responseCode < 20) {
+            boolean sensitive = (responseCode == 11);
+            throw new FailedGeminiRequestException.GeminiInputRequired(meta, sensitive);
+        }
+
+        // Success (20-29)
         if (responseCode >= 20 && responseCode < 30) {
             List<String> lines = new ArrayList<>();
             if (meta.startsWith("text/gemini")) {
@@ -121,29 +224,73 @@ public class Gemini {
                     activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
                 }
             }
-            outputStream.close();
             new DatabaseController(activity.openOrCreateDatabase("history", Context.MODE_PRIVATE, null))
-                .addHistoryEntry(uri);
+                    .addHistoryEntry(uri);
             return lines;
         }
+
+        // Redirect (30-39)
         if (responseCode >= 30 && responseCode < 40) {
-            return this.request(activity, Uri.parse(meta.trim()));
+            if (meta.isEmpty()) {
+                throw new FailedGeminiRequestException.GeminiInvalidResponse();
+            }
+            Uri redirectUri = Uri.parse(meta.trim());
+            validateUri(redirectUri);
+            return requestInternal(activity, redirectUri, redirectCount + 1);
         }
-        if (responseCode == 51) {
-            throw new FailedGeminiRequestException.GeminiNotFound();
+
+        // Temporary failure (40-49)
+        if (responseCode >= 40 && responseCode < 50) {
+            switch (responseCode) {
+                case 40:
+                    throw new FailedGeminiRequestException.GeminiTemporaryFailure(meta);
+                case 41:
+                    throw new FailedGeminiRequestException.GeminiServerUnavailable(meta);
+                case 42:
+                    throw new FailedGeminiRequestException.GeminiCGIError(meta);
+                case 43:
+                    throw new FailedGeminiRequestException.GeminiProxyError(meta);
+                case 44:
+                    throw new FailedGeminiRequestException.GeminiSlowDown(meta);
+                default:
+                    throw new FailedGeminiRequestException.GeminiTemporaryFailure(meta);
+            }
         }
-        System.out.printf("server header: %s\n", headerLine);
-        System.out.printf("meta: %s\n", meta);
-        String line;
-        while ((line = readLineFromStream(inputStream)) != null) {
-            System.out.printf("server return: %s\n", line);
+
+        // Permanent failure (50-59)
+        if (responseCode >= 50 && responseCode < 60) {
+            switch (responseCode) {
+                case 50:
+                    throw new FailedGeminiRequestException.GeminiPermanentFailure(meta);
+                case 51:
+                    throw new FailedGeminiRequestException.GeminiNotFound();
+                case 52:
+                    throw new FailedGeminiRequestException.GeminiGone();
+                case 53:
+                    throw new FailedGeminiRequestException.GeminiProxyRequestRefused(meta);
+                case 59:
+                    throw new FailedGeminiRequestException.GeminiBadRequest(meta);
+                default:
+                    throw new FailedGeminiRequestException.GeminiPermanentFailure(meta);
+            }
         }
-        System.out.flush();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        // Client certificate required (60-69)
+        if (responseCode >= 60 && responseCode < 70) {
+            switch (responseCode) {
+                case 60:
+                    throw new FailedGeminiRequestException.GeminiClientCertificateRequired(meta);
+                case 61:
+                    throw new FailedGeminiRequestException.GeminiCertificateNotAuthorized(meta);
+                case 62:
+                    throw new FailedGeminiRequestException.GeminiCertificateNotValid(meta);
+                default:
+                    throw new FailedGeminiRequestException.GeminiClientCertificateRequired(meta);
+            }
         }
+
+        // Unknown status code
+        System.out.printf("Unknown response code: %d, meta: %s\n", responseCode, meta);
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 

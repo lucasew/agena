@@ -1,10 +1,13 @@
 package com.biglucas.agena.ui;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -53,29 +56,121 @@ public class PageActivity extends AppCompatActivity {
                 .commit();
     }
     private void handleLoad(Exception e) {
+        // Handle input prompts (status codes 10-19) with dialogs
+        if (e instanceof FailedGeminiRequestException.GeminiInputRequired) {
+            FailedGeminiRequestException.GeminiInputRequired inputEx = (FailedGeminiRequestException.GeminiInputRequired) e;
+            showInputDialog(inputEx.getPrompt(), inputEx.isSensitive());
+            return;
+        }
+
         String errText;
         Context appctx = this.getApplicationContext();
+
+        // Network errors
         if (e instanceof UnknownHostException) {
             errText = appctx.getString(R.string.error_unable_to_resolve_host);
         } else if (e instanceof SocketTimeoutException) {
-            errText = appctx.getResources().getString(R.string.error_connection_timeout);
+            errText = appctx.getString(R.string.error_connection_timeout);
+
+        // Temporary failures (40-49)
+        } else if (e instanceof FailedGeminiRequestException.GeminiSlowDown) {
+            errText = appctx.getString(R.string.error_slow_down) + ": " + e.getMessage();
+        } else if (e instanceof FailedGeminiRequestException.GeminiServerUnavailable) {
+            errText = appctx.getString(R.string.error_server_unavailable);
+        } else if (e instanceof FailedGeminiRequestException.GeminiCGIError) {
+            errText = appctx.getString(R.string.error_cgi_error);
+        } else if (e instanceof FailedGeminiRequestException.GeminiProxyError) {
+            errText = appctx.getString(R.string.error_proxy_error);
+        } else if (e instanceof FailedGeminiRequestException.GeminiTemporaryFailure) {
+            errText = appctx.getString(R.string.error_temporary_failure);
+
+        // Permanent failures (50-59)
         } else if (e instanceof FailedGeminiRequestException.GeminiNotFound) {
-            errText = appctx.getResources().getString(R.string.error_gemini_not_found);
+            errText = appctx.getString(R.string.error_gemini_not_found);
         } else if (e instanceof FailedGeminiRequestException.GeminiGone) {
-            errText = appctx.getResources().getString(R.string.error_gone);
+            errText = appctx.getString(R.string.error_gone);
+        } else if (e instanceof FailedGeminiRequestException.GeminiProxyRequestRefused) {
+            errText = appctx.getString(R.string.error_proxy_request_refused);
+        } else if (e instanceof FailedGeminiRequestException.GeminiBadRequest) {
+            errText = appctx.getString(R.string.error_bad_request);
+        } else if (e instanceof FailedGeminiRequestException.GeminiPermanentFailure) {
+            errText = appctx.getString(R.string.error_permanent_failure);
+
+        // Client certificate errors (60-69)
+        } else if (e instanceof FailedGeminiRequestException.GeminiClientCertificateRequired) {
+            errText = appctx.getString(R.string.error_client_certificate_required);
+        } else if (e instanceof FailedGeminiRequestException.GeminiCertificateNotAuthorized) {
+            errText = appctx.getString(R.string.error_certificate_not_authorized);
+        } else if (e instanceof FailedGeminiRequestException.GeminiCertificateNotValid) {
+            errText = appctx.getString(R.string.error_certificate_not_valid);
+
+        // Redirect errors
+        } else if (e instanceof FailedGeminiRequestException.GeminiTooManyRedirects) {
+            errText = appctx.getString(R.string.error_too_many_redirects);
+
+        // URI validation errors
+        } else if (e instanceof FailedGeminiRequestException.GeminiInvalidUri) {
+            errText = appctx.getString(R.string.error_invalid_uri) + ": " + e.getMessage();
+
+        // Other Gemini errors
         } else if (e instanceof FailedGeminiRequestException.GeminiInvalidResponse) {
-            errText = appctx.getResources().getString(R.string.error_gemini_invalid_response);
+            errText = appctx.getString(R.string.error_gemini_invalid_response);
         } else if (e instanceof FailedGeminiRequestException.GeminiUnimplementedCase) {
-            errText = appctx.getResources().getString(R.string.error_gemini_unimplemented);
-        } else  {
-            errText = appctx.getResources().getString(R.string.error_generic);
+            errText = appctx.getString(R.string.error_gemini_unimplemented);
+
+        // Generic error
+        } else {
+            errText = appctx.getString(R.string.error_generic);
             e.printStackTrace();
         }
+
         if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.browser_content, new PageErrorFragment(errText, e))
                 .commit();
+    }
+
+    /**
+     * Shows an input dialog for Gemini status codes 10-19
+     */
+    private void showInputDialog(String prompt, boolean sensitive) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.input_prompt_title);
+        builder.setMessage(prompt);
+
+        final EditText input = new EditText(this);
+        if (sensitive) {
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        } else {
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+        }
+        builder.setView(input);
+
+        builder.setPositiveButton(R.string.input_prompt_ok, (dialog, which) -> {
+            String userInput = input.getText().toString();
+            // Append input as query parameter to current URL
+            Uri.Builder uriBuilder = url.buildUpon();
+            uriBuilder.query(userInput);
+            Uri newUrl = uriBuilder.build();
+            this.url = newUrl;
+            handlePageLoad();
+        });
+
+        builder.setNegativeButton(R.string.input_prompt_cancel, (dialog, which) -> {
+            dialog.cancel();
+            // Show error fragment on cancel
+            if (!getSupportFragmentManager().isDestroyed()) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.browser_content, new PageErrorFragment(
+                                getApplicationContext().getString(R.string.error_generic),
+                                new Exception("Input cancelled by user")))
+                        .commit();
+            }
+        });
+
+        builder.show();
     }
 
     public void handlePageLoad() {
