@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.biglucas.agena"
-        minSdk 16
+        minSdk 21
         targetSdk 34
         versionCode 100
         versionName "0.1.0"
