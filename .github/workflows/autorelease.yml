@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, master ]
     tags:
-      - 'v*'
+      - '*'
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
@@ -35,43 +35,23 @@ jobs:
       checks: write
 
     steps:
-    # Setup steps (always run)
     - name: Checkout code
       uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
-
-    - name: Grant execute permissions
-      run: |
-        chmod +x gradlew
-        chmod +x make_release
-
-    # Version bump (only on workflow_dispatch or schedule)
-    - name: Bump version
-      if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-      env:
-        NEW_VERSION: ${{ github.event.inputs.new_version || 'patch' }}
+    - name: Setup git config
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        ./make_release $NEW_VERSION
 
-    # Read version for later use
-    - name: Read version
-      id: version
-      run: |
-        VERSION=$(cat version.txt)
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "Current version: $VERSION"
+    - name: Setup mise
+      uses: jdx/mise-action@v3
 
-    # Test steps (always run)
+    - name: Grant execute permissions
+      run: chmod +x gradlew make_release
+
+    # Run unit tests
     - name: Run unit tests
       run: ./gradlew test --stacktrace
 
@@ -93,67 +73,59 @@ jobs:
         reporter: java-junit
         fail-on-error: true
 
-    # Build steps (always run)
-    - name: Build release APK
-      if: startsWith(github.ref, 'refs/tags/v')
-      run: ./gradlew assembleRelease --stacktrace
-
+    # Build debug APK (for non-release builds)
     - name: Build debug APK
-      if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+      if: github.event_name == 'pull_request' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/'))
       run: ./gradlew assembleDebug --stacktrace
 
-    # Upload APK as artifact (always run)
-    - name: Upload release APK artifact
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-apk-${{ steps.version.outputs.VERSION }}
-        path: app/build/outputs/apk/release/*.apk
-
     - name: Upload debug APK artifact
-      if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: debug-apk-${{ steps.version.outputs.VERSION }}
+        name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
 
-    # GitHub Release (only on version tags)
-    - name: Get tag name
-      if: startsWith(github.ref, 'refs/tags/v')
-      id: tag_name
-      run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+    # Make release if workflow_dispatch or schedule
+    - name: Make release
+      if: github.event_name != 'pull_request'
+      env:
+        NEW_VERSION: ${{ github.event.inputs.new_version }}
+      run: |
+        if [[ ! -z "$NEW_VERSION" ]]; then
+          NO_TAG=1 ./make_release "$NEW_VERSION"
+          echo "New version: $(cat version.txt)" >> $GITHUB_STEP_SUMMARY
+          echo "RELEASE_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+        fi
 
-    - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: softprops/action-gh-release@v1
+    # Build release APK
+    - name: Build release APK
+      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
+      run: ./gradlew assembleRelease --stacktrace
+
+    - name: Upload release APK artifact
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        name: Release ${{ steps.tag_name.outputs.TAG_NAME }}
-        body: |
-          ## AGENA - Gemini Browser for Android v${{ steps.version.outputs.VERSION }}
+        name: release-apk
+        path: app/build/outputs/apk/release/*.apk
 
-          ### What's New
-          See commits since last release for details.
-
-          ### Downloads
-          - **agena-release.apk** - Release build (recommended)
-
-          ### Requirements
-          - Android 4.1 (API 16) or higher
-
-          ### Features
-          - Full Gemini protocol specification compliance
-          - All status codes (10-69) supported
-          - Input prompts with dialog support
-          - TLS 1.2+ with SNI
-          - Comprehensive error handling
-
-          ### Installation
-          1. Download the APK
-          2. Enable "Install from unknown sources" in Android settings
-          3. Install the APK
-          4. Enjoy browsing Gemini!
-        files: app/build/outputs/apk/release/*.apk
-        draft: false
-        prerelease: false
+    # Create GitHub release
+    - name: Create release
+      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: v${{ env.RELEASE_VERSION }}
+        TITLE: Release v${{ env.RELEASE_VERSION }}
+      run: |
+        gh release create "$TAG" \
+          --title "$TITLE" \
+          --generate-notes
+
+    # Upload release APK
+    - name: Upload release artifacts
+      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TAG: v${{ env.RELEASE_VERSION }}
+      run: |
+        gh release upload "$TAG" app/build/outputs/apk/release/*.apk --clobber
