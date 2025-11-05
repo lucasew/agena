@@ -2,21 +2,43 @@ name: Build, Test and Auto-Release
 
 on:
   push:
-    branches: [ main, master, develop, claude/** ]
+    branches: [ main, master ]
     tags:
       - 'v*'
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'Version bump type'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+  schedule:
+    # Run every Saturday at 2 AM UTC (for automated dependency updates)
+    - cron: '0 2 * * 6'
 
 jobs:
   build-test-release:
     name: Build, Test and Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+      pull-requests: write
 
     steps:
     # Setup steps (always run)
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -25,8 +47,28 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Grant execute permissions
+      run: |
+        chmod +x gradlew
+        chmod +x make_release
+
+    # Version bump (only on workflow_dispatch or schedule)
+    - name: Bump version
+      if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+      env:
+        NEW_VERSION: ${{ github.event.inputs.new_version || 'patch' }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        ./make_release $NEW_VERSION
+
+    # Read version for later use
+    - name: Read version
+      id: version
+      run: |
+        VERSION=$(cat version.txt)
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $VERSION"
 
     # Test steps (always run)
     - name: Run unit tests
@@ -59,7 +101,7 @@ jobs:
       if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v4
       with:
-        name: debug-apk
+        name: debug-apk-${{ steps.version.outputs.VERSION }}
         path: app/build/outputs/apk/debug/*.apk
 
     # Release build steps (only on version tags)
@@ -71,7 +113,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v4
       with:
-        name: release-apk
+        name: release-apk-${{ steps.version.outputs.VERSION }}
         path: app/build/outputs/apk/release/*.apk
 
     # GitHub Release (only on version tags)
@@ -86,7 +128,7 @@ jobs:
       with:
         name: Release ${{ steps.tag_name.outputs.TAG_NAME }}
         body: |
-          ## AGENA - Gemini Browser for Android
+          ## AGENA - Gemini Browser for Android v${{ steps.version.outputs.VERSION }}
 
           ### What's New
           See commits since last release for details.
