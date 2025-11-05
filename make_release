@@ -60,6 +60,13 @@ echo "Updated app/build.gradle:"
 echo "  versionCode: $VERSION_CODE"
 echo "  versionName: \"$NEW_VERSION\""
 
+# If DRY_RUN is set, skip git operations
+if [ -n "$DRY_RUN" ]; then
+    echo "🔍 DRY_RUN mode: Files updated, skipping git operations"
+    echo "✅ Version bumped to $NEW_VERSION (DRY_RUN)"
+    exit 0
+fi
+
 # Git operations
 git add -A
 git commit -m "bump to $NEW_VERSION"

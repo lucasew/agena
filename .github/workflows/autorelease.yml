@@ -49,15 +49,13 @@ jobs:
         chmod +x gradlew
         chmod +x make_release
 
-    # Version bump (only on workflow_dispatch or schedule)
-    - name: Bump version
+    # Version bump and release (only on workflow_dispatch or schedule)
+    - name: Bump version (DRY_RUN)
       if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
       env:
+        DRY_RUN: "1"
         NEW_VERSION: ${{ github.event.inputs.new_version || 'patch' }}
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        ./make_release $NEW_VERSION
+      run: ./make_release $NEW_VERSION
 
     # Read version for later use
     - name: Read version
@@ -66,6 +64,18 @@ jobs:
         VERSION=$(cat version.txt)
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         echo "Current version: $VERSION"
+
+    # Commit, tag and push version bump
+    - name: Commit and tag version
+      if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add version.txt app/build.gradle
+        git commit -m "bump to ${{ steps.version.outputs.VERSION }}"
+        git tag "v${{ steps.version.outputs.VERSION }}"
+        git push
+        git push --tags
 
     # CI steps (test + build)
     - name: Run CI (test + build)
@@ -89,37 +99,33 @@ jobs:
         reporter: java-junit
         fail-on-error: true
 
-    # Build release APK for tags
+    # Build release APK for releases (workflow_dispatch/schedule or tags)
     - name: Build release APK
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v')
       run: mise run build:release
 
-    # Upload APK as artifact (always run)
+    # Upload APK as artifact
     - name: Upload release APK artifact
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v4
       with:
         name: release-apk-${{ steps.version.outputs.VERSION }}
         path: app/build/outputs/apk/release/*.apk
 
     - name: Upload debug APK artifact
-      if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+      if: ${{ !(github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v')) }}
       uses: actions/upload-artifact@v4
       with:
         name: debug-apk-${{ steps.version.outputs.VERSION }}
         path: app/build/outputs/apk/debug/*.apk
 
-    # GitHub Release (only on version tags)
-    - name: Get tag name
-      if: startsWith(github.ref, 'refs/tags/v')
-      id: tag_name
-      run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
+    # GitHub Release (workflow_dispatch/schedule or tags)
     - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
       with:
-        name: Release ${{ steps.tag_name.outputs.TAG_NAME }}
+        tag_name: v${{ steps.version.outputs.VERSION }}
+        name: Release v${{ steps.version.outputs.VERSION }}
         body: |
           ## AGENA - Gemini Browser for Android v${{ steps.version.outputs.VERSION }}
 
