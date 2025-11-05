@@ -41,12 +41,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
+    - name: Setup mise
+      uses: jdx/mise-action@v2
       with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+        experimental: true
 
     - name: Grant execute permissions
       run: |
@@ -73,7 +71,7 @@ jobs:
 
     # Test steps (always run)
     - name: Run unit tests
-      run: ./gradlew test --stacktrace
+      run: mise run test
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -96,11 +94,11 @@ jobs:
     # Build steps (always run)
     - name: Build release APK
       if: startsWith(github.ref, 'refs/tags/v')
-      run: ./gradlew assembleRelease --stacktrace
+      run: mise run build:release
 
     - name: Build debug APK
       if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-      run: ./gradlew assembleDebug --stacktrace
+      run: mise run build
 
     # Upload APK as artifact (always run)
     - name: Upload release APK artifact

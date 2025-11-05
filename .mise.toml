@@ -1,0 +1,43 @@
+[tools]
+java = "17"
+
+[tasks.build]
+description = "Build the Android application"
+run = """
+#!/bin/bash
+set -e
+chmod +x gradlew
+./gradlew assembleDebug --stacktrace
+"""
+
+[tasks.test]
+description = "Run unit tests"
+run = """
+#!/bin/bash
+set -e
+chmod +x gradlew
+./gradlew test --stacktrace
+"""
+
+[tasks.ci]
+description = "Run CI pipeline (test + build)"
+depends = ["test", "build"]
+run = "echo 'CI tasks completed successfully!'"
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = """
+#!/bin/bash
+set -e
+chmod +x gradlew
+./gradlew clean
+"""
+
+[tasks."build:release"]
+description = "Build release APK"
+run = """
+#!/bin/bash
+set -e
+chmod +x gradlew
+./gradlew assembleRelease --stacktrace
+"""
