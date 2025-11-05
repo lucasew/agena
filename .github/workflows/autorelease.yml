@@ -93,29 +93,29 @@ jobs:
         reporter: java-junit
         fail-on-error: true
 
-    # Build steps (only on push, not on PR)
-    - name: Build debug APK
-      if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
-      run: ./gradlew assembleDebug --stacktrace
-
-    - name: Upload debug APK
-      if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
-      uses: actions/upload-artifact@v4
-      with:
-        name: debug-apk-${{ steps.version.outputs.VERSION }}
-        path: app/build/outputs/apk/debug/*.apk
-
-    # Release build steps (only on version tags)
+    # Build steps (always run)
     - name: Build release APK
       if: startsWith(github.ref, 'refs/tags/v')
       run: ./gradlew assembleRelease --stacktrace
 
-    - name: Upload release APK
+    - name: Build debug APK
+      if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+      run: ./gradlew assembleDebug --stacktrace
+
+    # Upload APK as artifact (always run)
+    - name: Upload release APK artifact
       if: startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v4
       with:
         name: release-apk-${{ steps.version.outputs.VERSION }}
         path: app/build/outputs/apk/release/*.apk
+
+    - name: Upload debug APK artifact
+      if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug-apk-${{ steps.version.outputs.VERSION }}
+        path: app/build/outputs/apk/debug/*.apk
 
     # GitHub Release (only on version tags)
     - name: Get tag name
