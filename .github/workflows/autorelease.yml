@@ -42,16 +42,13 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup mise
-        uses: jdx/mise-action@v2
-        with:
-          install: true
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run CI before release
-        run: mise run ci
+      - name: Test and build before release
+        run: |
+          ./gradlew test
+          ./gradlew assembleRelease
 
       - name: Make release
         if: github.event_name != 'pull_request'
@@ -63,11 +60,12 @@ jobs:
           RELEASE_VERSION=$(grep 'versionName' app/build.gradle | sed 's/.*"\(.*\)".*/\1/')
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
 
-      - name: Run CI after version bump
+      - name: Test and build after version bump
         if: env.RELEASE_VERSION != ''
         run: |
-          mise run clean
-          mise run ci
+          ./gradlew clean
+          ./gradlew test
+          ./gradlew assembleRelease
 
       - name: Create GitHub Release
         if: env.RELEASE_VERSION != ''
