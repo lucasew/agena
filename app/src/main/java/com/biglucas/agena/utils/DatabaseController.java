@@ -1,12 +1,11 @@
 package com.biglucas.agena.utils;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Environment;
-
-import com.biglucas.agena.BuildConfig;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,7 +24,9 @@ public class DatabaseController {
      * In release builds, the database is stored in the app's private directory.
      */
     public static SQLiteDatabase openDatabase(Context context) {
-        if (BuildConfig.DEBUG) {
+        boolean isDebug = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+
+        if (isDebug) {
             // Debug: Save in Downloads/AGENA so it survives uninstallation
             File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             File agenaDir = new File(downloadsDir, "AGENA");
