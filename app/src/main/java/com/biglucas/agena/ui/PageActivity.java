@@ -78,7 +78,7 @@ public class PageActivity extends AppCompatActivity {
         } else if (e instanceof FailedGeminiRequestException.GeminiServerUnavailable) {
             errText = appctx.getString(R.string.error_server_unavailable);
         } else if (e instanceof FailedGeminiRequestException.GeminiCGIError) {
-            errText = appctx.getString(R.string.error_cgi_error);
+            errText = e.getMessage().replaceFirst("^CGI error: CGI [Ee]rror: ", "CGI error: ");
         } else if (e instanceof FailedGeminiRequestException.GeminiProxyError) {
             errText = appctx.getString(R.string.error_proxy_error);
         } else if (e instanceof FailedGeminiRequestException.GeminiTemporaryFailure) {
