@@ -100,7 +100,7 @@ public class Gemini {
         }
 
         // Validate scheme
-        if (!uri.getScheme().equals("gemini")) {
+        if (uri.getScheme() == null || !uri.getScheme().equals("gemini")) {
             throw new FailedGeminiRequestException.GeminiInvalidUri("Invalid scheme: " + uri.getScheme());
         }
     }
@@ -116,7 +116,7 @@ public class Gemini {
             throw new FailedGeminiRequestException.GeminiTooManyRedirects();
         }
 
-        if (!uri.getScheme().equals("gemini")) {
+        if (uri.getScheme() == null || !uri.getScheme().equals("gemini")) {
             new Invoker(activity, uri).invokeNewWindow();
             return new ArrayList<>();
         }
