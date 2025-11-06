@@ -242,7 +242,7 @@ public class Gemini {
                     activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
                 }
             }
-            new DatabaseController(activity.openOrCreateDatabase("history", Context.MODE_PRIVATE, null))
+            new DatabaseController(DatabaseController.openDatabase(activity))
                     .addHistoryEntry(uri);
             return lines;
         }
