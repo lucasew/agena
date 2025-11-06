@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.security.KeyManagementException;
@@ -252,7 +253,10 @@ public class Gemini {
             if (meta.isEmpty()) {
                 throw new FailedGeminiRequestException.GeminiInvalidResponse();
             }
-            Uri redirectUri = Uri.parse(meta.trim());
+            // Resolve relative URIs against the current request URI (RFC 3986)
+            URI currentUri = URI.create(uri.toString());
+            URI resolvedUri = currentUri.resolve(meta.trim());
+            Uri redirectUri = Uri.parse(resolvedUri.toString());
             validateUri(redirectUri);
             return requestInternal(activity, redirectUri, redirectCount + 1);
         }
