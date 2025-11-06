@@ -110,6 +110,13 @@ public class DatabaseController {
     }
 
     private static void showToast(final Context context, final String message) {
+        // Only show toasts in debug builds
+        boolean isDebug = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        if (!isDebug) {
+            Log.d(TAG, "Toast (release build, hidden): " + message);
+            return;
+        }
+
         // Show toast on main thread
         if (context instanceof android.app.Activity) {
             ((android.app.Activity) context).runOnUiThread(new Runnable() {
