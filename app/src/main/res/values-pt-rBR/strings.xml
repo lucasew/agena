@@ -7,6 +7,8 @@
     <string name="start_navigating">Iniciar Navegação</string>
     <string name="warning_icon">Apenas um ícone de aviso para deixar explícito que algo inesperado aconteceu</string>
     <string name="more_information">Mais infomações</string>
+    <string name="copy_stacktrace">Copiar</string>
+    <string name="stacktrace_copied">Stack trace copiado para a área de transferência</string>
     <string name="error_generic">Erro genérico não especificado/tratado</string>
     <string name="error_unable_to_resolve_host">Não foi possível resolver o host. Não foi encontrado pelo DNS.</string>
     <string name="error_connection_timeout">Tempo limite expirado conectando ao servidor. Existe realmente um servidor Gemini ali?</string>

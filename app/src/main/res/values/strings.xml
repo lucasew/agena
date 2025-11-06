@@ -9,6 +9,8 @@
 
     <string name="warning_icon">Just a warning icon to make it explicit that something unexpected happened</string>
     <string name="more_information">More information</string>
+    <string name="copy_stacktrace">Copy</string>
+    <string name="stacktrace_copied">Stack trace copied to clipboard</string>
 
     <!-- Errors -->
     <string name="error_generic">Generic unspecified/unhandled error</string>
