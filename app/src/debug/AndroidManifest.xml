@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        DEBUG BUILD ONLY PERMISSIONS
+        This manifest is merged ONLY in debug builds.
+        The MANAGE_EXTERNAL_STORAGE permission allows database persistence
+        in Downloads/AGENA across app uninstalls for testing purposes.
+
+        This permission is NOT included in release builds for Play Store compliance.
+    -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+</manifest>
