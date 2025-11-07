@@ -43,16 +43,20 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        Toast.makeText(this, "🔍 DEBUG: Checking permissions... SDK=" + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+
         // Only needed for Android 6-12 (API 23-32)
         Log.d(TAG, "SDK_INT: " + Build.VERSION.SDK_INT + " (M=" + Build.VERSION_CODES.M + ", TIRAMISU=" + Build.VERSION_CODES.TIRAMISU + ")");
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Log.d(TAG, "Android version < 6.0, no runtime permissions needed");
+            Toast.makeText(this, "⚠️ DEBUG: Android < 6.0, no permissions needed", Toast.LENGTH_LONG).show();
             return;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Log.d(TAG, "Android 13+, Downloads access very restricted, skipping");
+            Toast.makeText(this, "⚠️ DEBUG: Android 13+! Downloads restricted. Will use private storage.", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (!hasPermission) {
             Log.d(TAG, "Permission not granted, requesting...");
+            Toast.makeText(this, "🔐 DEBUG: Requesting storage permission...", Toast.LENGTH_LONG).show();
 
             // Show explanation if needed
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -80,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                     STORAGE_PERMISSION_CODE);
         } else {
             Log.d(TAG, "Permission already granted!");
-            Toast.makeText(this, "Storage permission already granted!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "✅ DEBUG: Storage permission already granted!", Toast.LENGTH_LONG).show();
         }
     }
 
