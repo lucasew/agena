@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".ui.PageErrorFragment">
 
     <LinearLayout
@@ -15,9 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <ImageButton
+            <ImageView
                 android:id="@+id/imageButton"
                 android:layout_width="200dp"
                 android:layout_height="200dp"
@@ -30,12 +32,13 @@
                 android:id="@+id/page_error_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:textAlignment="center"
-                android:textSize="16sp" />
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurface" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/more_information_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.Invoker;
+import com.google.android.material.button.MaterialButton;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class GeminiPageContentFragment extends Fragment {
                 if (label.length() == 0) {
                     label = buttonURI;
                 }
-                Button button = new Button(this.getContext());
+                MaterialButton button = new MaterialButton(this.getContext());
                 button.setText(label);
                 button.setAllCaps(false);
 

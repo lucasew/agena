@@ -1,13 +1,13 @@
 package com.biglucas.agena.utils;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 
 import com.biglucas.agena.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 
 public class Invoker {
@@ -27,7 +27,7 @@ public class Invoker {
         try {
             this.activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            new AlertDialog.Builder(this.activity)
+            new MaterialAlertDialogBuilder(this.activity)
                     .setTitle(R.string.error_dont_know_how_to_handle_content_type)
                     .setPositiveButton("OK", null)
                     .setMessage(this.uri.toString())

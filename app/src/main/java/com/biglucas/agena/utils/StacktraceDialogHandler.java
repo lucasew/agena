@@ -1,6 +1,5 @@
 package com.biglucas.agena.utils;
 
-import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.biglucas.agena.R;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -26,7 +26,7 @@ public class StacktraceDialogHandler {
         show(view.getContext());
     }
     public void show(Context context) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());
         StringWriter sw = new StringWriter();
@@ -43,9 +43,6 @@ public class StacktraceDialogHandler {
             Toast.makeText(context, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show();
         });
 
-        AlertDialog dialog = builder.show();
-        TextView messageView = (TextView) dialog.findViewById(android.R.id.message);
-        messageView.setTypeface(Typeface.MONOSPACE);
-        messageView.setGravity(Gravity.CENTER);
+        builder.show();
     }
 }
