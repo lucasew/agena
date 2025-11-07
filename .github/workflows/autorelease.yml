@@ -73,9 +73,8 @@ jobs:
         reporter: java-junit
         fail-on-error: true
 
-    # Build debug APK (for non-release builds)
+    # Build debug APK
     - name: Build debug APK
-      if: github.event_name == 'pull_request' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/'))
       run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload debug APK artifact
@@ -97,9 +96,8 @@ jobs:
           echo "RELEASE_VERSION=$(cat version.txt)" >> $GITHUB_ENV
         fi
 
-    # Build release APK
+    # Build release APK (always, after potential version bump)
     - name: Build release APK
-      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
       run: ./gradlew assembleRelease --stacktrace
 
     - name: Upload release APK artifact
@@ -121,11 +119,21 @@ jobs:
           --title "$TITLE" \
           --generate-notes
 
-    # Upload release APK
+    # Rebuild both APKs after creating release (ensures correct version in both)
+    - name: Rebuild debug APK for release
+      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
+      run: ./gradlew assembleDebug --stacktrace
+
+    - name: Rebuild release APK for release
+      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
+      run: ./gradlew assembleRelease --stacktrace
+
+    # Upload both APKs to GitHub release
     - name: Upload release artifacts
       if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TAG: v${{ env.RELEASE_VERSION }}
       run: |
+        gh release upload "$TAG" app/build/outputs/apk/debug/*.apk --clobber
         gh release upload "$TAG" app/build/outputs/apk/release/*.apk --clobber

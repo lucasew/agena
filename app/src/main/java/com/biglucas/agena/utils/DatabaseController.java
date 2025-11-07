@@ -33,7 +33,9 @@ public class DatabaseController {
      * In release builds, always uses the app's private directory.
      */
     public static SQLiteDatabase openDatabase(Context context) {
-        boolean isDebug = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        // Detect debug build by checking if MANAGE_EXTERNAL_STORAGE permission exists in manifest
+        // This permission is only declared in src/debug/AndroidManifest.xml
+        boolean isDebug = hasManageExternalStoragePermission(context);
 
         Log.d(TAG, "openDatabase called - isDebug: " + isDebug + ", SDK_INT: " + Build.VERSION.SDK_INT);
 
@@ -111,9 +113,28 @@ public class DatabaseController {
         }
     }
 
+    private static boolean hasManageExternalStoragePermission(Context context) {
+        try {
+            String[] permissions = context.getPackageManager()
+                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
+                .requestedPermissions;
+
+            if (permissions != null) {
+                for (String permission : permissions) {
+                    if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking permissions: " + e.getMessage());
+        }
+        return false;
+    }
+
     private static void showToast(final Context context, final String message) {
         // Only show toasts in debug builds
-        boolean isDebug = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        boolean isDebug = hasManageExternalStoragePermission(context);
         if (!isDebug) {
             Log.d(TAG, "Toast (release build, hidden): " + message);
             return;

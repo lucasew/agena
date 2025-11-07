@@ -36,9 +36,29 @@ public class MainActivity extends AppCompatActivity {
         requestStoragePermissionIfNeeded();
     }
 
+    private boolean hasManageExternalStoragePermission() {
+        try {
+            String[] permissions = getPackageManager()
+                .getPackageInfo(getPackageName(), PackageManager.GET_PERMISSIONS)
+                .requestedPermissions;
+
+            if (permissions != null) {
+                for (String permission : permissions) {
+                    if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking permissions: " + e.getMessage());
+        }
+        return false;
+    }
+
     private void requestStoragePermissionIfNeeded() {
-        // Only request permission in debug builds
-        boolean isDebug = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        // Detect debug build by checking if MANAGE_EXTERNAL_STORAGE permission exists in manifest
+        // This permission is only declared in src/debug/AndroidManifest.xml
+        boolean isDebug = hasManageExternalStoragePermission();
         Log.d(TAG, "requestStoragePermissionIfNeeded - isDebug: " + isDebug);
 
         if (!isDebug) {
