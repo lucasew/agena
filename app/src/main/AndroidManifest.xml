@@ -2,8 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Only needed for Android 9 and below -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <!-- Storage permissions for Android 6-12 (debug builds use these too) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!--
+        Note: MANAGE_EXTERNAL_STORAGE permission is declared in src/debug/AndroidManifest.xml
+        and is ONLY included in debug builds for testing database persistence.
+    -->
 
     <application
         android:allowBackup="true"
