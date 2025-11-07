@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 
 import com.biglucas.agena.R;
+import com.biglucas.agena.ui.ContentActivity;
 import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.PermissionAsker;
@@ -38,11 +39,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLSocket;
 
 public class Gemini {
-    public Gemini() {}
+    static Logger logger = Logger.getLogger(Gemini.class.getName());
 
     /**
      * Result of a download operation containing URI and display path
@@ -181,7 +183,7 @@ public class Gemini {
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
         }
 
-        System.out.printf("response_code=%d, meta=%s\n", responseCode, meta);
+        logger.info("response_code=%d, meta=%s%n", responseCode, meta);
 
         // Handle response based on status code ranges
         try {

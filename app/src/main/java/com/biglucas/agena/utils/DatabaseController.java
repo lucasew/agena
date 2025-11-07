@@ -1,8 +1,8 @@
 package com.biglucas.agena.utils;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,9 +16,11 @@ import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseController {
     private static final String TAG = "DatabaseController";
+    private static final String FILENAME = "history";
     final SQLiteDatabase db;
 
     public DatabaseController(SQLiteDatabase db) {
@@ -64,7 +66,7 @@ public class DatabaseController {
             if (!hasPermission) {
                 Log.e(TAG, "No storage permission, falling back to private storage");
                 showToast(context, "DB: No permission - using private storage");
-                return context.openOrCreateDatabase("history", Context.MODE_PRIVATE, null);
+                return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
             }
 
             try {
@@ -82,7 +84,7 @@ public class DatabaseController {
                     if (!created) {
                         Log.e(TAG, "Failed to create AGENA directory, falling back to private storage");
                         showToast(context, "DB: Failed to create dir - using private storage");
-                        return context.openOrCreateDatabase("history", Context.MODE_PRIVATE, null);
+                        return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
                     }
                 }
 
@@ -92,7 +94,7 @@ public class DatabaseController {
                 if (!canWrite) {
                     Log.e(TAG, "AGENA directory not writable, falling back to private storage");
                     showToast(context, "DB: Dir not writable - using private storage");
-                    return context.openOrCreateDatabase("history", Context.MODE_PRIVATE, null);
+                    return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
                 }
 
                 File dbFile = new File(agenaDir, "history.db");
@@ -104,12 +106,12 @@ public class DatabaseController {
                 // If any error occurs (permissions, etc), fall back to private storage
                 Log.e(TAG, "Error accessing Downloads directory: " + e.getMessage(), e);
                 showToast(context, "DB: Error - using private storage");
-                return context.openOrCreateDatabase("history", Context.MODE_PRIVATE, null);
+                return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
             }
         } else {
             // Release: Use private directory for better security
             Log.d(TAG, "Release build - using private storage");
-            return context.openOrCreateDatabase("history", Context.MODE_PRIVATE, null);
+            return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
         }
     }
 
@@ -142,12 +144,7 @@ public class DatabaseController {
 
         // Show toast on main thread
         if (context instanceof android.app.Activity) {
-            ((android.app.Activity) context).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-                }
-            });
+            ((android.app.Activity) context).runOnUiThread(() -> Toast.makeText(context, message, Toast.LENGTH_LONG).show());
         } else {
             // If not an Activity context, just log
             Log.d(TAG, "Toast (no activity): " + message);
@@ -157,13 +154,13 @@ public class DatabaseController {
         Log.d(TAG, "Saving to history: " + uri.toString());
         this.db.execSQL("insert into history (url) values (?)", new String[]{uri.toString()});
     }
-    public ArrayList<String> getHistoryLines() {
+    public List<String> getHistoryLines() {
         ArrayList<String> list = new ArrayList<>();
         Cursor cursor = this.db.rawQuery("select * from history order by accessed desc", null);
         Log.d(TAG, "getHistoryLines - found " + cursor.getCount() + " entries");
         while (cursor.moveToNext()) {
-            String uri = cursor.getString(cursor.getColumnIndex("url"));
-            String timestamp = cursor.getString(cursor.getColumnIndex("accessed"));
+            @SuppressLint("Range") String uri = cursor.getString(cursor.getColumnIndex("url"));
+            @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("accessed"));
             String toAdd = String.format("=> %s %s %s", uri, timestamp, uri);
             Log.d(TAG, "History entry: " + toAdd);
             list.add(toAdd);
