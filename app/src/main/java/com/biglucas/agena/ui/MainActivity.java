@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestStoragePermissionIfNeeded() {
         // Only request permission in debug builds
-        boolean isDebug = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        boolean isDebug = BuildConfig.DEBUG;
         Log.d(TAG, "requestStoragePermissionIfNeeded - isDebug: " + isDebug);
 
         if (!isDebug) {
