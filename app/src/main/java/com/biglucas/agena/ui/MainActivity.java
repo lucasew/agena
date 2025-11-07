@@ -4,8 +4,11 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -45,8 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this, "🔍 DEBUG: Checking permissions... SDK=" + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
 
-        // Only needed for Android 6-12 (API 23-32)
-        Log.d(TAG, "SDK_INT: " + Build.VERSION.SDK_INT + " (M=" + Build.VERSION_CODES.M + ", TIRAMISU=" + Build.VERSION_CODES.TIRAMISU + ")");
+        Log.d(TAG, "SDK_INT: " + Build.VERSION.SDK_INT);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Log.d(TAG, "Android version < 6.0, no runtime permissions needed");
@@ -54,13 +56,33 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Log.d(TAG, "Android 13+, Downloads access very restricted, skipping");
-            Toast.makeText(this, "⚠️ DEBUG: Android 13+! Downloads restricted. Will use private storage.", Toast.LENGTH_LONG).show();
+        // Android 13+ (API 33+): Use MANAGE_EXTERNAL_STORAGE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Log.d(TAG, "Android 11+ detected, checking MANAGE_EXTERNAL_STORAGE");
+
+            if (Environment.isExternalStorageManager()) {
+                Log.d(TAG, "MANAGE_EXTERNAL_STORAGE already granted!");
+                Toast.makeText(this, "✅ DEBUG: All files access granted! DB will use Downloads/AGENA", Toast.LENGTH_LONG).show();
+            } else {
+                Log.d(TAG, "MANAGE_EXTERNAL_STORAGE not granted, opening settings");
+                Toast.makeText(this,
+                    "📁 DEBUG: Need 'All files access' permission.\n\nOpening Settings...\n\nEnable: Allow management of all files",
+                    Toast.LENGTH_LONG).show();
+
+                try {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                    intent.setData(Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to open settings: " + e.getMessage());
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                    startActivity(intent);
+                }
+            }
             return;
         }
 
-        // Check if permission is already granted
+        // Android 6-12 (API 23-32): Use WRITE_EXTERNAL_STORAGE
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         boolean hasPermission = permissionCheck == PackageManager.PERMISSION_GRANTED;
 
@@ -70,16 +92,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Permission not granted, requesting...");
             Toast.makeText(this, "🔐 DEBUG: Requesting storage permission...", Toast.LENGTH_LONG).show();
 
-            // Show explanation if needed
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                Log.d(TAG, "Showing rationale to user");
-                Toast.makeText(this,
-                    "Storage permission needed to persist history across app reinstalls (debug mode)",
-                    Toast.LENGTH_LONG).show();
-            }
-
-            // Request the permission
-            Log.d(TAG, "Calling requestPermissions()");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     STORAGE_PERMISSION_CODE);

@@ -40,25 +40,27 @@ public class DatabaseController {
         if (isDebug) {
             // Debug: Try to save in Downloads/AGENA so it survives uninstallation
 
-            // Check if we have storage permission (Android 6-12)
-            boolean hasPermission = true;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            boolean hasPermission = false;
+
+            // Android 11+ (API 30+): Check MANAGE_EXTERNAL_STORAGE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                hasPermission = Environment.isExternalStorageManager();
+                Log.d(TAG, "Android 11+ - MANAGE_EXTERNAL_STORAGE: " + hasPermission);
+            }
+            // Android 6-10 (API 23-29): Check WRITE_EXTERNAL_STORAGE
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 hasPermission = ContextCompat.checkSelfPermission(context,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-                Log.d(TAG, "Storage permission check: " + hasPermission);
+                Log.d(TAG, "Android 6-10 - WRITE_EXTERNAL_STORAGE: " + hasPermission);
             }
-
-            // For Android 13+ (API 33+), writing arbitrary files to Downloads is very restricted
-            // Fall back to private storage for these versions
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Log.w(TAG, "Android 13+ detected, using private storage (Downloads access restricted)");
-                showToast(context, "DB: Using private storage (Android 13+)");
-                return context.openOrCreateDatabase("history", Context.MODE_PRIVATE, null);
+            // Android < 6: No runtime permissions needed
+            else {
+                hasPermission = true;
+                Log.d(TAG, "Android < 6 - No runtime permissions needed");
             }
 
             if (!hasPermission) {
                 Log.e(TAG, "No storage permission, falling back to private storage");
-                Log.e(TAG, "Grant storage permission to persist database across uninstalls");
                 showToast(context, "DB: No permission - using private storage");
                 return context.openOrCreateDatabase("history", Context.MODE_PRIVATE, null);
             }
