@@ -16,7 +16,6 @@ import com.biglucas.agena.protocol.gemini.FailedGeminiRequestException;
 import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 import com.biglucas.agena.protocol.gemini.GeminiSingleton;
 import com.biglucas.agena.utils.Invoker;
-import com.google.android.material.color.DynamicColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -31,10 +30,6 @@ public class PageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Apply Material You dynamic colors (Android 12+)
-        DynamicColors.applyToActivityIfAvailable(this);
-
         setContentView(R.layout.page_activity);
         String uriStr = this.getIntent().getData().toString();
 
