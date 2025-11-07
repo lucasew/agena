@@ -1,13 +1,12 @@
 package com.biglucas.agena.ui;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +17,8 @@ import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 import com.biglucas.agena.protocol.gemini.GeminiSingleton;
 import com.biglucas.agena.utils.Invoker;
 import com.google.android.material.color.DynamicColors;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -182,17 +183,20 @@ public class PageActivity extends AppCompatActivity {
      * Shows an input dialog for Gemini status codes 10-19
      */
     private void showInputDialog(String prompt, boolean sensitive) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.input_prompt_title);
-        builder.setMessage(prompt);
+        // Create Material TextInputLayout programmatically
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_input, null);
+        TextInputEditText input = dialogView.findViewById(R.id.dialog_input_text);
 
-        final EditText input = new EditText(this);
         if (sensitive) {
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         } else {
             input.setInputType(InputType.TYPE_CLASS_TEXT);
         }
-        builder.setView(input);
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        builder.setTitle(R.string.input_prompt_title);
+        builder.setMessage(prompt);
+        builder.setView(dialogView);
 
         builder.setPositiveButton(R.string.input_prompt_ok, (dialog, which) -> {
             String userInput = input.getText().toString();
