@@ -19,7 +19,7 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Theme.AndroidDemos.NoActionBar">
+    <style name="Theme.AndroidDemos.NoActionBar" parent="Theme.AndroidDemos">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
