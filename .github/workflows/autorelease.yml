@@ -55,6 +55,12 @@ jobs:
     - name: Run unit tests
       run: ./gradlew test --stacktrace
 
+    - name: Sonarqube
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      run: ./gradlew build sonar --info
+
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
