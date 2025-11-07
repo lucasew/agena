@@ -40,10 +40,52 @@ public class PageActivity extends AppCompatActivity {
 
     public void handlePageGo(View view) { // this method is called from the XML
         TextView urlText = findViewById(R.id.browser_url);
-        String urlToGoTo = urlText.getText().toString();
-        Uri destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo.trim()).toString());
+        String urlToGoTo = urlText.getText().toString().trim();
+
+        Uri destURL;
+        // Check if input looks like an absolute domain (not a relative path)
+        if (urlToGoTo.contains("://")) {
+            // Already has a scheme, use as-is
+            destURL = Uri.parse(urlToGoTo);
+        } else if (isAbsoluteDomain(urlToGoTo)) {
+            // Looks like a domain (e.g., "foo.bar"), add gemini:// prefix
+            destURL = Uri.parse("gemini://" + urlToGoTo);
+        } else {
+            // Treat as relative path
+            destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+        }
+
         System.out.printf("scheme: '%s'", destURL.getScheme());
         new Invoker(this, destURL).invoke();
+    }
+
+    /**
+     * Checks if input looks like an absolute domain rather than a relative path.
+     * A string is considered an absolute domain if it:
+     * - Contains at least one dot (.)
+     * - Does not start with a forward slash (/)
+     * - Does not contain a forward slash before the first dot
+     */
+    private boolean isAbsoluteDomain(String input) {
+        if (input.startsWith("/")) {
+            return false; // Absolute path, not domain
+        }
+
+        int dotIndex = input.indexOf('.');
+        int slashIndex = input.indexOf('/');
+
+        // Must have a dot to be a domain
+        if (dotIndex == -1) {
+            return false;
+        }
+
+        // If there's a slash, it must come after the dot (e.g., "foo.bar/path")
+        // If slash comes before dot, it's a relative path (e.g., "path/file.gmi")
+        if (slashIndex != -1 && slashIndex < dotIndex) {
+            return false;
+        }
+
+        return true;
     }
     public void handlePageReload(View view) {
         handlePageLoad();
