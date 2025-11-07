@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.Invoker;
+import com.google.android.material.color.DynamicColors;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -28,6 +29,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Apply Material You dynamic colors (Android 12+)
+        DynamicColors.applyToActivityIfAvailable(this);
+
         setContentView(R.layout.activity_main);
 
         Log.d(TAG, "MainActivity onCreate - SDK_INT: " + Build.VERSION.SDK_INT);
