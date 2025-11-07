@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AGENA</string>
     <string name="start_navigating">Iniciar Navegação</string>
     <string name="warning_icon">Apenas um ícone de aviso para deixar explícito que algo inesperado aconteceu</string>
     <string name="more_information">Mais infomações</string>

@@ -32,7 +32,7 @@ public class PageErrorFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        TextView label = Objects.requireNonNull(this.getActivity()).findViewById(R.id.page_error_label);
+        TextView label = this.requireActivity().findViewById(R.id.page_error_label);
         label.setText(this.error);
 
         Button moreInfoBtn = this.getActivity().findViewById(R.id.more_information_button);

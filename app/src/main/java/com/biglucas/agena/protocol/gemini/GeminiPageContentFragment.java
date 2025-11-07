@@ -48,7 +48,7 @@ public class GeminiPageContentFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        LinearLayout contentColumn = Objects.requireNonNull(this.getView()).findViewById(R.id.content_column);
+        LinearLayout contentColumn = this.requireView().findViewById(R.id.content_column);
         contentColumn.removeAllViewsInLayout();
         TextView tv = new TextView(this.getContext());
         float textSizeBaseline = 14; //tv.getTextSize();
