@@ -84,17 +84,6 @@ jobs:
         name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
 
-    # Build release APK (always, for testing)
-    - name: Build release APK
-      run: ./gradlew assembleRelease --stacktrace
-
-    - name: Upload release APK artifact
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-apk
-        path: app/build/outputs/apk/release/*.apk
-
     # Make release if workflow_dispatch or schedule
     - name: Make release
       if: github.event_name != 'pull_request'
@@ -106,6 +95,18 @@ jobs:
           echo "New version: $(cat version.txt)" >> $GITHUB_STEP_SUMMARY
           echo "RELEASE_VERSION=$(cat version.txt)" >> $GITHUB_ENV
         fi
+
+    # Build release APK (only for non-PR builds, after version bump)
+    - name: Build release APK
+      if: github.event_name != 'pull_request'
+      run: ./gradlew assembleRelease --stacktrace
+
+    - name: Upload release APK artifact
+      if: github.event_name != 'pull_request'
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: app/build/outputs/apk/release/*.apk
 
     # Create GitHub release
     - name: Create release
