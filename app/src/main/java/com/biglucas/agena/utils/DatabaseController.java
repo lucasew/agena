@@ -33,7 +33,7 @@ public class DatabaseController {
      * In release builds, always uses the app's private directory.
      */
     public static SQLiteDatabase openDatabase(Context context) {
-        boolean isDebug = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        boolean isDebug = BuildConfig.DEBUG;
 
         Log.d(TAG, "openDatabase called - isDebug: " + isDebug + ", SDK_INT: " + Build.VERSION.SDK_INT);
 
