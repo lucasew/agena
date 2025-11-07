@@ -26,8 +26,7 @@
                 android:layout_gravity="center"
                 android:contentDescription="@string/warning_icon"
                 android:scaleType="fitCenter"
-                android:src="@android:drawable/stat_sys_warning"
-                app:tint="?attr/colorError" />
+                android:src="@android:drawable/stat_sys_warning" />
 
             <TextView
                 android:id="@+id/page_error_label"
