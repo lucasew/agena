@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.biglucas.agena.BuildConfig;
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.Invoker;
 
@@ -39,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestStoragePermissionIfNeeded() {
         // Only request permission in debug builds
-        boolean isDebug = BuildConfig.DEBUG;
+        boolean isDebug = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         Log.d(TAG, "requestStoragePermissionIfNeeded - isDebug: " + isDebug);
 
         if (!isDebug) {

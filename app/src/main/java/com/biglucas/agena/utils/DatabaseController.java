@@ -14,8 +14,6 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
-import com.biglucas.agena.BuildConfig;
-
 import java.io.File;
 import java.util.ArrayList;
 
@@ -35,7 +33,7 @@ public class DatabaseController {
      * In release builds, always uses the app's private directory.
      */
     public static SQLiteDatabase openDatabase(Context context) {
-        boolean isDebug = BuildConfig.DEBUG;
+        boolean isDebug = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 
         Log.d(TAG, "openDatabase called - isDebug: " + isDebug + ", SDK_INT: " + Build.VERSION.SDK_INT);
 
