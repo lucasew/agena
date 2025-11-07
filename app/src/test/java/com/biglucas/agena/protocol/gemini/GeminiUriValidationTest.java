@@ -137,4 +137,27 @@ public class GeminiUriValidationTest {
         assertNotNull("TLS version should be specified", requiredTlsVersion);
         assertEquals("TLS context should be 'TLS'", "TLS", requiredTlsVersion);
     }
+
+    @Test
+    public void testRelativeUriResolution() {
+        // Test that relative URIs are properly resolved against base URIs
+        // This is critical for handling redirects with relative paths
+        java.net.URI baseUri = java.net.URI.create("gemini://cities.yesterweb.org/");
+        java.net.URI relativeUri = baseUri.resolve("signup?lucasew");
+
+        assertEquals("Resolved URI should have gemini scheme", "gemini", relativeUri.getScheme());
+        assertEquals("Resolved URI should have correct host", "cities.yesterweb.org", relativeUri.getHost());
+        assertEquals("Resolved URI should have correct path and query", "/signup?lucasew", relativeUri.getRawPath() + "?" + relativeUri.getRawQuery());
+    }
+
+    @Test
+    public void testAbsoluteUriResolution() {
+        // Test that absolute URIs are not modified during resolution
+        java.net.URI baseUri = java.net.URI.create("gemini://example.com/page");
+        java.net.URI absoluteUri = baseUri.resolve("gemini://another.com/other");
+
+        assertEquals("Absolute URI should keep its scheme", "gemini", absoluteUri.getScheme());
+        assertEquals("Absolute URI should keep its host", "another.com", absoluteUri.getHost());
+        assertEquals("Absolute URI should keep its path", "/other", absoluteUri.getPath());
+    }
 }
