@@ -23,15 +23,20 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
 
 public class PageActivity extends AppCompatActivity {
+    static Logger logger = Logger.getLogger(PageActivity.class.getName());
+
     private Uri url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.page_activity);
-        String uriStr = this.getIntent().getData().toString();
+        String uriStr = Objects.requireNonNull(this.getIntent().getData()).toString();
 
         this.url = Uri.parse(uriStr.trim());
         TextView urlText = findViewById(R.id.browser_url);
@@ -82,16 +87,12 @@ public class PageActivity extends AppCompatActivity {
 
         // If there's a slash, it must come after the dot (e.g., "foo.bar/path")
         // If slash comes before dot, it's a relative path (e.g., "path/file.gmi")
-        if (slashIndex != -1 && slashIndex < dotIndex) {
-            return false;
-        }
-
-        return true;
+        return slashIndex == -1 || slashIndex >= dotIndex;
     }
     public void handlePageReload(View view) {
         handlePageLoad();
     }
-    public void handleLoad(ArrayList<String> content) {
+    public void handleLoad(List<String> content) {
         if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
@@ -121,7 +122,7 @@ public class PageActivity extends AppCompatActivity {
         } else if (e instanceof FailedGeminiRequestException.GeminiServerUnavailable) {
             errText = appctx.getString(R.string.error_server_unavailable);
         } else if (e instanceof FailedGeminiRequestException.GeminiCGIError) {
-            errText = e.getMessage().replaceFirst("^CGI error: CGI [Ee]rror: ", "CGI error: ");
+            errText = Objects.requireNonNull(e.getMessage()).replaceFirst("^CGI error: CGI [Ee]rror: ", "CGI error: ");
         } else if (e instanceof FailedGeminiRequestException.GeminiProxyError) {
             errText = appctx.getString(R.string.error_proxy_error);
         } else if (e instanceof FailedGeminiRequestException.GeminiTemporaryFailure) {
@@ -194,12 +195,11 @@ public class PageActivity extends AppCompatActivity {
         builder.setView(dialogView);
 
         builder.setPositiveButton(R.string.input_prompt_ok, (dialog, which) -> {
-            String userInput = input.getText().toString();
+            String userInput = Objects.requireNonNull(input.getText()).toString();
             // Append input as query parameter to current URL
             Uri.Builder uriBuilder = url.buildUpon();
             uriBuilder.query(userInput);
-            Uri newUrl = uriBuilder.build();
-            this.url = newUrl;
+            this.url = uriBuilder.build();
             handlePageLoad();
         });
 
@@ -230,7 +230,7 @@ public class PageActivity extends AppCompatActivity {
                 .replace(R.id.browser_content, new PageLoadingFragment())
                 .commit();
         Uri uri = Uri.parse(url);
-        System.out.println(uri.toString());
+        logger.info(uri.toString());
         ((TextView)this.findViewById(R.id.browser_url)).setText(uri.toString());
         PageActivity that = this;
         AsyncTask<String, Integer, ArrayList<String>> task = new AsyncTask<String, Integer, ArrayList<String>>() {

@@ -2,7 +2,6 @@ package com.biglucas.agena.ui;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -14,6 +13,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         Log.d(TAG, "onRequestPermissionsResult - requestCode: " + requestCode);
@@ -144,13 +144,11 @@ public class MainActivity extends AppCompatActivity {
     }
     public void onClickHistory(View view) {
         Intent intent = new Intent(this, HistoricActivity.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         startActivity(intent);
     }
     public void onClickEnter(View view) {
-        EditText input = (EditText) findViewById(R.id.url);
+        EditText input = findViewById(R.id.url);
         String txt = input.getText().toString();
         if (!txt.startsWith("gemini://")) {
             txt = String.format("gemini://%s", txt);

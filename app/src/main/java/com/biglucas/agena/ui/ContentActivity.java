@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import com.biglucas.agena.R;
 
 public class ContentActivity extends AppCompatActivity {
-    static Logger logger = Logger.getLogger(ContentActivity.class.getName());
+    static final Logger logger = Logger.getLogger(ContentActivity.class.getName());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

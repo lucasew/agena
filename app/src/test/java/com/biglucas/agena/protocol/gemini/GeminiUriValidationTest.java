@@ -119,16 +119,6 @@ public class GeminiUriValidationTest {
         assertEquals("Maximum redirects should be 5", 5, maxRedirects);
     }
 
-    @Test
-    public void testStatusCodeRanges() {
-        // Verify status code ranges per Gemini spec
-        assertTrue("Status 10 is in INPUT range", 10 >= 10 && 10 < 20);
-        assertTrue("Status 20 is in SUCCESS range", 20 >= 20 && 20 < 30);
-        assertTrue("Status 30 is in REDIRECT range", 30 >= 30 && 30 < 40);
-        assertTrue("Status 40 is in TEMP_FAILURE range", 40 >= 40 && 40 < 50);
-        assertTrue("Status 50 is in PERM_FAILURE range", 50 >= 50 && 50 < 60);
-        assertTrue("Status 60 is in CERT_REQUIRED range", 60 >= 60 && 60 < 70);
-    }
 
     @Test
     public void testTlsVersion() {

@@ -7,10 +7,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
+
+import java.util.Objects;
 
 public class PageErrorFragment extends Fragment {
 
@@ -28,8 +31,8 @@ public class PageErrorFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        TextView label = this.getActivity().findViewById(R.id.page_error_label);
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        TextView label = Objects.requireNonNull(this.getActivity()).findViewById(R.id.page_error_label);
         label.setText(this.error);
 
         Button moreInfoBtn = this.getActivity().findViewById(R.id.more_information_button);

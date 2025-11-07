@@ -1,6 +1,5 @@
 package com.biglucas.agena.ui;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;

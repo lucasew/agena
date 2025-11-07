@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 import androidx.core.content.FileProvider;
 
 import com.biglucas.agena.R;
-import com.biglucas.agena.ui.ContentActivity;
 import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.PermissionAsker;
@@ -33,18 +31,20 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.net.ssl.SSLSocket;
 
 public class Gemini {
-    static Logger logger = Logger.getLogger(Gemini.class.getName());
+    static final Logger logger = Logger.getLogger(Gemini.class.getName());
 
     /**
      * Result of a download operation containing URI and display path
@@ -112,7 +112,7 @@ public class Gemini {
      * Internal request method with redirect tracking
      */
     private List<String> requestInternal(Activity activity, Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
-        System.out.printf("Requesting: '%s' (redirect count: %d)\n", uri.toString(), redirectCount);
+        logger.log(Level.INFO, "Requesting: '{0}' (redirect count: {1})", List.of(uri.toString(), redirectCount).toArray());
 
         // Check redirect limit (max 5 as per spec)
         if (redirectCount > 5) {
@@ -158,7 +158,7 @@ public class Gemini {
         InputStream inputStream = new BufferedInputStream(socket.getInputStream());
         String headerLine = readLineFromStream(inputStream);
         if (headerLine == null) {
-            System.out.println("Server did not respond with a Gemini header");
+            logger.log(Level.INFO, "Server did not respond with a Gemini header");
             inputStream.close();
             outputStream.close();
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
@@ -183,7 +183,7 @@ public class Gemini {
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
         }
 
-        logger.info("response_code=%d, meta=%s%n", responseCode, meta);
+        logger.log(Level.INFO, "response_code={0}, meta={1}", List.of(responseCode, meta).toArray());
 
         // Handle response based on status code ranges
         try {
@@ -233,9 +233,7 @@ public class Gemini {
                 if (result != null) {
                     activity.runOnUiThread(() -> Toast.makeText(activity, result.displayPath, Toast.LENGTH_SHORT).show());
                     Intent intent = new Intent();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                    }
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.setDataAndType(result.uri, meta);
@@ -266,8 +264,6 @@ public class Gemini {
         // Temporary failure (40-49)
         if (responseCode >= 40 && responseCode < 50) {
             switch (responseCode) {
-                case 40:
-                    throw new FailedGeminiRequestException.GeminiTemporaryFailure(meta);
                 case 41:
                     throw new FailedGeminiRequestException.GeminiServerUnavailable(meta);
                 case 42:
@@ -284,8 +280,6 @@ public class Gemini {
         // Permanent failure (50-59)
         if (responseCode >= 50 && responseCode < 60) {
             switch (responseCode) {
-                case 50:
-                    throw new FailedGeminiRequestException.GeminiPermanentFailure(meta);
                 case 51:
                     throw new FailedGeminiRequestException.GeminiNotFound();
                 case 52:
@@ -302,8 +296,6 @@ public class Gemini {
         // Client certificate required (60-69)
         if (responseCode >= 60 && responseCode < 70) {
             switch (responseCode) {
-                case 60:
-                    throw new FailedGeminiRequestException.GeminiClientCertificateRequired(meta);
                 case 61:
                     throw new FailedGeminiRequestException.GeminiCertificateNotAuthorized(meta);
                 case 62:
@@ -314,7 +306,7 @@ public class Gemini {
         }
 
         // Unknown status code
-        System.out.printf("Unknown response code: %d, meta: %s\n", responseCode, meta);
+        logger.log(Level.INFO, "Unknown response code: {0}, meta: {1}", List.of(responseCode, meta).toArray());
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
@@ -328,7 +320,7 @@ public class Gemini {
         if (uriString.endsWith("/")) {
             uriString = uriString.substring(0, uriString.length() - 1);
         }
-        System.out.println("Downloading: " + uriString);
+        logger.log(Level.INFO, "Downloading: {}", uriString);
 
         String[] sectors = uriString.split("\\.");
         String extension = sectors.length > 0 ? sectors[sectors.length - 1] : "bin";
@@ -353,15 +345,30 @@ public class Gemini {
                                                  String extension, String mimeType,
                                                  MessageDigest digest, byte[] buffer) throws IOException {
         ContentResolver resolver = activity.getContentResolver();
-        ContentValues values = new ContentValues();
 
         // Generate filename with timestamp
         String filename = "agena_" + System.currentTimeMillis() + "." + extension;
-        values.put(MediaStore.Downloads.DISPLAY_NAME, filename);
-        values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
-        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/AGENA");
+        String subdir = "AGENA";
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
 
-        Uri downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_DOWNLOADS + File.separator + subdir);
+        } else {
+            File dir = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS), subdir);
+            boolean _ = dir.mkdirs();
+            File file = new File(dir, filename);
+            values.put(MediaStore.MediaColumns.DATA, file.getAbsolutePath());
+        }
+
+
+        Uri downloadUri = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        }
         if (downloadUri == null) {
             throw new IOException("Failed to create MediaStore entry");
         }
@@ -381,7 +388,7 @@ public class Gemini {
 
         String hash = new BigInteger(1, digest.digest()).toString(16);
         String displayPath = Environment.DIRECTORY_DOWNLOADS + "/AGENA/" + filename;
-        System.out.println("Downloaded to: " + displayPath + " (hash: " + hash + ")");
+        logger.log(Level.INFO, "Downloaded to: {0} (hash: {1})", List.of(displayPath, hash).toArray());
 
         return new DownloadResult(downloadUri, displayPath);
     }
@@ -403,7 +410,7 @@ public class Gemini {
 
         File tempPath = File.createTempFile("agena", "." + extension, agenaPath);
 
-        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempPath))) {
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(tempPath.toPath()))) {
             int len;
             while ((len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
@@ -418,7 +425,7 @@ public class Gemini {
         File finalFile = tempPath.renameTo(outFile) ? outFile : tempPath;
         Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), finalFile);
 
-        System.out.println("Downloaded to: " + finalFile.getAbsolutePath());
+        logger.info("Downloaded to: " + finalFile.getAbsolutePath());
         return new DownloadResult(fileUri, finalFile.getAbsolutePath());
     }
 }

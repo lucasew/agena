@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.biglucas.agena.R;
@@ -22,6 +23,7 @@ import com.google.android.material.button.MaterialButton;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.IllegalFormatConversionException;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,8 +47,8 @@ public class GeminiPageContentFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        LinearLayout contentColumn = this.getView().findViewById(R.id.content_column);
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        LinearLayout contentColumn = Objects.requireNonNull(this.getView()).findViewById(R.id.content_column);
         contentColumn.removeAllViewsInLayout();
         TextView tv = new TextView(this.getContext());
         float textSizeBaseline = 14; //tv.getTextSize();
@@ -82,15 +84,15 @@ public class GeminiPageContentFragment extends Fragment {
                     label = String.format("%s %s", label, tokenizer.nextToken());
                 }
                 label = label.trim(); // remove spaces around
-                if (label.length() == 0) {
+                if (label.isEmpty()) {
                     label = buttonURI;
                 }
-                MaterialButton button = new MaterialButton(this.getContext());
+                MaterialButton button = new MaterialButton(Objects.requireNonNull(this.getContext()));
                 button.setText(label);
                 button.setAllCaps(false);
 
                 String oldURINormalized = this.oldURI.toString();
-                if (!this.oldURI.getPath().endsWith("/") && !this.oldURI.getPath().endsWith(".gmi")) {
+                if (!Objects.requireNonNull(this.oldURI.getPath()).endsWith("/") && !this.oldURI.getPath().endsWith(".gmi")) {
                     oldURINormalized = String.format("%s/", oldURINormalized);
                 }
                 GeminiPageContentFragment that = this;
@@ -114,19 +116,19 @@ public class GeminiPageContentFragment extends Fragment {
                         }
                         private final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
                             @Override
-                            public boolean onDoubleTap(MotionEvent e) {
+                            public boolean onDoubleTap(@NonNull MotionEvent e) {
                                 getInvoker().invokeNewWindow();
                                 return super.onDoubleTap(e);
                             }
 
                             @Override
-                            public boolean onSingleTapConfirmed(MotionEvent e) {
+                            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
                                 getInvoker().invoke();
                                 return super.onSingleTapConfirmed(e);
                             }
 
                             @Override
-                            public void onLongPress(MotionEvent e) {
+                            public void onLongPress(@NonNull MotionEvent e) {
                                 Toast.makeText(that.getContext(), uri.toString(), Toast.LENGTH_SHORT)
                                         .show();
                                 System.out.println("long press");

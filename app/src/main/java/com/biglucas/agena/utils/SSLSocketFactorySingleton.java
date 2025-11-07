@@ -12,20 +12,20 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * Provides SSL/TLS socket factory for Gemini protocol connections.
- *
+ * <p>
  * Gemini Protocol TLS Requirements (from specification):
  * - TLS version 1.2 or higher is mandatory
  * - SNI (Server Name Indication) must be used
  * - TOFU (Trust On First Use) model is recommended for certificate validation
  * - Self-signed certificates are considered legitimate in Gemini ecosystem
  * - Servers must use TLS close_notify to terminate connections
- *
+ * <p>
  * Current Implementation:
  * - Uses "TLS" context which supports TLS 1.2+ (exact version negotiated by SSL handshake)
  * - Conscrypt provider ensures modern TLS support on older Android devices
  * - SNI is enabled by default in Android's SSLSocket implementation
  * - Currently accepts all certificates (similar to TOFU but without persistence)
- *
+ * <p>
  * Note: This implementation uses a permissive trust manager that accepts all certificates.
  * This is appropriate for Gemini's TOFU model but means ALL certificates are trusted.
  * A full TOFU implementation would persist first-seen certificates and alert on changes.

@@ -1,6 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/page_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
@@ -33,7 +32,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/page_refresh"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_margin="1dp"
@@ -42,7 +40,6 @@
                 app:icon="@android:drawable/stat_notify_sync" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/page_go"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_margin="1dp"

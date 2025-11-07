@@ -48,9 +48,7 @@ public class Invoker {
 
     public void invokeNewWindow() {
         Intent intent = getBaseIntent();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         runIntent(intent);
     }
 }

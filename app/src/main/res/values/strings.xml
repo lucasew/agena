@@ -1,10 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">AGENA</string>
     <string name="app_description">Gemini browser</string>
-    <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
     <string name="start_navigating">Start Navigating</string>
 
     <string name="warning_icon">Just a warning icon to make it explicit that something unexpected happened</string>
@@ -25,7 +22,6 @@
     <!-- Temporary failures (40-49) -->
     <string name="error_temporary_failure">Temporary server failure. Try again later.</string>
     <string name="error_server_unavailable">Server unavailable. Try again later.</string>
-    <string name="error_cgi_error">Server CGI error</string>
     <string name="error_proxy_error">Proxy error</string>
     <string name="error_slow_down">Rate limited. Please slow down.</string>
 
@@ -52,6 +48,6 @@
 
     <string name="explain_permission_storage">I need storage permission to store downloaded files from sites, like images.</string>
     <string name="please_repeat_action">Permission state has changed. Please retry the operation.</string>
-    <string name="please_wait">Please wait</string>
     <string name="historic">Historic</string>
+    <string name="url" translatable="false">URL</string>
 </resources>
