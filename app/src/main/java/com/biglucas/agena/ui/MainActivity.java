@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.biglucas.agena.BuildConfig;
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.Invoker;
 
