@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     android:visibility="visible"
     tools:context=".ui.MainActivity">
 
@@ -45,13 +46,21 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/url"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:hint="URL"
-                android:inputType="textUri" />
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/url"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="textUri" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -59,7 +68,7 @@
                 android:layout_weight="10"
                 android:orientation="horizontal">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/enter_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -67,10 +76,9 @@
                     android:layout_marginLeft="10dp"
                     android:layout_weight="10"
                     android:onClick="onClickEnter"
-                    android:text="@string/start_navigating"
-                    android:textColor="#263238" />
+                    android:text="@string/start_navigating" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/historic_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -79,6 +87,7 @@
                     android:layout_marginEnd="10dp"
                     android:layout_marginRight="10dp"
                     android:onClick="onClickHistory"
+                    style="@style/Widget.Material3.Button.Icon"
                     app:icon="@android:drawable/ic_menu_recent_history" />
             </LinearLayout>
         </LinearLayout>

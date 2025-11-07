@@ -3,37 +3,52 @@
     android:id="@+id/page_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     android:orientation="vertical">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/browser_url"
-            android:layout_height="48dp"
-            android:layout_width="48dp"
-            android:layout_weight="1"
-            android:inputType="textPersonName" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="4dp">
 
-        <Button
-            android:id="@+id/page_refresh"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_margin="1dp"
-            android:onClick="handlePageReload"
-            app:icon="@android:drawable/stat_notify_sync" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
 
-        <Button
-            android:id="@+id/page_go"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_margin="1dp"
-            android:onClick="handlePageGo"
-            android:text=">"
-            app:icon="@android:drawable/ic_menu_send" />
-    </LinearLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/browser_url"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:inputType="textUri"
+                    android:singleLine="true" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/page_refresh"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="1dp"
+                android:onClick="handlePageReload"
+                style="@style/Widget.Material3.Button.IconButton"
+                app:icon="@android:drawable/stat_notify_sync" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/page_go"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="1dp"
+                android:onClick="handlePageGo"
+                style="@style/Widget.Material3.Button.IconButton"
+                app:icon="@android:drawable/ic_menu_send" />
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/browser_content"

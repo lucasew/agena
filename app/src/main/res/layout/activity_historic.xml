@@ -5,6 +5,7 @@
     android:id="@+id/historic_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     android:orientation="vertical"
     tools:context=".ui.HistoricActivity">
 
@@ -12,21 +13,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:baselineAligned="false"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="8dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/historic"
-            android:textSize="60sp" />
+            android:textAppearance="?attr/textAppearanceHeadlineLarge" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/button"
-            android:layout_width="55dp"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:onClick="refreshHistoric"
+            style="@style/Widget.Material3.Button.IconButton"
             app:icon="@android:drawable/ic_popup_sync" />
 
     </LinearLayout>
