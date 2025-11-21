@@ -358,7 +358,7 @@ public class Gemini {
         } else {
             File dir = new File(Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOWNLOADS), subdir);
-            boolean _ = dir.mkdirs();
+            boolean ignored = dir.mkdirs();
             File file = new File(dir, filename);
             values.put(MediaStore.MediaColumns.DATA, file.getAbsolutePath());
         }
