@@ -87,7 +87,7 @@ public class GeminiPageContentFragment extends Fragment {
                 if (label.isEmpty()) {
                     label = buttonURI;
                 }
-                MaterialButton button = new MaterialButton(Objects.requireNonNull(this.getContext()));
+                MaterialButton button = new MaterialButton(this.requireContext());
                 button.setText(label);
                 button.setAllCaps(false);
 

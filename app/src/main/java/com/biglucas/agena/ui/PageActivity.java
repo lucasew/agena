@@ -96,7 +96,7 @@ public class PageActivity extends AppCompatActivity {
         if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.browser_content, new GeminiPageContentFragment(content, this.url))
+                .replace(R.id.browser_content, new GeminiPageContentFragment(new ArrayList<>(content), this.url))
                 .commit();
     }
     private void handleLoad(Exception e) {

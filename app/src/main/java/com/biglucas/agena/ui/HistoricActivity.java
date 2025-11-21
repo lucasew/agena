@@ -25,7 +25,7 @@ public class HistoricActivity extends AppCompatActivity {
         refreshHistoric();
     }
     public void refreshHistoric() {
-        ArrayList<String> historic = new DatabaseController(DatabaseController.openDatabase(this))
+        ArrayList<String> historic = (ArrayList<String>) new DatabaseController(DatabaseController.openDatabase(this))
                 .getHistoryLines();
         try {
             System.out.println(historic);

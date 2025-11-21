@@ -358,7 +358,7 @@ public class Gemini {
         } else {
             File dir = new File(Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOWNLOADS), subdir);
-            boolean _ = dir.mkdirs();
+            boolean ignored = dir.mkdirs();
             File file = new File(dir, filename);
             values.put(MediaStore.MediaColumns.DATA, file.getAbsolutePath());
         }
@@ -409,7 +409,7 @@ public class Gemini {
 
         File tempPath = File.createTempFile("agena", "." + extension, agenaPath);
 
-        try (BufferedOutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(tempPath.toPath()))) {
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new java.io.FileOutputStream(tempPath))) {
             int len;
             while ((len = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, len);
