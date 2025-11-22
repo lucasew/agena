@@ -36,7 +36,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v6
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
       with:
         fetch-depth: 0
 
@@ -46,7 +46,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
     - name: Setup mise
-      uses: jdx/mise-action@v3
+      uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
 
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
@@ -62,7 +62,7 @@ jobs:
       run: ./gradlew build sonar --info
 
     - name: Upload test results
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       if: always()
       with:
         name: test-results
@@ -71,7 +71,7 @@ jobs:
           app/build/test-results/
 
     - name: Test Report
-      uses: dorny/test-reporter@v2
+      uses: dorny/test-reporter@7b7927aa7da8b82e81e755810cb51f39941a2cc7 # v2
       if: always()
       with:
         name: JUnit Test Results
@@ -85,7 +85,7 @@ jobs:
 
     - name: Upload debug APK artifact
       if: always()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
@@ -108,7 +108,7 @@ jobs:
 
     - name: Upload release APK artifact
       if: always()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: release-apk
         path: app/build/outputs/apk/release/*.apk
