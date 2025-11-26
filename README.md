@@ -1,5 +1,5 @@
 <center>
-    <img src="./logo.svg" width="256"></img>
+    <img src="./logo.svg" height="256"></img>
 </center>
 
 [![Build, Test and Auto-Release](https://github.com/lucasew/agena/actions/workflows/autorelease.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/autorelease.yml)
