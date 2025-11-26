@@ -39,6 +39,6 @@
 - [ ] Client certificate generation and management
 
 # Screenshots
-![Main view](./demo/1.jpg)
-![Historic page](./demo/2.jpg)
-![Browser view](./demo/3.jpg)
+![Main view](./demo/1.png)
+![Historic page](./demo/2.png)
+![Browser view](./demo/3.png)
