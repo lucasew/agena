@@ -18,8 +18,7 @@
         <item name="dynamicColorThemeOverlay">@style/ThemeOverlay.Material3.DynamicColors.DayNight</item>
         <!-- Splash screen configuration (Android 12+) -->
         <item name="android:windowSplashScreenBackground" tools:targetApi="s">?attr/colorSurface</item>
-        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_logo_agena</item>
-        <item name="android:windowSplashScreenIconBackgroundColor" tools:targetApi="s">?attr/colorSurface</item>
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_splash_icon</item>
         <!-- Customize your theme here. -->
     </style>
 </resources>
