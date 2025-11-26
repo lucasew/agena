@@ -17,7 +17,7 @@
         <!-- Enable dynamic colors for Material You (Android 12+) -->
         <item name="dynamicColorThemeOverlay">@style/ThemeOverlay.Material3.DynamicColors.DayNight</item>
         <!-- Splash screen configuration (Android 12+) -->
-        <item name="android:windowSplashScreenBackground" tools:targetApi="s">?attr/colorSurface</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@android:color/system_neutral1_50</item>
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_splash_icon</item>
         <!-- Customize your theme here. -->
     </style>
