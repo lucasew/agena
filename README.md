@@ -1,8 +1,7 @@
-<center>
-    <img src="./logo.svg" height="256"></img>
-</center>
+<img align="center" src="./logo.svg" height="256" width="256"></img>
 
 [![Build, Test and Auto-Release](https://github.com/lucasew/agena/actions/workflows/autorelease.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/autorelease.yml)
+
 [Download](https://github.com/lucasew/agena) (>Android 4.1)
 
 * Gemini browser implementation made in Java for Android that can render gemtext as native components.
