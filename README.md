@@ -1,15 +1,6 @@
-```
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-░░░░░░░░░░░░█▀█░█▀▀░█▀▀░█▀█░█▀█░░░░░░░░░░░
-░░░░░░░░░░░░█▀█░█░█░█▀▀░█░█░█▀█░░░░░░░░░░░
-░░░░░░░░░░░░▀░▀░▀▀▀░▀▀▀░▀░▀░▀░▀░░░░░░░░░░░
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-Minimalistic Gemini Browser
-by lucasew
-```
+<center>
+    <img src="./logo.svg"></img>
+</center>
 
 [![Build, Test and Auto-Release](https://github.com/lucasew/agena/actions/workflows/autorelease.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/autorelease.yml)
 [Download](https://github.com/lucasew/agena) (>Android 4.1)
@@ -49,6 +40,6 @@ by lucasew
 - [ ] Client certificate generation and management
 
 # Screenshots
-![Main view](./demo/1.png)
-![Historic page](./demo/2.png)
-![Browser view](./demo/3.png)
+![Main view](./demo/1.jpg)
+![Historic page](./demo/2.jpg)
+![Browser view](./demo/3.jpg)
