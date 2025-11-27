@@ -2,6 +2,10 @@
 
 [![Build, Test and Auto-Release](https://github.com/lucasew/agena/actions/workflows/autorelease.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/autorelease.yml)
 
+<a href="https://hosted.weblate.org/engage/agena/">
+<img src="https://hosted.weblate.org/widget/agena/multi-auto.svg" alt="Status da tradução" />
+</a>
+
 [Download](https://github.com/lucasew/agena) (>Android 4.1)
 
 * Gemini browser implementation made in Java for Android that can render gemtext as native components.
