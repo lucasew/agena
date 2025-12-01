@@ -38,6 +38,4 @@
     <string name="please_repeat_action">Estado das permissões alterado. Por favor tente esta operação novamente.</string>
     <string name="historic">Histórico</string>
     <string name="app_description">Navegador gemini</string>
-    <string name="url" translatable="false"></string>
-    <string name="app_name" translatable="false"></string>
 </resources>
