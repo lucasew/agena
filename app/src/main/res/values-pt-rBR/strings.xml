@@ -13,34 +13,27 @@
     <string name="error_gemini_unimplemented">Detalhe do protocolo Gemini não implementado (ainda)</string>
     <string name="error_dont_know_how_to_handle_content_type">Eu não sei como tratar este conteúdo</string>
     <string name="error_gone">Sumiu</string>
-
     <!-- Temporary failures (40-49) -->
     <string name="error_temporary_failure">Falha temporária do servidor. Tente novamente mais tarde.</string>
     <string name="error_server_unavailable">Servidor indisponível. Tente novamente mais tarde.</string>
     <string name="error_proxy_error">Erro de proxy</string>
     <string name="error_slow_down">Limite de taxa atingido. Por favor, diminua a velocidade.</string>
-
     <!-- Permanent failures (50-59) -->
     <string name="error_permanent_failure">Falha permanente</string>
     <string name="error_proxy_request_refused">Requisição de proxy recusada</string>
     <string name="error_bad_request">Requisição inválida</string>
-
     <!-- Client certificate errors (60-69) -->
     <string name="error_client_certificate_required">Certificado de cliente necessário</string>
     <string name="error_certificate_not_authorized">Certificado não autorizado</string>
     <string name="error_certificate_not_valid">Certificado não válido</string>
-
     <!-- Redirects -->
     <string name="error_too_many_redirects">Muitos redirecionamentos (máximo 5)</string>
-
     <!-- URI validation -->
     <string name="error_invalid_uri">URI inválida</string>
-
     <!-- Input prompts -->
     <string name="input_prompt_title">Entrada Necessária</string>
     <string name="input_prompt_ok">OK</string>
     <string name="input_prompt_cancel">Cancelar</string>
-
     <string name="explain_permission_storage">Eu preciso de permissão de armazenamento para salvar arquivos baixados de sites, como imagens.</string>
     <string name="please_repeat_action">Estado das permissões alterado. Por favor tente esta operação novamente.</string>
     <string name="historic">Histórico</string>
