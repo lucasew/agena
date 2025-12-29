@@ -1,0 +1,9 @@
+plugins {
+    id 'base'
+}
+
+task sqlc {
+    group = "codegen"
+    description = "Runs SQLC code generation"
+    dependsOn ":app:generateSqlc"
+}
