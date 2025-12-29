@@ -1,2 +1,3 @@
 [tools]
+"github:sqlc-dev/sqlc" = "1.30.0"
 java = "17"

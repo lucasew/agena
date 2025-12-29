@@ -1,0 +1,4 @@
+CREATE TABLE history (
+    url TEXT,
+    accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
