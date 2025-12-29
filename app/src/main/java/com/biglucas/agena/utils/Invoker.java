@@ -31,7 +31,6 @@ public class Invoker {
                     .setPositiveButton("OK", null)
                     .setMessage(this.uri.toString())
                     .show();
-            //new StacktraceDialogHandler(e).show(this.activity);
         }
     }
     private Uri getUri() {
