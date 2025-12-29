@@ -20,12 +20,30 @@ import java.util.List;
 
 public class DatabaseController {
     private static final String TAG = "DatabaseController";
+    private static final String TABLE_HISTORY = "history";
+    private static final String COLUMN_URL = "url";
+    private static final String COLUMN_ACCESSED = "accessed";
+    private static final String HISTORY_FILENAME = "history.db";
+
+    private static final String SQL_CREATE_HISTORY_TABLE =
+        "CREATE TABLE IF NOT EXISTS " + TABLE_HISTORY + " (" +
+            COLUMN_URL + " TEXT, " +
+            COLUMN_ACCESSED + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+            ");";
+
+    private static final String SQL_INSERT_HISTORY_URL =
+        "INSERT INTO " + TABLE_HISTORY + " (" + COLUMN_URL + ") VALUES (?);";
+
+    private static final String SQL_SELECT_ALL_HISTORY_ORDERED =
+        "SELECT * FROM " + TABLE_HISTORY + " ORDER BY " + COLUMN_ACCESSED + " DESC;";
+
+    private static final String HISTORY_LINE_FORMAT = "=> %s %s %s";
     private static final String FILENAME = "history";
     final SQLiteDatabase db;
 
     public DatabaseController(SQLiteDatabase db) {
         this.db = db;
-        db.execSQL("create table if not exists history (url text, accessed timestamp default CURRENT_TIMESTAMP);");
+        db.execSQL(SQL_CREATE_HISTORY_TABLE);
     }
 
     /**
@@ -97,10 +115,10 @@ public class DatabaseController {
                     return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
                 }
 
-                File dbFile = new File(agenaDir, "history.db");
+                File dbFile = new File(agenaDir, HISTORY_FILENAME);
                 String dbPath = dbFile.getAbsolutePath();
                 Log.i(TAG, "✅ Opening database at: " + dbPath);
-                showToast(context, "✅ DB at: Downloads/AGENA/history.db");
+                showToast(context, "✅ DB at: Downloads/AGENA/" + HISTORY_FILENAME);
                 return SQLiteDatabase.openOrCreateDatabase(dbFile, null);
             } catch (Exception e) {
                 // If any error occurs (permissions, etc), fall back to private storage
@@ -152,16 +170,16 @@ public class DatabaseController {
     }
     public void addHistoryEntry(Uri uri) {
         Log.d(TAG, "Saving to history: " + uri.toString());
-        this.db.execSQL("insert into history (url) values (?)", new String[]{uri.toString()});
+        this.db.execSQL(SQL_INSERT_HISTORY_URL, new String[]{uri.toString()});
     }
     public List<String> getHistoryLines() {
         ArrayList<String> list = new ArrayList<>();
-        Cursor cursor = this.db.rawQuery("select * from history order by accessed desc", null);
+        Cursor cursor = this.db.rawQuery(SQL_SELECT_ALL_HISTORY_ORDERED, null);
         Log.d(TAG, "getHistoryLines - found " + cursor.getCount() + " entries");
         while (cursor.moveToNext()) {
-            @SuppressLint("Range") String uri = cursor.getString(cursor.getColumnIndex("url"));
-            @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("accessed"));
-            String toAdd = String.format("=> %s %s %s", uri, timestamp, uri);
+            @SuppressLint("Range") String uri = cursor.getString(cursor.getColumnIndex(COLUMN_URL));
+            @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex(COLUMN_ACCESSED));
+            String toAdd = String.format(HISTORY_LINE_FORMAT, uri, timestamp, uri);
             Log.d(TAG, "History entry: " + toAdd);
             list.add(toAdd);
         }
