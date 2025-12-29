@@ -6,6 +6,7 @@ import android.content.Context;
 import android.view.View;
 import android.widget.Toast;
 
+import com.biglucas.agena.BuildConfig;
 import com.biglucas.agena.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -23,6 +24,9 @@ public class StacktraceDialogHandler {
         show(view.getContext());
     }
     public void show(Context context) {
+        if (!BuildConfig.DEBUG) {
+            return;
+        }
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());

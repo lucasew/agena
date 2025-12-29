@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.biglucas.agena.BuildConfig;
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 
@@ -35,11 +36,16 @@ public class PageErrorFragment extends Fragment {
         TextView label = this.requireActivity().findViewById(R.id.page_error_label);
         label.setText(this.error);
 
-        Button moreInfoBtn = this.getActivity().findViewById(R.id.more_information_button);
-        moreInfoBtn.setOnClickListener(v -> {
-            System.out.println("* click *");
-            new StacktraceDialogHandler(this.exception).show(v);
-        });
+        Button moreInfoBtn = requireActivity().findViewById(R.id.more_information_button);
+
+        if (BuildConfig.DEBUG) {
+            moreInfoBtn.setVisibility(View.VISIBLE);
+            moreInfoBtn.setOnClickListener(v -> {
+                new StacktraceDialogHandler(this.exception).show(v);
+            });
+        } else {
+            moreInfoBtn.setVisibility(View.GONE);
+        }
     }
 
     @Override
