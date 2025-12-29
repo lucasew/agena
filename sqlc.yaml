@@ -1,0 +1,15 @@
+version: "2"
+plugins:
+  - name: java
+    wasm:
+      url: https://github.com/tandemdude/sqlc-gen-java/releases/download/v0.0.7/sqlc-gen-java.wasm
+      sha256: 513aee0ff7ca03934d9e4dafa61ecf4e48afe0dcd1cb49d85e5d46ae91f60df6
+sql:
+  - schema: "app/src/main/resources/schema.sql"
+    queries: "app/src/main/resources/query.sql"
+    engine: "mysql"
+    codegen:
+      - plugin: java
+        out: "app/src/main/java"
+        options:
+          package: "com.biglucas.agena.db"

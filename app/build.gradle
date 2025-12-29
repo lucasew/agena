@@ -23,8 +23,9 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
     buildFeatures {
         viewBinding true
@@ -44,4 +45,30 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
+
+task generateSqlc(type: Exec) {
+    commandLine 'sqlc', 'generate'
+    workingDir project.rootDir
+
+    doLast {
+        def rogueFile = file("src/main/java/Queries.java")
+        if (rogueFile.exists()) {
+             rogueFile.delete()
+        }
+
+        def queriesFile = file("src/main/java/com/biglucas/agena/db/Queries.java")
+        if (queriesFile.exists()) {
+            def content = queriesFile.text
+            // Cast results to AndroidResultSet to access getObject(int, Class)
+            content = content.replace(
+                "results.getObject(2, OffsetDateTime.class)",
+                "((com.biglucas.agena.db.wrapper.AndroidResultSet)results).getObject(2, OffsetDateTime.class)"
+            )
+            queriesFile.text = content
+        }
+    }
+}
+
+preBuild.dependsOn generateSqlc
