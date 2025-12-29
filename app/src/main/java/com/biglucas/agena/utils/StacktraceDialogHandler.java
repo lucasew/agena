@@ -24,22 +24,33 @@ public class StacktraceDialogHandler {
         show(view.getContext());
     }
     public void show(Context context) {
-        if (!BuildConfig.DEBUG) {
-            return;
-        }
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        this.exception.printStackTrace(pw);
-        String stackTrace = sw.toString();
-        builder.setMessage(stackTrace);
+
+        final String errorDetails;
+        if (BuildConfig.DEBUG) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            this.exception.printStackTrace(pw);
+            errorDetails = sw.toString();
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Error: ");
+            sb.append(exception.getClass().getName());
+            if (exception.getMessage() != null) {
+                sb.append("\nMessage: ");
+                sb.append(exception.getMessage());
+            }
+            errorDetails = sb.toString();
+        }
+
+        builder.setMessage(errorDetails);
 
         // Add copy button
         builder.setNeutralButton(R.string.copy_stacktrace, (dialog, which) -> {
             ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("Stack Trace", stackTrace);
+            ClipData clip = ClipData.newPlainText("Error Details", errorDetails);
             clipboard.setPrimaryClip(clip);
             Toast.makeText(context, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show();
         });
