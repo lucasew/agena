@@ -15,9 +15,3 @@ sonar {
 tasks.register('clean', Delete) {
     delete rootProject.buildDir
 }
-
-tasks.register("codegen") {
-    group = "codegen"
-    description = "Runs all codegen tasks"
-    dependsOn project(":codegen").tasks.matching { it.group == "codegen" }
-}

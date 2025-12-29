@@ -2,9 +2,19 @@
 "github:sqlc-dev/sqlc" = "1.30.0"
 java = "17"
 
+[tasks."codegen:sqlc"]
+description = "Run SQLC code generation"
+run = """
+sqlc generate
+rm -f app/src/main/java/Queries.java
+if [ -f "app/src/main/java/com/biglucas/agena/db/Queries.java" ]; then
+    sed -i 's/results.getObject(2, OffsetDateTime.class)/((com.biglucas.agena.db.wrapper.AndroidResultSet)results).getObject(2, OffsetDateTime.class)/g' app/src/main/java/com/biglucas/agena/db/Queries.java
+fi
+"""
+
 [tasks.codegen]
-description = "Run code generation"
-run = "./gradlew codegen"
+description = "Run all codegen tasks"
+depends = ["codegen:sqlc"]
 
 [tasks.test]
 description = "Run tests"

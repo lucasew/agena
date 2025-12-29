@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Android agena"
 include ':app'
-include ':codegen'
