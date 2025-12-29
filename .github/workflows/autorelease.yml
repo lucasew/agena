@@ -23,6 +23,39 @@ on:
     - cron: '0 2 * * 6'
 
 jobs:
+  codegen:
+    name: Codegen
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+
+      - name: Run codegen
+        run: mise run codegen
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code || echo "changes=true" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.git-check.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update codegen"
+          title: "chore: update codegen"
+          body: "This PR updates the generated code."
+          branch: "codegen-update"
+          base: "main"
+          delete-branch: true
+
   build-test-release:
     name: Build, Test and Release
     runs-on: ubuntu-latest
@@ -51,9 +84,9 @@ jobs:
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
 
-    # Run unit tests
+    # Run unit tests using mise
     - name: Run unit tests
-      run: ./gradlew test --stacktrace
+      run: mise run test -- --stacktrace
 
     - name: Upload test results
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6

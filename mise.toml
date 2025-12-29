@@ -1,3 +1,11 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.30.0"
 java = "17"
+
+[tasks.codegen]
+description = "Run code generation"
+run = "./gradlew codegen"
+
+[tasks.test]
+description = "Run tests"
+run = "./gradlew test"
