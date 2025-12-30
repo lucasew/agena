@@ -51,9 +51,33 @@ jobs:
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
 
-    # Run unit tests
+    - name: Run codegen
+      run: mise run codegen
+
+    - name: Create Pull Request if there is new stuff from updaters
+      if: github.event_name != 'pull_request'
+      uses: peter-evans/create-pull-request@v6
+      id: pr_create
+      with:
+        commit-message: "chore: update codegen"
+        title: "chore: update codegen"
+        body: "This PR updates the generated code."
+        branch: "codegen-update"
+        delete-branch: true
+
+    - name: Stop if a pull request was created
+      if: github.event_name != 'pull_request'
+      env:
+        PR_NUMBER: ${{ steps.pr_create.outputs.pull-request-number }}
+      run: |
+        if [[ ! -z "$PR_NUMBER" ]]; then
+          echo "The update scripts changed something and a PR was created. Giving up deploy." >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+    # Run unit tests using mise
     - name: Run unit tests
-      run: ./gradlew test --stacktrace
+      run: mise run test -- --stacktrace
 
     - name: Upload test results
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
