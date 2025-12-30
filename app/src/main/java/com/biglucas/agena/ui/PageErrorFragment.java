@@ -36,10 +36,14 @@ public class PageErrorFragment extends Fragment {
         label.setText(this.error);
 
         Button moreInfoBtn = this.getActivity().findViewById(R.id.more_information_button);
-        moreInfoBtn.setOnClickListener(v -> {
-            System.out.println("* click *");
-            new StacktraceDialogHandler(this.exception).show(v);
-        });
+        if (com.biglucas.agena.BuildConfig.DEBUG) {
+            moreInfoBtn.setOnClickListener(v -> {
+                System.out.println("* click *");
+                new StacktraceDialogHandler(this.exception).show(v);
+            });
+        } else {
+            moreInfoBtn.setVisibility(View.GONE);
+        }
     }
 
     @Override

@@ -26,19 +26,24 @@ public class StacktraceDialogHandler {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        this.exception.printStackTrace(pw);
-        String stackTrace = sw.toString();
-        builder.setMessage(stackTrace);
 
-        // Add copy button
-        builder.setNeutralButton(R.string.copy_stacktrace, (dialog, which) -> {
-            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("Stack Trace", stackTrace);
-            clipboard.setPrimaryClip(clip);
-            Toast.makeText(context, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show();
-        });
+        if (com.biglucas.agena.BuildConfig.DEBUG) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            this.exception.printStackTrace(pw);
+            String stackTrace = sw.toString();
+            builder.setMessage(stackTrace);
+
+            // Add copy button
+            builder.setNeutralButton(R.string.copy_stacktrace, (dialog, which) -> {
+                ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Stack Trace", stackTrace);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(context, R.string.stacktrace_copied, Toast.LENGTH_SHORT).show();
+            });
+        } else {
+            builder.setMessage("An unexpected error occurred. Please try again later.");
+        }
 
         builder.show();
     }
