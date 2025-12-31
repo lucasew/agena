@@ -46,7 +46,7 @@ public class ContentActivity extends AppCompatActivity {
                     .replace(R.id.browser_content, new GeminiPageContentFragment(lines, this.getIntent().getData()))
                     .commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failed to handle intent", e);
         }
     }
 }
