@@ -7,7 +7,11 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-public class PermissionAsker {
+public final class PermissionAsker {
+    private PermissionAsker() {
+        // This class is not meant to be instantiated.
+    }
+
     public static boolean ensurePermission(Activity activity, String permission, int reason) {
         System.out.printf("Ensuring permission: '%s'\n", permission);
         if (ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) {
