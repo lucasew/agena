@@ -13,22 +13,16 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class StacktraceDialogHandler {
-    private final Exception exception;
-
-    public StacktraceDialogHandler(Exception e) {
-        this.exception = e;
+    private StacktraceDialogHandler() {
+        // Private constructor to prevent instantiation
     }
-
-    public void show(View view) {
-        show(view.getContext());
-    }
-    public void show(Context context) {
+    public static void show(Context context, Exception exception) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        this.exception.printStackTrace(pw);
+        exception.printStackTrace(pw);
         String stackTrace = sw.toString();
         builder.setMessage(stackTrace);
 

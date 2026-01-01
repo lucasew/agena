@@ -32,13 +32,12 @@ public class PageErrorFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        TextView label = this.requireActivity().findViewById(R.id.page_error_label);
+        TextView label = view.findViewById(R.id.page_error_label);
         label.setText(this.error);
 
-        Button moreInfoBtn = this.getActivity().findViewById(R.id.more_information_button);
+        Button moreInfoBtn = view.findViewById(R.id.more_information_button);
         moreInfoBtn.setOnClickListener(v -> {
-            System.out.println("* click *");
-            new StacktraceDialogHandler(this.exception).show(v);
+            StacktraceDialogHandler.show(requireContext(), this.exception);
         });
     }
 
