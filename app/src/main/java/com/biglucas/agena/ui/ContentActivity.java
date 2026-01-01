@@ -18,6 +18,7 @@ import com.biglucas.agena.R;
 
 public class ContentActivity extends AppCompatActivity {
     static final Logger logger = Logger.getLogger(ContentActivity.class.getName());
+    private static final int MAX_LINES = 10000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +34,13 @@ public class ContentActivity extends AppCompatActivity {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader dis = new BufferedReader(inputStreamReader);
             ArrayList<String> lines = new ArrayList<>();
+            int lineCount = 0;
             while (true) {
+                if (lineCount >= MAX_LINES) {
+                    logger.log(Level.WARNING, "File exceeds MAX_LINES, truncating");
+                    break;
+                }
+                lineCount++;
                 String line = dis.readLine();
                 logger.log(Level.FINER, line);
                 if (line == null) {
