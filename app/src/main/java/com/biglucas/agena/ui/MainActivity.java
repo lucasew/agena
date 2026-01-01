@@ -153,6 +153,6 @@ public class MainActivity extends AppCompatActivity {
         if (!txt.startsWith("gemini://")) {
             txt = String.format("gemini://%s", txt);
         }
-        new Invoker(this, txt).invokeNewWindow();
+        Invoker.invokeNewWindow(this, txt);
     }
 }

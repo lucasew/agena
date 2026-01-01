@@ -119,7 +119,7 @@ public class Gemini {
         }
 
         if (uri.getScheme() == null || !uri.getScheme().equals("gemini")) {
-            new Invoker(activity, uri).invokeNewWindow();
+            Invoker.invokeNewWindow(activity, uri);
             return new ArrayList<>();
         }
 

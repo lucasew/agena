@@ -9,44 +9,42 @@ import com.biglucas.agena.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 
-public class Invoker {
-    private final Activity activity;
-    private final Uri uri;
+public final class Invoker {
+    private Invoker() {}
 
-    public Invoker(Activity activity, Uri uri) {
-        this.activity = activity;
-        this.uri = uri;
-    }
-
-    public Invoker(Activity activity, String uri) {
-        this(activity, Uri.parse(uri.trim()));
-    }
-
-    private void runIntent(Intent intent) {
+    private static void runIntent(Activity activity, Uri uri, Intent intent) {
         try {
-            this.activity.startActivity(intent);
+            activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            new MaterialAlertDialogBuilder(this.activity)
+            new MaterialAlertDialogBuilder(activity)
                     .setTitle(R.string.error_dont_know_how_to_handle_content_type)
                     .setPositiveButton("OK", null)
-                    .setMessage(this.uri.toString())
+                    .setMessage(uri.toString())
                     .show();
         }
     }
-    private Uri getUri() {
-        return Uri.parse(this.uri.toString());
+    private static Uri getUri(Uri uri) {
+        return Uri.parse(uri.toString());
     }
-    private Intent getBaseIntent() {
-        return new Intent(Intent.ACTION_VIEW, getUri());
-    }
-
-    public void invoke() {
-        runIntent(getBaseIntent());
+    private static Intent getBaseIntent(Uri uri) {
+        return new Intent(Intent.ACTION_VIEW, getUri(uri));
     }
 
-    public void invokeNewWindow() {
-        Intent intent = getBaseIntent();
+    public static void invoke(Activity activity, Uri uri) {
+        runIntent(activity, uri, getBaseIntent(uri));
+    }
+
+    public static void invoke(Activity activity, String uri) {
+        invoke(activity, Uri.parse(uri.trim()));
+    }
+
+    public static void invokeNewWindow(Activity activity, Uri uri) {
+        Intent intent = getBaseIntent(uri);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        runIntent(intent);
+        runIntent(activity, uri, intent);
+    }
+
+    public static void invokeNewWindow(Activity activity, String uri) {
+        invokeNewWindow(activity, Uri.parse(uri.trim()));
     }
 }

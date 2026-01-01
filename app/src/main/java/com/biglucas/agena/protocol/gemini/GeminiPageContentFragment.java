@@ -111,19 +111,16 @@ public class GeminiPageContentFragment extends Fragment {
                     }
                     final Uri uri = u;
                     button.setOnTouchListener(new View.OnTouchListener() {
-                        private Invoker getInvoker() {
-                            return new Invoker(getActivity(), uri);
-                        }
                         private final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
                             @Override
                             public boolean onDoubleTap(@NonNull MotionEvent e) {
-                                getInvoker().invokeNewWindow();
+                                Invoker.invokeNewWindow(getActivity(), uri);
                                 return super.onDoubleTap(e);
                             }
 
                             @Override
                             public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-                                getInvoker().invoke();
+                                Invoker.invoke(getActivity(), uri);
                                 return super.onSingleTapConfirmed(e);
                             }
 

@@ -62,7 +62,7 @@ public class PageActivity extends AppCompatActivity {
         }
 
         System.out.printf("scheme: '%s'", destURL.getScheme());
-        new Invoker(this, destURL).invoke();
+        Invoker.invoke(this, destURL);
     }
 
     /**
