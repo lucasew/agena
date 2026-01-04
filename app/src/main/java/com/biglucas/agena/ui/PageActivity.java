@@ -39,6 +39,15 @@ public class PageActivity extends AppCompatActivity {
         String uriStr = Objects.requireNonNull(this.getIntent().getData()).toString();
 
         this.url = Uri.parse(uriStr.trim());
+
+        // Security: Ensure that only "gemini" schemes are handled.
+        // This prevents other apps from forcing this activity to open arbitrary URIs (e.g., http, file).
+        if (!"gemini".equals(this.url.getScheme())) {
+            logger.severe("Security risk: a non-gemini URI was passed to PageActivity: " + this.url);
+            finish(); // Close the activity immediately if the scheme is not allowed
+            return;
+        }
+
         TextView urlText = findViewById(R.id.browser_url);
         urlText.setText(this.url.toString());
         handlePageReload(null);
