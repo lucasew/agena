@@ -165,7 +165,6 @@ public class PageActivity extends AppCompatActivity {
         // Generic error
         } else {
             errText = appctx.getString(R.string.error_generic);
-            e.printStackTrace();
         }
 
         if (this.getSupportFragmentManager().isDestroyed()) return;
