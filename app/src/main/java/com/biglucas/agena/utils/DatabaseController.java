@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
@@ -55,7 +54,7 @@ public class DatabaseController {
     public static SQLiteDatabase openDatabase(Context context) {
         // Detect debug build by checking if MANAGE_EXTERNAL_STORAGE permission exists in manifest
         // This permission is only declared in src/debug/AndroidManifest.xml
-        boolean isDebug = hasManageExternalStoragePermission(context);
+        boolean isDebug = DebugUIHelper.hasManageExternalStoragePermission(context);
 
         Log.d(TAG, "openDatabase called - isDebug: " + isDebug + ", SDK_INT: " + Build.VERSION.SDK_INT);
 
@@ -83,7 +82,7 @@ public class DatabaseController {
 
             if (!hasPermission) {
                 Log.e(TAG, "No storage permission, falling back to private storage");
-                showToast(context, "DB: No permission - using private storage");
+                DebugUIHelper.showToast(context, "DB: No permission - using private storage");
                 return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
             }
 
@@ -101,7 +100,7 @@ public class DatabaseController {
                     Log.d(TAG, "mkdirs() result: " + created);
                     if (!created) {
                         Log.e(TAG, "Failed to create AGENA directory, falling back to private storage");
-                        showToast(context, "DB: Failed to create dir - using private storage");
+                        DebugUIHelper.showToast(context, "DB: Failed to create dir - using private storage");
                         return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
                     }
                 }
@@ -111,19 +110,19 @@ public class DatabaseController {
                 Log.d(TAG, "Directory canWrite: " + canWrite);
                 if (!canWrite) {
                     Log.e(TAG, "AGENA directory not writable, falling back to private storage");
-                    showToast(context, "DB: Dir not writable - using private storage");
+                    DebugUIHelper.showToast(context, "DB: Dir not writable - using private storage");
                     return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
                 }
 
                 File dbFile = new File(agenaDir, HISTORY_FILENAME);
                 String dbPath = dbFile.getAbsolutePath();
                 Log.i(TAG, "✅ Opening database at: " + dbPath);
-                showToast(context, "✅ DB at: Downloads/AGENA/" + HISTORY_FILENAME);
+                DebugUIHelper.showToast(context, "✅ DB at: Downloads/AGENA/" + HISTORY_FILENAME);
                 return SQLiteDatabase.openOrCreateDatabase(dbFile, null);
             } catch (Exception e) {
                 // If any error occurs (permissions, etc), fall back to private storage
                 Log.e(TAG, "Error accessing Downloads directory: " + e.getMessage(), e);
-                showToast(context, "DB: Error - using private storage");
+                DebugUIHelper.showToast(context, "DB: Error - using private storage");
                 return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
             }
         } else {
@@ -133,41 +132,6 @@ public class DatabaseController {
         }
     }
 
-    private static boolean hasManageExternalStoragePermission(Context context) {
-        try {
-            String[] permissions = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
-                .requestedPermissions;
-
-            if (permissions != null) {
-                for (String permission : permissions) {
-                    if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error checking permissions: " + e.getMessage());
-        }
-        return false;
-    }
-
-    private static void showToast(final Context context, final String message) {
-        // Only show toasts in debug builds
-        boolean isDebug = hasManageExternalStoragePermission(context);
-        if (!isDebug) {
-            Log.d(TAG, "Toast (release build, hidden): " + message);
-            return;
-        }
-
-        // Show toast on main thread
-        if (context instanceof android.app.Activity) {
-            ((android.app.Activity) context).runOnUiThread(() -> Toast.makeText(context, message, Toast.LENGTH_LONG).show());
-        } else {
-            // If not an Activity context, just log
-            Log.d(TAG, "Toast (no activity): " + message);
-        }
-    }
     public void addHistoryEntry(Uri uri) {
         Log.d(TAG, "Saving to history: " + uri.toString());
         this.db.execSQL(SQL_INSERT_HISTORY_URL, new String[]{uri.toString()});
