@@ -31,29 +31,31 @@ import javax.net.ssl.X509TrustManager;
  * A full TOFU implementation would persist first-seen certificates and alert on changes.
  */
 public class SSLSocketFactorySingleton {
-    private static SSLSocketFactory factory = null;
+    private static volatile SSLSocketFactory factory = null;
 
     /**
      * Returns a singleton SSLSocketFactory configured for Gemini protocol.
      * The factory uses TLS 1.2+ and accepts all certificates per Gemini's TOFU model.
      */
     public static SSLSocketFactory getSSLSocketFactory() throws NoSuchAlgorithmException, KeyManagementException {
-        if (factory != null) {
-            return factory;
+        if (factory == null) {
+            synchronized (SSLSocketFactorySingleton.class) {
+                if (factory == null) {
+                    // Add Conscrypt security provider for modern TLS support on older Android versions
+                    SecurityProvider.addConscryptIfAvailable();
+
+                    // Use "TLS" context which supports TLS 1.2+ (specific version negotiated during handshake)
+                    // Note: On modern Android (API 20+), this defaults to TLS 1.2 or higher
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+
+                    // Initialize with permissive trust manager (TOFU-style, accepts all certificates)
+                    X509TrustManager[] trustManagers = {new GeminiTrustManager()};
+                    sslContext.init(null, trustManagers, null);
+
+                    SSLSocketFactorySingleton.factory = sslContext.getSocketFactory();
+                }
+            }
         }
-
-        // Add Conscrypt security provider for modern TLS support on older Android versions
-        SecurityProvider.addConscryptIfAvailable();
-
-        // Use "TLS" context which supports TLS 1.2+ (specific version negotiated during handshake)
-        // Note: On modern Android (API 20+), this defaults to TLS 1.2 or higher
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-
-        // Initialize with permissive trust manager (TOFU-style, accepts all certificates)
-        X509TrustManager[] trustManagers = {new GeminiTrustManager()};
-        sslContext.init(null, trustManagers, null);
-
-        SSLSocketFactorySingleton.factory = sslContext.getSocketFactory();
         return factory;
     }
 }
