@@ -165,7 +165,9 @@ public class PageActivity extends AppCompatActivity {
         // Generic error
         } else {
             errText = appctx.getString(R.string.error_generic);
-            e.printStackTrace();
+            // Do not leak stack traces to the user-facing error fragment.
+            // Log the full exception for developers.
+            logger.log(java.util.logging.Level.SEVERE, "Unhandled error in PageActivity", e);
         }
 
         if (this.getSupportFragmentManager().isDestroyed()) return;
