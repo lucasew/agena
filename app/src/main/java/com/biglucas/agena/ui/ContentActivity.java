@@ -28,9 +28,15 @@ public class ContentActivity extends AppCompatActivity {
     }
 
     private void handleIntentOpen() {
+        if (getIntent().getData() == null) {
+            logger.log(Level.SEVERE, "No data in intent, finishing activity");
+            finish();
+            return;
+        }
+
         try {
             logger.log(Level.FINER, "{}", getIntent().getData());
-            InputStream inputStream = getContentResolver().openInputStream(Objects.requireNonNull(getIntent().getData()));
+            InputStream inputStream = getContentResolver().openInputStream(getIntent().getData());
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader dis = new BufferedReader(inputStreamReader);
             ArrayList<String> lines = new ArrayList<>();

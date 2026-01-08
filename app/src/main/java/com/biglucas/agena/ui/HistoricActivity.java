@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.biglucas.agena.R;
 import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 import com.biglucas.agena.utils.DatabaseController;
+import com.biglucas.agena.utils.StacktraceDialogHandler;
 
 import java.util.ArrayList;
 
@@ -35,7 +36,7 @@ public class HistoricActivity extends AppCompatActivity {
                     .replace(R.id.historic_content, contentFragment)
                     .commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            StacktraceDialogHandler.show(this, e);
         }
     }
 }
