@@ -10,6 +10,8 @@ public class SecurityProvider {
     }
 
     public static void addConscryptIfAvailable() {
-        Security.insertProviderAt(Conscrypt.newProvider(), 1);
+        if (Security.getProvider("Conscrypt") == null) {
+            Security.insertProviderAt(Conscrypt.newProvider(), 1);
+        }
     }
 }

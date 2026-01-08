@@ -23,6 +23,16 @@ public final class Invoker {
                     .show();
         }
     }
+
+    private static boolean isSafeGeminiUri(Uri uri) {
+        if (uri == null) {
+            return false;
+        }
+        // Prevent redirection attacks by ensuring the scheme is "gemini"
+        // and the authority is not empty, which could lead to malformed URIs.
+        return "gemini".equals(uri.getScheme()) && uri.getAuthority() != null && !uri.getAuthority().isEmpty();
+    }
+
     private static Uri getUri(Uri uri) {
         return Uri.parse(uri.toString());
     }
@@ -39,6 +49,14 @@ public final class Invoker {
     }
 
     public static void invokeNewWindow(Activity activity, Uri uri) {
+        if (!isSafeGeminiUri(uri)) {
+            new MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.error_invalid_uri)
+                .setMessage(uri.toString())
+                .setPositiveButton("OK", null)
+                .show();
+            return;
+        }
         Intent intent = getBaseIntent(uri);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         runIntent(activity, uri, intent);
