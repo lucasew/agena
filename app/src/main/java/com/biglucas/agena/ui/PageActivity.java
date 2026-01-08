@@ -16,6 +16,7 @@ import com.biglucas.agena.protocol.gemini.FailedGeminiRequestException;
 import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 import com.biglucas.agena.protocol.gemini.GeminiSingleton;
 import com.biglucas.agena.utils.Invoker;
+import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -165,7 +166,7 @@ public class PageActivity extends AppCompatActivity {
         // Generic error
         } else {
             errText = appctx.getString(R.string.error_generic);
-            e.printStackTrace();
+            StacktraceDialogHandler.show(this, e);
         }
 
         if (this.getSupportFragmentManager().isDestroyed()) return;
