@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.Invoker;
+import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.button.MaterialButton;
 
 import java.net.URI;
@@ -143,7 +144,7 @@ public class GeminiPageContentFragment extends Fragment {
                     });
                     contentColumn.addView(button);
                 } catch (IllegalFormatConversionException e) {
-                    e.printStackTrace();
+                    StacktraceDialogHandler.show(getContext(), e);
                 }
                 continue;
             }

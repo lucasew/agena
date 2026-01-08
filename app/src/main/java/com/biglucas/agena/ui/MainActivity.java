@@ -149,10 +149,24 @@ public class MainActivity extends AppCompatActivity {
     }
     public void onClickEnter(View view) {
         EditText input = findViewById(R.id.url);
-        String txt = input.getText().toString();
-        if (!txt.startsWith("gemini://")) {
-            txt = String.format("gemini://%s", txt);
+        String userInput = input.getText().toString().trim();
+
+        if (userInput.isEmpty()) {
+            return;
         }
-        Invoker.invokeNewWindow(this, txt);
+
+        Uri uri = Uri.parse(userInput);
+
+        String finalUriString;
+        if (uri.getScheme() == null) {
+            finalUriString = "gemini://" + userInput;
+        } else if ("gemini".equalsIgnoreCase(uri.getScheme())) {
+            finalUriString = userInput;
+        } else {
+            Toast.makeText(this, "Unsupported scheme: " + uri.getScheme(), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Invoker.invokeNewWindow(this, finalUriString);
     }
 }
