@@ -1,24 +1,27 @@
 package com.biglucas.agena.ui;
 
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.biglucas.agena.R;
 import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.biglucas.agena.R;
 
 public class ContentActivity extends AppCompatActivity {
     static final Logger logger = Logger.getLogger(ContentActivity.class.getName());
     private static final int MAX_LINES = 10000;
+    private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +38,25 @@ public class ContentActivity extends AppCompatActivity {
         }
 
         try {
-            logger.log(Level.FINER, "{}", getIntent().getData());
-            InputStream inputStream = getContentResolver().openInputStream(getIntent().getData());
+            Uri uri = getIntent().getData();
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                    if (!cursor.isNull(sizeIndex)) {
+                        long fileSize = cursor.getLong(sizeIndex);
+                        if (fileSize > MAX_FILE_SIZE_BYTES) {
+                            logger.log(Level.WARNING, "File is too large: " + fileSize + " bytes");
+                            Toast.makeText(this, R.string.error_file_too_large, Toast.LENGTH_LONG).show();
+                            finish();
+                            return;
+                        }
+                    }
+                }
+            }
+
+
+            logger.log(Level.FINER, "{}", uri);
+            InputStream inputStream = getContentResolver().openInputStream(uri);
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader dis = new BufferedReader(inputStreamReader);
             ArrayList<String> lines = new ArrayList<>();

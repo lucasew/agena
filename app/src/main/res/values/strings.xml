@@ -40,6 +40,7 @@
 
     <!-- URI validation -->
     <string name="error_invalid_uri">Invalid URI</string>
+    <string name="error_file_too_large">File is too large to open</string>
 
     <!-- Input prompts -->
     <string name="input_prompt_title">Input Required</string>
