@@ -22,6 +22,7 @@ import javax.net.ssl.X509TrustManager;
  */
 @SuppressLint("CustomX509TrustManager")
 public class GeminiTrustManager implements X509TrustManager {
+    private static final X509Certificate[] ACCEPTED_ISSUERS = new X509Certificate[0];
     @SuppressLint("TrustAllX509TrustManager")
     @Override
     public void checkClientTrusted(X509Certificate[] chain, String authType) {
@@ -40,6 +41,6 @@ public class GeminiTrustManager implements X509TrustManager {
 
     @Override
     public X509Certificate[] getAcceptedIssuers() {
-        return new X509Certificate[0];
+        return ACCEPTED_ISSUERS;
     }
 }
