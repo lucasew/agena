@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         } else if ("gemini".equalsIgnoreCase(uri.getScheme())) {
             finalUriString = userInput;
         } else {
-            Toast.makeText(this, "Unsupported scheme: " + uri.getScheme(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.error_unsupported_scheme, uri.getScheme()), Toast.LENGTH_LONG).show();
             return;
         }
 
