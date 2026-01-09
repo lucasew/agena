@@ -16,3 +16,9 @@
 **Root Cause:** The initial implementation did not check whether the security provider was already registered before attempting to add it.
 **Solution:** The method was updated to first check if the "Conscrypt" provider is already available using `Security.getProvider("Conscrypt") == null`. The provider is now only inserted if it is not already registered, making the initialization logic more efficient and resilient.
 **Pattern:** Before registering global resources, such as security providers or listeners, always check for their existence to prevent redundant operations and potential side effects of multiple registrations.
+
+## 2024-07-29 - Remove Redundant URI Conversion
+**Issue:** The `Invoker.java` utility class contained a `getUri(Uri uri)` method that converted a `Uri` object to a `String` and immediately parsed it back into a `Uri`. This operation was redundant and inefficient.
+**Root Cause:** This was likely a leftover from a previous refactoring or a simple oversight where the code was written to handle a `String` before being changed to accept a `Uri`, but the conversion logic was never removed.
+**Solution:** I removed the `getUri` method entirely. The `getBaseIntent` method, which was the only place it was used, was updated to use the input `Uri` object directly. This simplifies the code and removes an unnecessary object allocation and parsing step.
+**Pattern:** Avoid redundant type conversions, such as `Uri -> String -> Uri`. If a method already has an object in the correct type, use it directly instead of converting it back and forth. This improves both performance and code clarity.
