@@ -22,3 +22,9 @@
 **Root Cause:** This was likely a leftover from a previous refactoring or a simple oversight where the code was written to handle a `String` before being changed to accept a `Uri`, but the conversion logic was never removed.
 **Solution:** I removed the `getUri` method entirely. The `getBaseIntent` method, which was the only place it was used, was updated to use the input `Uri` object directly. This simplifies the code and removes an unnecessary object allocation and parsing step.
 **Pattern:** Avoid redundant type conversions, such as `Uri -> String -> Uri`. If a method already has an object in the correct type, use it directly instead of converting it back and forth. This improves both performance and code clarity.
+
+## 2026-01-09 - Cache Expensive Permission Check Result
+**Issue:** The `DebugUIHelper.hasManageExternalStoragePermission()` method repeatedly queried the `PackageManager` every time it was called. This is an inefficient operation, as permissions do not change at runtime.
+**Root Cause:** The method was implemented without considering that the result of the permission check is static during an application's lifecycle.
+**Solution:** I introduced a `private static Boolean hasManageExternalStorage` field to cache the result. The check is now performed only once, and subsequent calls return the cached value.
+**Pattern:** For expensive operations whose results are static within a specific context (like runtime permissions), cache the result in a `static` field to avoid redundant computations. This is a form of memoization that improves performance.
