@@ -38,6 +38,14 @@ public final class Invoker {
     }
 
     public static void invoke(Activity activity, Uri uri) {
+        if (!isSafeGeminiUri(uri)) {
+            new MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.error_invalid_uri)
+                .setMessage(uri.toString())
+                .setPositiveButton("OK", null)
+                .show();
+            return;
+        }
         runIntent(activity, uri, getBaseIntent(uri));
     }
 
