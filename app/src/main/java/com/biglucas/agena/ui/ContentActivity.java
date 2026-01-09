@@ -1,10 +1,10 @@
 package com.biglucas.agena.ui;
 
+import android.app.AlertDialog;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -50,8 +50,12 @@ public class ContentActivity extends AppCompatActivity {
                         long fileSize = cursor.getLong(sizeIndex);
                         if (fileSize > MAX_FILE_SIZE_BYTES) {
                             logger.log(Level.WARNING, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
-                            Toast.makeText(this, "File is too large to open.", Toast.LENGTH_LONG).show();
-                            finish();
+                            new AlertDialog.Builder(this)
+                                    .setTitle("File too large")
+                                    .setMessage("File cannot be larger than 10MB")
+                                    .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                                    .setOnCancelListener(dialogInterface -> finish())
+                                    .show();
                             return;
                         }
                     }
