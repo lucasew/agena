@@ -8,6 +8,8 @@
     <string name="more_information">More information</string>
     <string name="copy_stacktrace">Copy</string>
     <string name="stacktrace_copied">Stack trace copied to clipboard</string>
+    <string name="generic_error_message">An unexpected error occurred. The details have been logged for the developer.</string>
+    <string name="error_report_copied">Error report copied to clipboard</string>
 
     <!-- Errors -->
     <string name="error_generic">Generic unspecified/unhandled error</string>
