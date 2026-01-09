@@ -51,8 +51,8 @@ public class ContentActivity extends AppCompatActivity {
                         if (fileSize > MAX_FILE_SIZE_BYTES) {
                             logger.log(Level.WARNING, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
                             new AlertDialog.Builder(this)
-                                    .setTitle("File too large")
-                                    .setMessage("File cannot be larger than 10MB")
+                                    .setTitle(getString(R.string.file_too_large))
+                                    .setMessage(getString(R.string.file_too_large_message))
                                     .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
                                     .setOnCancelListener(dialogInterface -> finish())
                                     .show();

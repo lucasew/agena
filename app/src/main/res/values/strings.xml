@@ -50,4 +50,11 @@
     <string name="please_repeat_action">Permission state has changed. Please retry the operation.</string>
     <string name="historic">Historic</string>
     <string name="url" translatable="false">URL</string>
+
+    <!-- File handling -->
+    <string name="file_too_large">File too large</string>
+    <string name="file_too_large_message">File cannot be larger than 10MB</string>
+
+    <!-- Scheme errors -->
+    <string name="error_unsupported_scheme">Unsupported scheme: %1$s</string>
 </resources>
