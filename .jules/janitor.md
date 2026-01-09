@@ -22,3 +22,9 @@
 **Root Cause:** This was likely a leftover from a previous refactoring or a simple oversight where the code was written to handle a `String` before being changed to accept a `Uri`, but the conversion logic was never removed.
 **Solution:** I removed the `getUri` method entirely. The `getBaseIntent` method, which was the only place it was used, was updated to use the input `Uri` object directly. This simplifies the code and removes an unnecessary object allocation and parsing step.
 **Pattern:** Avoid redundant type conversions, such as `Uri -> String -> Uri`. If a method already has an object in the correct type, use it directly instead of converting it back and forth. This improves both performance and code clarity.
+
+## 2026-01-09 - Replace `System.out.printf` with `Log.d` for Android Best Practices
+**Issue:** The `PermissionAsker` utility class used `System.out.printf` for logging debug information, which is not standard practice in Android development.
+**Root Cause:** This was likely a remnant of quick, C-style debugging or code written by a developer less familiar with Android-specific logging conventions.
+**Solution:** I replaced the `System.out.printf` call with a standard `Log.d` call, which integrates the output with Android's `logcat` system. This required adding a `TAG` constant to the class and importing `android.util.Log`.
+**Pattern:** Always use the standard Android `Log` class (`Log.d`, `Log.i`, `Log.e`, etc.) for logging instead of `System.out.print`. This ensures log messages are correctly routed to `logcat`, can be filtered by tags, and can be compiled out of release builds.
