@@ -33,11 +33,8 @@ public final class Invoker {
         return "gemini".equals(uri.getScheme()) && uri.getAuthority() != null && !uri.getAuthority().isEmpty();
     }
 
-    private static Uri getUri(Uri uri) {
-        return Uri.parse(uri.toString());
-    }
     private static Intent getBaseIntent(Uri uri) {
-        return new Intent(Intent.ACTION_VIEW, getUri(uri));
+        return new Intent(Intent.ACTION_VIEW, uri);
     }
 
     public static void invoke(Activity activity, Uri uri) {
