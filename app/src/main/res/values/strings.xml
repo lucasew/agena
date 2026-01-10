@@ -57,4 +57,7 @@
 
     <!-- Scheme errors -->
     <string name="error_unsupported_scheme">Unsupported scheme: %1$s</string>
+
+    <!-- Database errors -->
+    <string name="error_database_write">Failed to write to history</string>
 </resources>

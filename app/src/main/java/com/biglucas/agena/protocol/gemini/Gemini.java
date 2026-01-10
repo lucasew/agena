@@ -242,8 +242,13 @@ public class Gemini {
                     activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
                 }
             }
-            new DatabaseController(DatabaseController.openDatabase(activity))
-                    .addHistoryEntry(uri);
+            try {
+                new DatabaseController(DatabaseController.openDatabase(activity))
+                        .addHistoryEntry(uri);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed to save history for URI: " + uri, e);
+                activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
+            }
             return lines;
         }
 
