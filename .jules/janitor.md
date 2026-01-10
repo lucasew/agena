@@ -28,3 +28,8 @@
 **Root Cause:** This was likely a remnant of quick, C-style debugging or code written by a developer less familiar with Android-specific logging conventions.
 **Solution:** I replaced the `System.out.printf` call with a standard `Log.d` call, which integrates the output with Android's `logcat` system. This required adding a `TAG` constant to the class and importing `android.util.Log`.
 **Pattern:** Always use the standard Android `Log` class (`Log.d`, `Log.i`, `Log.e`, etc.) for logging instead of `System.out.print`. This ensures log messages are correctly routed to `logcat`, can be filtered by tags, and can be compiled out of release builds.
+## 2026-01-10 - Cache Expensive, Static Lookups
+**Issue:** The `DebugUIHelper.hasManageExternalStoragePermission` method repeatedly queried the `PackageManager` every time it was called. This is an expensive operation for a value that does not change during the application's runtime.
+**Root Cause:** The implementation was not optimized to cache the result of the permission check, leading to unnecessary work on every call.
+**Solution:** I introduced a `private static Boolean canShowUI` field to cache the result of the permission check. The `canShowDebugUI` method (renamed for clarity) now checks if the value is already cached and returns it, otherwise it performs the lookup once and stores the result for future calls.
+**Pattern:** When a value is expensive to compute or look up and remains static throughout the application's lifecycle (like runtime permissions), cache it in a `static` field to avoid redundant work and improve performance.

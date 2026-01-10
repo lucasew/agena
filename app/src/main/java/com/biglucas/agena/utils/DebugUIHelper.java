@@ -7,12 +7,16 @@ import android.widget.Toast;
 
 public class DebugUIHelper {
     private static final String TAG = "DebugUIHelper";
+    private static Boolean canShowUI = null;
 
     private DebugUIHelper() {
         // This is a utility class and should not be instantiated
     }
 
-    public static boolean hasManageExternalStoragePermission(Context context) {
+    public static boolean canShowDebugUI(Context context) {
+        if (canShowUI != null) {
+            return canShowUI;
+        }
         try {
             String[] permissions = context.getPackageManager()
                 .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
@@ -21,6 +25,7 @@ public class DebugUIHelper {
             if (permissions != null) {
                 for (String permission : permissions) {
                     if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
+                        canShowUI = true;
                         return true;
                     }
                 }
@@ -28,11 +33,12 @@ public class DebugUIHelper {
         } catch (Exception e) {
             Log.e(TAG, "Error checking permissions: " + e.getMessage());
         }
+        canShowUI = false;
         return false;
     }
 
     public static void showToast(final Context context, final String message) {
-        if (!hasManageExternalStoragePermission(context)) {
+        if (!canShowDebugUI(context)) {
             Log.d(TAG, "Toast (release build, hidden): " + message);
             return;
         }
