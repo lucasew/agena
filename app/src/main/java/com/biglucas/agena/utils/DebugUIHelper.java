@@ -8,19 +8,30 @@ import android.widget.Toast;
 public class DebugUIHelper {
     private static final String TAG = "DebugUIHelper";
 
+    // Cache the permission status to avoid repeated lookups.
+    // The permission is granted at install time and won't change at runtime.
+    private static Boolean hasManageExternalStoragePermission = null;
+
     private DebugUIHelper() {
         // This is a utility class and should not be instantiated
     }
 
-    public static boolean hasManageExternalStoragePermission(Context context) {
+    public static synchronized boolean hasManageExternalStoragePermission(Context context) {
+        if (hasManageExternalStoragePermission != null) {
+            return hasManageExternalStoragePermission;
+        }
+
         try {
-            String[] permissions = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
-                .requestedPermissions;
+            // Use application context to avoid memory leaks
+            Context appContext = context.getApplicationContext();
+            String[] permissions = appContext.getPackageManager()
+                    .getPackageInfo(appContext.getPackageName(), PackageManager.GET_PERMISSIONS)
+                    .requestedPermissions;
 
             if (permissions != null) {
                 for (String permission : permissions) {
                     if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
+                        hasManageExternalStoragePermission = true;
                         return true;
                     }
                 }
@@ -28,6 +39,8 @@ public class DebugUIHelper {
         } catch (Exception e) {
             Log.e(TAG, "Error checking permissions: " + e.getMessage());
         }
+
+        hasManageExternalStoragePermission = false;
         return false;
     }
 

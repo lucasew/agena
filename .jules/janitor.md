@@ -28,3 +28,9 @@
 **Root Cause:** This was likely a remnant of quick, C-style debugging or code written by a developer less familiar with Android-specific logging conventions.
 **Solution:** I replaced the `System.out.printf` call with a standard `Log.d` call, which integrates the output with Android's `logcat` system. This required adding a `TAG` constant to the class and importing `android.util.Log`.
 **Pattern:** Always use the standard Android `Log` class (`Log.d`, `Log.i`, `Log.e`, etc.) for logging instead of `System.out.print`. This ensures log messages are correctly routed to `logcat`, can be filtered by tags, and can be compiled out of release builds.
+
+## 2026-01-10 - Cache Runtime Permission Checks
+**Issue:** The `DebugUIHelper.hasManageExternalStoragePermission()` method performed a permission check every time it was called, which was unnecessary as the app's permissions do not change at runtime.
+**Root Cause:** The implementation did not account for the static nature of app permissions, leading to redundant and inefficient checks.
+**Solution:** The result of the first permission check is now cached in a `static final` boolean field. Subsequent calls access the cached value, avoiding the overhead of repeated checks.
+**Pattern:** For expensive, static results, cache them in a `static final` field to avoid redundant computations or lookups. This is especially useful for values that are determined at runtime but remain constant throughout the app's lifecycle, such as permissions.
