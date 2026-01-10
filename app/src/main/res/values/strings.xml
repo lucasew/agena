@@ -54,6 +54,8 @@
     <!-- File handling -->
     <string name="file_too_large">File too large</string>
     <string name="file_too_large_message">File cannot be larger than 10MB</string>
+    <string name="cannot_determine_file_size_title">Cannot determine file size</string>
+    <string name="cannot_determine_file_size_message">Could not determine the size of the selected file. The file may be corrupt or inaccessible.</string>
 
     <!-- Scheme errors -->
     <string name="error_unsupported_scheme">Unsupported scheme: %1$s</string>
