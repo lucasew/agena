@@ -33,6 +33,10 @@ import javax.net.ssl.X509TrustManager;
 public class SSLSocketFactorySingleton {
     private static volatile SSLSocketFactory factory = null;
 
+    private SSLSocketFactorySingleton() {
+        // This class is not meant to be instantiated.
+    }
+
     /**
      * Returns a singleton SSLSocketFactory configured for Gemini protocol.
      * The factory uses TLS 1.2+ and accepts all certificates per Gemini's TOFU model.
