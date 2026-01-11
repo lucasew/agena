@@ -9,6 +9,7 @@
     <string name="copy_stacktrace">Copy</string>
     <string name="stacktrace_copied">Stack trace copied to clipboard</string>
 
+    <string name="error_unhandled_title">Unhandled Error</string>
     <!-- Errors -->
     <string name="error_generic">Generic unspecified/unhandled error</string>
     <string name="error_unable_to_resolve_host">Unable to resolve host. It wasn\'t found by DNS.</string>
