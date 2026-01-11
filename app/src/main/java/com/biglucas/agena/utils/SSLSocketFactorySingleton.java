@@ -35,6 +35,7 @@ public class SSLSocketFactorySingleton {
 
     private SSLSocketFactorySingleton() {
         // This class is not meant to be instantiated.
+        throw new AssertionError("This class is not meant to be instantiated.");
     }
 
     /**
