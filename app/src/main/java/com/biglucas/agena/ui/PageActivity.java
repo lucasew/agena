@@ -49,21 +49,25 @@ public class PageActivity extends AppCompatActivity {
         TextView urlText = findViewById(R.id.browser_url);
         String urlToGoTo = urlText.getText().toString().trim();
 
-        Uri destURL;
-        // Check if input looks like an absolute domain (not a relative path)
-        if (urlToGoTo.contains("://")) {
-            // Already has a scheme, use as-is
-            destURL = Uri.parse(urlToGoTo);
-        } else if (isAbsoluteDomain(urlToGoTo)) {
-            // Looks like a domain (e.g., "foo.bar"), add gemini:// prefix
-            destURL = Uri.parse("gemini://" + urlToGoTo);
-        } else {
-            // Treat as relative path
-            destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+        try {
+            Uri destURL;
+            // Check if input looks like an absolute domain (not a relative path)
+            if (urlToGoTo.contains("://")) {
+                // Already has a scheme, use as-is
+                destURL = Uri.parse(urlToGoTo);
+            } else if (isAbsoluteDomain(urlToGoTo)) {
+                // Looks like a domain (e.g., "foo.bar"), add gemini:// prefix
+                destURL = Uri.parse("gemini://" + urlToGoTo);
+            } else {
+                // Treat as relative path
+                destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+            }
+            logger.info("Navigating to: " + destURL);
+            Invoker.invoke(this, destURL);
+        } catch (IllegalArgumentException e) {
+            logger.warning("Invalid URI: " + urlToGoTo);
+            handleLoad(new FailedGeminiRequestException.GeminiInvalidUri(urlToGoTo));
         }
-
-        System.out.printf("scheme: '%s'", destURL.getScheme());
-        Invoker.invoke(this, destURL);
     }
 
     /**
