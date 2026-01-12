@@ -67,9 +67,11 @@ public class DatabaseController {
         ArrayList<String> list = new ArrayList<>();
         Cursor cursor = this.db.rawQuery(SQL_SELECT_ALL_HISTORY_ORDERED, null);
         Log.d(TAG, "getHistoryLines - found " + cursor.getCount() + " entries");
+        int urlColumnIndex = cursor.getColumnIndex(COLUMN_URL);
+        int accessedColumnIndex = cursor.getColumnIndex(COLUMN_ACCESSED);
         while (cursor.moveToNext()) {
-            @SuppressLint("Range") String uri = cursor.getString(cursor.getColumnIndex(COLUMN_URL));
-            @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex(COLUMN_ACCESSED));
+            @SuppressLint("Range") String uri = cursor.getString(urlColumnIndex);
+            @SuppressLint("Range") String timestamp = cursor.getString(accessedColumnIndex);
             String toAdd = String.format(HISTORY_LINE_FORMAT, uri, timestamp, uri);
             Log.d(TAG, "History entry: " + toAdd);
             list.add(toAdd);
