@@ -43,22 +43,26 @@ public class ContentActivity extends AppCompatActivity {
 
             // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack
             // from a malicious application providing a massive file, which could cause an OutOfMemoryError.
+            // This check must be fail-safe: if we cannot determine the size, we must abort.
             try (Cursor cursor = getContentResolver().query(incomingUri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-                    if (!cursor.isNull(sizeIndex)) {
-                        long fileSize = cursor.getLong(sizeIndex);
-                        if (fileSize > MAX_FILE_SIZE_BYTES) {
-                            logger.log(Level.WARNING, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
-                            new AlertDialog.Builder(this)
-                                    .setTitle(getString(R.string.file_too_large))
-                                    .setMessage(getString(R.string.file_too_large_message))
-                                    .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
-                                    .setOnCancelListener(dialogInterface -> finish())
-                                    .show();
-                            return;
-                        }
-                    }
+                if (cursor == null || !cursor.moveToFirst()) {
+                    // If the cursor is null or empty, we cannot determine the file size.
+                    showErrorAndFinish(R.string.file_size_check_failed_title, R.string.file_size_check_failed);
+                    return;
+                }
+
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (cursor.isNull(sizeIndex)) {
+                    // If the size is not provided, we cannot verify it.
+                    showErrorAndFinish(R.string.file_size_check_failed_title, R.string.file_size_check_failed);
+                    return;
+                }
+
+                long fileSize = cursor.getLong(sizeIndex);
+                if (fileSize > MAX_FILE_SIZE_BYTES) {
+                    logger.log(Level.WARNING, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
+                    showErrorAndFinish(R.string.file_too_large, R.string.file_too_large_message);
+                    return;
                 }
             }
 
@@ -89,5 +93,14 @@ public class ContentActivity extends AppCompatActivity {
             logger.log(Level.SEVERE, "Failed to handle intent", e);
             finish();
         }
+    }
+
+    private void showErrorAndFinish(int titleResId, int messageResId) {
+        new AlertDialog.Builder(this)
+                .setTitle(getString(titleResId))
+                .setMessage(getString(messageResId))
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                .setOnCancelListener(dialogInterface -> finish())
+                .show();
     }
 }

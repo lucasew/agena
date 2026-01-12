@@ -54,6 +54,8 @@
     <!-- File handling -->
     <string name="file_too_large">File too large</string>
     <string name="file_too_large_message">File cannot be larger than 10MB</string>
+    <string name="file_size_check_failed_title">Security Check Failed</string>
+    <string name="file_size_check_failed">Could not determine the size of the incoming file. The operation has been aborted to prevent a potential Denial of Service attack.</string>
 
     <!-- Scheme errors -->
     <string name="error_unsupported_scheme">Unsupported scheme: %1$s</string>
