@@ -1,7 +1,8 @@
 package com.biglucas.agena.utils;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,21 +14,12 @@ public class DebugUIHelper {
     }
 
     public static boolean hasManageExternalStoragePermission(Context context) {
-        try {
-            String[] permissions = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
-                .requestedPermissions;
-
-            if (permissions != null) {
-                for (String permission : permissions) {
-                    if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error checking permissions: " + e.getMessage());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Environment.isExternalStorageManager();
         }
+        // This permission does not exist on versions older than Android 11 (API 30).
+        // The previous implementation incorrectly checked the manifest instead of
+        // performing a runtime check. Returning false is the correct behavior.
         return false;
     }
 
