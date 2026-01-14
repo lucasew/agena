@@ -43,22 +43,43 @@ public class ContentActivity extends AppCompatActivity {
 
             // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack
             // from a malicious application providing a massive file, which could cause an OutOfMemoryError.
+            // The check must be "fail-safe" - if the size cannot be determined, we must abort.
             try (Cursor cursor = getContentResolver().query(incomingUri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-                    if (!cursor.isNull(sizeIndex)) {
-                        long fileSize = cursor.getLong(sizeIndex);
-                        if (fileSize > MAX_FILE_SIZE_BYTES) {
-                            logger.log(Level.WARNING, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
-                            new AlertDialog.Builder(this)
-                                    .setTitle(getString(R.string.file_too_large))
-                                    .setMessage(getString(R.string.file_too_large_message))
-                                    .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
-                                    .setOnCancelListener(dialogInterface -> finish())
-                                    .show();
-                            return;
-                        }
-                    }
+                // If the cursor is null or empty, we cannot determine the size. Abort.
+                if (cursor == null || !cursor.moveToFirst()) {
+                    logger.log(Level.SEVERE, "Could not determine file size: cursor is null or empty.");
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.error_reading_file)
+                            .setMessage(R.string.error_reading_file_message_size)
+                            .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                            .setOnCancelListener(dialogInterface -> finish())
+                            .show();
+                    return;
+                }
+
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                // If the size column doesn't exist or is null, we cannot determine the size. Abort.
+                if (sizeIndex == -1 || cursor.isNull(sizeIndex)) {
+                    logger.log(Level.SEVERE, "Could not determine file size: size column not found or is null.");
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.error_reading_file)
+                            .setMessage(R.string.error_reading_file_message_size)
+                            .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                            .setOnCancelListener(dialogInterface -> finish())
+                            .show();
+                    return;
+                }
+
+                long fileSize = cursor.getLong(sizeIndex);
+                if (fileSize > MAX_FILE_SIZE_BYTES) {
+                    logger.log(Level.WARNING, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.file_too_large)
+                            .setMessage(R.string.file_too_large_message)
+                            .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                            .setOnCancelListener(dialogInterface -> finish())
+                            .show();
+                    return;
                 }
             }
 
