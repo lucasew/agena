@@ -11,9 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.biglucas.agena.R;
+import com.biglucas.agena.utils.DebugUIHelper;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
-
-import java.util.Objects;
 
 public class PageErrorFragment extends Fragment {
 
@@ -36,6 +35,14 @@ public class PageErrorFragment extends Fragment {
         label.setText(this.error);
 
         Button moreInfoBtn = view.findViewById(R.id.more_information_button);
+
+        // Conditionally show the "More Information" button only in a debug-like context.
+        // This prevents leaking stack traces to regular users, mitigating an information
+        // disclosure vulnerability.
+        if (!DebugUIHelper.hasManageExternalStoragePermission(requireContext())) {
+            moreInfoBtn.setVisibility(View.GONE);
+            return;
+        }
         moreInfoBtn.setOnClickListener(v -> {
             StacktraceDialogHandler.show(requireContext(), this.exception);
         });
