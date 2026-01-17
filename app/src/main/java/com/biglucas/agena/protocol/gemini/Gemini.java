@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
@@ -37,13 +38,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.net.ssl.SSLSocket;
 
 public class Gemini {
-    static final Logger logger = Logger.getLogger(Gemini.class.getName());
+    private static final String TAG = "Gemini";
 
     /**
      * Result of a download operation containing URI and display path
@@ -111,7 +110,7 @@ public class Gemini {
      * Internal request method with redirect tracking
      */
     private List<String> requestInternal(Activity activity, Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
-        logger.log(Level.INFO, "Requesting: '{0}' (redirect count: {1})", List.of(uri.toString(), redirectCount).toArray());
+        Log.i(TAG, "Requesting: '" + uri.toString() + "' (redirect count: " + redirectCount + ")");
 
         // Check redirect limit (max 5 as per spec)
         if (redirectCount > 5) {
@@ -157,7 +156,7 @@ public class Gemini {
         InputStream inputStream = new BufferedInputStream(socket.getInputStream());
         String headerLine = readLineFromStream(inputStream);
         if (headerLine == null) {
-            logger.log(Level.INFO, "Server did not respond with a Gemini header");
+            Log.i(TAG, "Server did not respond with a Gemini header");
             inputStream.close();
             outputStream.close();
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
@@ -182,7 +181,7 @@ public class Gemini {
             throw new FailedGeminiRequestException.GeminiInvalidResponse();
         }
 
-        logger.log(Level.INFO, "response_code={0}, meta={1}", List.of(responseCode, meta).toArray());
+        Log.i(TAG, "response_code=" + responseCode + ", meta=" + meta);
 
         // Handle response based on status code ranges
         try {
@@ -246,7 +245,7 @@ public class Gemini {
                 new DatabaseController(DatabaseController.openDatabase(activity))
                         .addHistoryEntry(uri);
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed to save history for URI: " + uri, e);
+                Log.e(TAG, "Failed to save history for URI: " + uri, e);
                 activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
             }
             return lines;
@@ -310,7 +309,7 @@ public class Gemini {
         }
 
         // Unknown status code
-        logger.log(Level.INFO, "Unknown response code: {0}, meta: {1}", List.of(responseCode, meta).toArray());
+        Log.i(TAG, "Unknown response code: " + responseCode + ", meta: " + meta);
         throw new FailedGeminiRequestException.GeminiUnimplementedCase();
     }
 
@@ -324,7 +323,7 @@ public class Gemini {
         if (uriString.endsWith("/")) {
             uriString = uriString.substring(0, uriString.length() - 1);
         }
-        logger.log(Level.INFO, "Downloading: {}", uriString);
+        Log.i(TAG, "Downloading: " + uriString);
 
         String[] sectors = uriString.split("\\.");
         String extension = sectors.length > 0 ? sectors[sectors.length - 1] : "bin";
@@ -392,7 +391,7 @@ public class Gemini {
 
         String hash = new BigInteger(1, digest.digest()).toString(16);
         String displayPath = Environment.DIRECTORY_DOWNLOADS + "/AGENA/" + filename;
-        logger.log(Level.INFO, "Downloaded to: {0} (hash: {1})", List.of(displayPath, hash).toArray());
+        Log.i(TAG, "Downloaded to: " + displayPath + " (hash: " + hash + ")");
 
         return new DownloadResult(downloadUri, displayPath);
     }
@@ -429,7 +428,7 @@ public class Gemini {
         File finalFile = tempPath.renameTo(outFile) ? outFile : tempPath;
         Uri fileUri = FileProvider.getUriForFile(activity, activity.getPackageName(), finalFile);
 
-        logger.info("Downloaded to: " + finalFile.getAbsolutePath());
+        Log.i(TAG, "Downloaded to: " + finalFile.getAbsolutePath());
         return new DownloadResult(fileUri, finalFile.getAbsolutePath());
     }
 }
