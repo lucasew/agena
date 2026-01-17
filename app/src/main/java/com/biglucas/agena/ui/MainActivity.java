@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.Invoker;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -155,7 +156,17 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Uri uri = Uri.parse(userInput);
+        Uri uri;
+        try {
+            uri = Uri.parse(userInput);
+        } catch (Exception e) {
+             new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.error_invalid_uri)
+                .setMessage(e.getMessage())
+                .setPositiveButton("OK", null)
+                .show();
+            return;
+        }
 
         String finalUriString;
         if (uri.getScheme() == null) {

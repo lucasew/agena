@@ -42,7 +42,15 @@ public final class Invoker {
     }
 
     public static void invoke(Activity activity, String uri) {
-        invoke(activity, Uri.parse(uri.trim()));
+        try {
+            invoke(activity, Uri.parse(uri.trim()));
+        } catch (Exception e) {
+            new MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.error_invalid_uri)
+                .setMessage(e.getMessage())
+                .setPositiveButton("OK", null)
+                .show();
+        }
     }
 
     public static void invokeNewWindow(Activity activity, Uri uri) {
@@ -60,6 +68,14 @@ public final class Invoker {
     }
 
     public static void invokeNewWindow(Activity activity, String uri) {
-        invokeNewWindow(activity, Uri.parse(uri.trim()));
+        try {
+            invokeNewWindow(activity, Uri.parse(uri.trim()));
+        } catch (Exception e) {
+            new MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.error_invalid_uri)
+                .setMessage(e.getMessage())
+                .setPositiveButton("OK", null)
+                .show();
+        }
     }
 }
