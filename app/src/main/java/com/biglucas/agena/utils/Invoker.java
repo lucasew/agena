@@ -33,11 +33,28 @@ public final class Invoker {
         return "gemini".equals(uri.getScheme()) && uri.getAuthority() != null && !uri.getAuthority().isEmpty();
     }
 
+    private static boolean isSafeUri(Uri uri) {
+        if (uri == null || uri.getScheme() == null) return false;
+        String scheme = uri.getScheme().toLowerCase();
+        return "gemini".equals(scheme) ||
+               "http".equals(scheme) ||
+               "https".equals(scheme) ||
+               "mailto".equals(scheme);
+    }
+
     private static Intent getBaseIntent(Uri uri) {
         return new Intent(Intent.ACTION_VIEW, uri);
     }
 
     public static void invoke(Activity activity, Uri uri) {
+        if (!isSafeUri(uri)) {
+            new MaterialAlertDialogBuilder(activity)
+                    .setTitle(activity.getString(R.string.error_unsupported_scheme, uri.getScheme()))
+                    .setMessage(uri.toString())
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
+        }
         runIntent(activity, uri, getBaseIntent(uri));
     }
 
