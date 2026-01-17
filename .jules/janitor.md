@@ -38,3 +38,9 @@
 **Root Cause:** This is a common performance anti-pattern where the column index, which is constant for the query, is fetched on every iteration of the loop, causing unnecessary overhead.
 **Solution:** I optimized the code by calling `cursor.getColumnIndex()` once for each required column before the loop starts. The resulting integer indices were stored in local variables and used within the loop to access the cursor data.
 **Pattern:** When iterating over a database cursor, always retrieve column indices into local variables *before* the loop begins. This avoids the redundant overhead of the `getColumnIndex()` lookup on every single row and improves data processing performance.
+
+## 2026-01-16 - Standardize Android Logging
+**Issue:** Several key classes (`ContentActivity`, `PageActivity`, `Gemini`) were using `java.util.logging.Logger` or `System.out.print` instead of the standard Android `android.util.Log` class.
+**Root Cause:** This inconsistency likely arose from code being ported from standard Java projects or developers unfamiliar with Android conventions using standard Java logging mechanisms.
+**Solution:** I replaced all instances of `java.util.logging.Logger`, `System.out.println`, and `System.out.printf` with `android.util.Log` methods (`Log.d`, `Log.i`, `Log.e`, etc.). I also added a private static final `TAG` constant to each modified class to ensure consistent log tagging.
+**Pattern:** In Android development, always prefer `android.util.Log` over `java.util.logging` or `System.out` calls. `Log` is integrated with Logcat, allowing for better filtering, level control, and tooling support.

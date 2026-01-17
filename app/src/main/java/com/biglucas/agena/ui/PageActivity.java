@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -26,10 +27,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 public class PageActivity extends AppCompatActivity {
-    static Logger logger = Logger.getLogger(PageActivity.class.getName());
+    private static final String TAG = "PageActivity";
 
     private Uri url;
 
@@ -62,7 +62,7 @@ public class PageActivity extends AppCompatActivity {
             destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
         }
 
-        System.out.printf("scheme: '%s'", destURL.getScheme());
+        Log.d(TAG, "scheme: " + destURL.getScheme());
         Invoker.invoke(this, destURL);
     }
 
@@ -224,14 +224,14 @@ public class PageActivity extends AppCompatActivity {
         handlePageLoad(this.url.toString());
     }
     public void handlePageLoad(String url) {
-        System.out.println("page load");
+        Log.d(TAG, "page load");
         if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.browser_content, new PageLoadingFragment())
                 .commit();
         Uri uri = Uri.parse(url);
-        logger.info(uri.toString());
+        Log.i(TAG, uri.toString());
         ((TextView)this.findViewById(R.id.browser_url)).setText(uri.toString());
         PageActivity that = this;
         AsyncTask<String, Integer, ArrayList<String>> task = new AsyncTask<String, Integer, ArrayList<String>>() {
@@ -241,7 +241,7 @@ public class PageActivity extends AppCompatActivity {
             @Override
             protected ArrayList<String> doInBackground(String ..._ignore) {
                 try {
-                    System.out.println("* request na thread *");
+                    Log.d(TAG, "* request na thread *");
                     this.list = (ArrayList<String>) GeminiSingleton.getGemini().request(that, that.url); // gambiarra alert
                 } catch (Exception e) {
                     this.exception = e;
@@ -251,10 +251,10 @@ public class PageActivity extends AppCompatActivity {
 
             @Override
             protected void onPostExecute(ArrayList<String> _ignore) {
-                System.out.println("* post execute *");
+                Log.d(TAG, "* post execute *");
                 if (list != null) {
                     for (String item : list) {
-                        System.out.println(item);
+                        Log.v(TAG, item);
                     }
                 }
                 if (list != null) {
