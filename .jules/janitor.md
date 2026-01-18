@@ -44,3 +44,9 @@
 **Root Cause:** This inconsistency likely arose from code being ported from standard Java projects or developers unfamiliar with Android conventions using standard Java logging mechanisms.
 **Solution:** I replaced all instances of `java.util.logging.Logger`, `System.out.println`, and `System.out.printf` with `android.util.Log` methods (`Log.d`, `Log.i`, `Log.e`, etc.). I also added a private static final `TAG` constant to each modified class to ensure consistent log tagging.
 **Pattern:** In Android development, always prefer `android.util.Log` over `java.util.logging` or `System.out` calls. `Log` is integrated with Logcat, allowing for better filtering, level control, and tooling support.
+
+## 2026-01-18 - Simplify Debug Build Detection in MainActivity
+**Issue:** `MainActivity` contained a complex, inefficient method `hasManageExternalStoragePermission` that inferred if the app was a debug build by manually iterating through declared permissions in the manifest.
+**Root Cause:** This was likely a workaround or legacy code written before `BuildConfig.DEBUG` was widely used or understood by the original author, or it was checking for a permission that is only present in debug builds as a proxy.
+**Solution:** I replaced the entire method and its usage with a simple check of `BuildConfig.DEBUG`. This standard Android constant directly indicates the build type, removing the need for reflection-like package manager lookups.
+**Pattern:** Always use `BuildConfig.DEBUG` to check for debug builds. Avoid inferring build types from secondary characteristics like declared permissions or file existence.
