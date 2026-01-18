@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.biglucas.agena.BuildConfig;
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.Invoker;
 
@@ -32,36 +33,12 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "MainActivity onCreate - SDK_INT: " + Build.VERSION.SDK_INT);
 
-        // Request storage permission for debug builds on Android 6-12
+        // Request storage permission for debug builds
         requestStoragePermissionIfNeeded();
     }
 
-    private boolean hasManageExternalStoragePermission() {
-        try {
-            String[] permissions = getPackageManager()
-                .getPackageInfo(getPackageName(), PackageManager.GET_PERMISSIONS)
-                .requestedPermissions;
-
-            if (permissions != null) {
-                for (String permission : permissions) {
-                    if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error checking permissions: " + e.getMessage());
-        }
-        return false;
-    }
-
     private void requestStoragePermissionIfNeeded() {
-        // Detect debug build by checking if MANAGE_EXTERNAL_STORAGE permission exists in manifest
-        // This permission is only declared in src/debug/AndroidManifest.xml
-        boolean isDebug = hasManageExternalStoragePermission();
-        Log.d(TAG, "requestStoragePermissionIfNeeded - isDebug: " + isDebug);
-
-        if (!isDebug) {
+        if (!BuildConfig.DEBUG) {
             Log.d(TAG, "Not debug build, skipping permission request");
             return;
         }
