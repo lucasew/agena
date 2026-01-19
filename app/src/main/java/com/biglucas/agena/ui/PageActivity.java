@@ -50,16 +50,25 @@ public class PageActivity extends AppCompatActivity {
         String urlToGoTo = urlText.getText().toString().trim();
 
         Uri destURL;
-        // Check if input looks like an absolute domain (not a relative path)
-        if (urlToGoTo.contains("://")) {
-            // Already has a scheme, use as-is
-            destURL = Uri.parse(urlToGoTo);
-        } else if (isAbsoluteDomain(urlToGoTo)) {
-            // Looks like a domain (e.g., "foo.bar"), add gemini:// prefix
-            destURL = Uri.parse("gemini://" + urlToGoTo);
-        } else {
-            // Treat as relative path
-            destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+        try {
+            // Check if input looks like an absolute domain (not a relative path)
+            if (urlToGoTo.contains("://")) {
+                // Already has a scheme, use as-is
+                destURL = Uri.parse(urlToGoTo);
+            } else if (isAbsoluteDomain(urlToGoTo)) {
+                // Looks like a domain (e.g., "foo.bar"), add gemini:// prefix
+                destURL = Uri.parse("gemini://" + urlToGoTo);
+            } else {
+                // Treat as relative path
+                destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+            }
+        } catch (IllegalArgumentException | NullPointerException e) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.error_invalid_uri)
+                    .setMessage(urlToGoTo)
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
         }
 
         Log.d(TAG, "scheme: " + destURL.getScheme());
