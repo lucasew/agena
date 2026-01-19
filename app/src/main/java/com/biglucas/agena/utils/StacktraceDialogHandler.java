@@ -17,6 +17,11 @@ public class StacktraceDialogHandler {
         // Private constructor to prevent instantiation
     }
     public static void show(Context context, Exception exception) {
+        if (!DebugUIHelper.hasManageExternalStoragePermission(context)) {
+            Toast.makeText(context, R.string.error_generic, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());
