@@ -1,3 +1,16 @@
+# Consistently Ignored Changes
+
+This file lists patterns of changes that have been consistently rejected by human reviewers. All agents MUST consult this file before proposing a new change. If a planned change matches any pattern described below, it MUST be abandoned.
+
+---
+
+## IGNORE: Caching the results of permission checks
+
+**- Pattern:** Do not introduce any form of caching for Android permission check results (e.g., `checkSelfPermission`).
+**- Justification:** This pattern has been rejected multiple times. Android permissions can be granted or revoked by the user at any time through the system settings. Caching the result of a permission check can lead to the application having a stale and incorrect understanding of its permissions, causing it to either fail unexpectedly or violate user privacy by accessing data after permission has been revoked. The only source of truth is a real-time check with the Android OS.
+**- Files Affected:** Potentially any file dealing with Android runtime permissions.
+
+---
 
 ## 2024-07-25 - Refactoring with data loss regression
 **Issue:** A refactoring that moved database path logic to a helper class introduced a data-loss bug.
@@ -44,3 +57,9 @@
 **Root Cause:** This inconsistency likely arose from code being ported from standard Java projects or developers unfamiliar with Android conventions using standard Java logging mechanisms.
 **Solution:** I replaced all instances of `java.util.logging.Logger`, `System.out.println`, and `System.out.printf` with `android.util.Log` methods (`Log.d`, `Log.i`, `Log.e`, etc.). I also added a private static final `TAG` constant to each modified class to ensure consistent log tagging.
 **Pattern:** In Android development, always prefer `android.util.Log` over `java.util.logging` or `System.out` calls. `Log` is integrated with Logcat, allowing for better filtering, level control, and tooling support.
+
+## 2026-01-20 - Simplify Debug Build Detection
+**Issue:** `MainActivity` was detecting debug builds by iterating through the manifest's requested permissions to see if `MANAGE_EXTERNAL_STORAGE` was declared. This was convoluted, inefficient, and obscure.
+**Root Cause:** The developer seemingly used the presence of a debug-only permission as a proxy for the build type, rather than checking the build type directly.
+**Solution:** I replaced the custom `hasManageExternalStoragePermission` method with a direct check of `BuildConfig.DEBUG`. This is the standard, explicit way to check for debug builds in Android.
+**Pattern:** Don't infer the build type from side effects (like permissions or resources). Use the generated `BuildConfig.DEBUG` field, which is explicitly designed for this purpose.
