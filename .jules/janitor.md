@@ -44,3 +44,9 @@
 **Root Cause:** This inconsistency likely arose from code being ported from standard Java projects or developers unfamiliar with Android conventions using standard Java logging mechanisms.
 **Solution:** I replaced all instances of `java.util.logging.Logger`, `System.out.println`, and `System.out.printf` with `android.util.Log` methods (`Log.d`, `Log.i`, `Log.e`, etc.). I also added a private static final `TAG` constant to each modified class to ensure consistent log tagging.
 **Pattern:** In Android development, always prefer `android.util.Log` over `java.util.logging` or `System.out` calls. `Log` is integrated with Logcat, allowing for better filtering, level control, and tooling support.
+
+## 2026-01-17 - Standardize Android Logging in GeminiPageContentFragment
+**Issue:** The `GeminiPageContentFragment` class used `System.out.println` and `System.out.printf` for logging debug information, which is inconsistent with Android best practices and other parts of the application.
+**Root Cause:** This was likely a leftover from initial development or debugging sessions where quick console output was used instead of proper Android logging.
+**Solution:** I replaced all instances of `System.out` calls with `android.util.Log.d`. I also introduced a `private static final String TAG` constant to the class for consistent log tagging.
+**Pattern:** Ensure all logging in Android components uses `android.util.Log` to guarantee messages are properly routed to Logcat and can be managed (filtered/stripped) correctly. Avoid `System.out` for production code.
