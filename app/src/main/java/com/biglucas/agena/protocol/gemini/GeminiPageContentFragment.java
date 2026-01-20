@@ -3,6 +3,7 @@ package com.biglucas.agena.protocol.gemini;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
  */
 public class GeminiPageContentFragment extends Fragment {
 
+    private static final String TAG = "GeminiPageContentFragment";
     private final ArrayList<String> content;
     private final Uri oldURI;
 
@@ -53,7 +55,7 @@ public class GeminiPageContentFragment extends Fragment {
         contentColumn.removeAllViewsInLayout();
         TextView tv = new TextView(this.getContext());
         float textSizeBaseline = 14; //tv.getTextSize();
-        System.out.printf("Default text size: %f\n", tv.getTextSize());
+        Log.d(TAG, "Default text size: " + tv.getTextSize());
         String monospaceText = null;
         for (String item : this.content) {
             if (item.startsWith("```")) {
@@ -129,7 +131,7 @@ public class GeminiPageContentFragment extends Fragment {
                             public void onLongPress(@NonNull MotionEvent e) {
                                 Toast.makeText(that.getContext(), uri.toString(), Toast.LENGTH_SHORT)
                                         .show();
-                                System.out.println("long press");
+                                Log.d(TAG, "long press");
                                 super.onLongPress(e);
                             }
                         });
@@ -159,7 +161,7 @@ public class GeminiPageContentFragment extends Fragment {
             if (headingLevels > 0) {
                 cutoutLevels += headingLevels;
             }
-            System.out.println(headingLevels);
+            Log.d(TAG, "Heading levels: " + headingLevels);
             switch (headingLevels) {
                 case 1: tv.setTextSize(textSizeBaseline * (20f/11f)); break;
                 case 2: tv.setTextSize(textSizeBaseline * (16f/11f)); break;
@@ -175,7 +177,7 @@ public class GeminiPageContentFragment extends Fragment {
                 labelText = String.format("○ %s", labelText);
             }
             tv.setText(labelText);
-            System.out.println(tv.getTextSize());
+            Log.d(TAG, "Text size: " + tv.getTextSize());
             contentColumn.addView(tv);
             tv = new TextView(this.getContext());
         }
