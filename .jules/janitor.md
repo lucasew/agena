@@ -8,7 +8,7 @@
 ## 2024-07-26 - Optimize getAcceptedIssuers to Avoid Unnecessary Allocations
 **Issue:** The `getAcceptedIssuers()` method in `GeminiTrustManager` created a new `X509Certificate[0]` array on every invocation. This is a small but unnecessary memory allocation that can be easily avoided.
 **Root Cause:** The implementation was likely written without considering the performance impact of repeated allocations of an empty, immutable array. It's a common oversight in code that is not performance-critical.
-**Solution:** I replaced the `return new X509Certificate[0];` with `return ACCEPTED_ISSUERS;` where `ACCEPTED_ISSUERS` is a `private static final X509Certificate[]` initialized once.
+**Solution:** I replaced the `return new X509Certificate[0]` with `return ACCEPTED_ISSUERS;` where `ACCEPTED_ISSUERS` is a `private static final X509Certificate[]` initialized once.
 **Pattern:** For methods that return empty, immutable collections or arrays, cache and reuse a single `static final` instance to prevent unnecessary memory allocations and reduce pressure on the garbage collector. This is a common and effective micro-optimization in Java.
 
 ## 2024-07-26 - Prevent Redundant Security Provider Registration
@@ -50,3 +50,9 @@
 **Root Cause:** This was likely a leftover from initial development or debugging sessions where quick console output was used instead of proper Android logging.
 **Solution:** I replaced all instances of `System.out` calls with `android.util.Log.d`. I also introduced a `private static final String TAG` constant to the class for consistent log tagging.
 **Pattern:** Ensure all logging in Android components uses `android.util.Log` to guarantee messages are properly routed to Logcat and can be managed (filtered/stripped) correctly. Avoid `System.out` for production code.
+
+## 2026-01-21 - Standardize Android Logging in HistoricActivity
+**Issue:** The `HistoricActivity.java` file contained a `System.out.println` call for debugging purposes, which is not the standard way to log in Android.
+**Root Cause:** This was likely a leftover debug statement from development that was not cleaned up or converted to proper Android logging.
+**Solution:** I replaced the `System.out.println` call with `android.util.Log.d`. I also added a `private static final String TAG` constant to the class to ensure consistent and identifiable log output in Logcat.
+**Pattern:** Always use `android.util.Log` for logging in Android applications. It ensures logs are correctly routed to Logcat, allows for filtering by tag and level, and prevents `System.out` content from polluting stdout/stderr which might be ignored or handled inefficiently.
