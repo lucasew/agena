@@ -81,6 +81,9 @@ public class GeminiPageContentFragment extends Fragment {
             }
             if (item.startsWith("=>")) {
                 StringTokenizer tokenizer = new StringTokenizer(item.substring(2));
+                if (!tokenizer.hasMoreTokens()) {
+                    continue;
+                }
                 String buttonURI = tokenizer.nextToken().trim();
                 String label = "";
                 while (tokenizer.hasMoreElements()) {
