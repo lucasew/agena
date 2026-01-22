@@ -81,6 +81,9 @@ public class GeminiPageContentFragment extends Fragment {
             }
             if (item.startsWith("=>")) {
                 StringTokenizer tokenizer = new StringTokenizer(item.substring(2));
+                if (!tokenizer.hasMoreTokens()) {
+                    continue;
+                }
                 String buttonURI = tokenizer.nextToken().trim();
                 String label = "";
                 while (tokenizer.hasMoreElements()) {
@@ -110,7 +113,12 @@ public class GeminiPageContentFragment extends Fragment {
                         final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
                         final Matcher matcher = pattern.matcher(buttonURI);
                         final String res = matcher.replaceAll("");
-                        u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(res).toString());
+                        try {
+                            u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(res).toString());
+                        } catch (IllegalArgumentException ex) {
+                            Log.e(TAG, "Failed to parse URI: " + ex.getMessage());
+                            continue;
+                        }
                     }
                     final Uri uri = u;
                     button.setOnTouchListener(new View.OnTouchListener() {
