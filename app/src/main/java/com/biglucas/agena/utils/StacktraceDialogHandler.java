@@ -12,9 +12,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class StacktraceDialogHandler {
+public final class StacktraceDialogHandler {
     private StacktraceDialogHandler() {
         // Private constructor to prevent instantiation
+        throw new AssertionError("This class is not meant to be instantiated.");
     }
     public static void show(Context context, Exception exception) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);

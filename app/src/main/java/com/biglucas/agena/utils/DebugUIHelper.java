@@ -6,11 +6,12 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
-public class DebugUIHelper {
+public final class DebugUIHelper {
     private static final String TAG = "DebugUIHelper";
 
     private DebugUIHelper() {
         // This is a utility class and should not be instantiated
+        throw new AssertionError("This class is not meant to be instantiated.");
     }
 
     public static boolean hasManageExternalStoragePermission(Context context) {

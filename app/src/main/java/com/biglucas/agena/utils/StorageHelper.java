@@ -9,13 +9,14 @@ import android.util.Log;
 import androidx.core.content.ContextCompat;
 import java.io.File;
 
-public class StorageHelper {
+public final class StorageHelper {
     private static final String TAG = "StorageHelper";
     public static final String HISTORY_FILENAME = "history.db";
     private static final String AGENA_DIR_NAME = "AGENA";
 
     private StorageHelper() {
         // This is a utility class and should not be instantiated
+        throw new AssertionError("This class is not meant to be instantiated.");
     }
 
     /**

@@ -10,7 +10,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 
 public final class Invoker {
-    private Invoker() {}
+    private Invoker() {
+        throw new AssertionError("This class is not meant to be instantiated.");
+    }
 
     private static void runIntent(Activity activity, Uri uri, Intent intent) {
         try {

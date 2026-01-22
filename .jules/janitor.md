@@ -50,3 +50,9 @@
 **Root Cause:** This was likely a leftover from initial development or debugging sessions where quick console output was used instead of proper Android logging.
 **Solution:** I replaced all instances of `System.out` calls with `android.util.Log.d`. I also introduced a `private static final String TAG` constant to the class for consistent log tagging.
 **Pattern:** Ensure all logging in Android components uses `android.util.Log` to guarantee messages are properly routed to Logcat and can be managed (filtered/stripped) correctly. Avoid `System.out` for production code.
+
+## 2026-01-20 - Enforce Strict Utility Class Definitions
+**Issue:** Several utility classes in the `com.biglucas.agena.utils` package (e.g., `DebugUIHelper`, `SecurityProvider`) were missing the `final` modifier and/or did not throw an exception in their private constructors.
+**Root Cause:** While they had private constructors to prevent instantiation, they lacked the stronger enforcement of throwing an `AssertionError` to prevent instantiation via reflection, and the `final` modifier to prevent subclassing.
+**Solution:** I added the `final` modifier to the class definitions and added `throw new AssertionError("This class is not meant to be instantiated.");` to the private constructors of 6 utility classes.
+**Pattern:** Utility classes (classes with only static members) should be declared `final` and their private constructors should throw `AssertionError`. This explicitly communicates intent and enforces the non-instantiability pattern even against reflection.
