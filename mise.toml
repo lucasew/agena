@@ -1,6 +1,6 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.30.0"
-java = "17"
+java = "17.0.18+8"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
