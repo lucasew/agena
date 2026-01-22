@@ -19,6 +19,16 @@ public class StacktraceDialogHandler {
     public static void show(Context context, Exception exception) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
+
+        // Security fix: Do not show stack traces unless in debug mode (managed storage permission)
+        // See .jules/sentinel.md
+        if (!DebugUIHelper.hasManageExternalStoragePermission(context)) {
+            builder.setTitle("Error");
+            builder.setMessage(R.string.error_generic);
+            builder.show();
+            return;
+        }
+
         builder.setTitle(exception.getClass().getName());
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
