@@ -50,3 +50,9 @@
 **Root Cause:** This was likely a leftover from initial development or debugging sessions where quick console output was used instead of proper Android logging.
 **Solution:** I replaced all instances of `System.out` calls with `android.util.Log.d`. I also introduced a `private static final String TAG` constant to the class for consistent log tagging.
 **Pattern:** Ensure all logging in Android components uses `android.util.Log` to guarantee messages are properly routed to Logcat and can be managed (filtered/stripped) correctly. Avoid `System.out` for production code.
+
+## 2026-01-22 - Use BuildConfig.DEBUG for Debug Detection
+**Issue:** `MainActivity` used an inefficient and fragile method to detect debug builds by iterating through manifest permissions to find `MANAGE_EXTERNAL_STORAGE`.
+**Root Cause:** Likely a workaround or legacy code from before `BuildConfig` was consistently used or trusted in this context.
+**Solution:** Replaced the manual permission check with `BuildConfig.DEBUG`, which is the standard Android way to check for debug builds.
+**Pattern:** Always prefer `BuildConfig.DEBUG` to check for debug builds instead of inferring it from side effects like manifest permissions.
