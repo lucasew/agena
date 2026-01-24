@@ -50,3 +50,9 @@
 **Root Cause:** This was likely a leftover from initial development or debugging sessions where quick console output was used instead of proper Android logging.
 **Solution:** I replaced all instances of `System.out` calls with `android.util.Log.d`. I also introduced a `private static final String TAG` constant to the class for consistent log tagging.
 **Pattern:** Ensure all logging in Android components uses `android.util.Log` to guarantee messages are properly routed to Logcat and can be managed (filtered/stripped) correctly. Avoid `System.out` for production code.
+
+## 2026-01-24 - Enforce Non-Instantiability in Utility Classes
+**Issue:** Several utility classes (`DebugUIHelper`, `Invoker`, `PermissionAsker`, `SecurityProvider`, `StorageHelper`) had private constructors that were either empty or just contained a comment, allowing potential instantiation within the class (e.g., via a stray `new` call).
+**Root Cause:** While the intention was to prevent instantiation (private constructor), the implementation was weak and inconsistent. Standard Java practice for utility classes is to throw an `AssertionError` to make the prevention explicit and foolproof, even against accidental internal use or reflection.
+**Solution:** I updated the private constructors of all identified utility classes to throw `new AssertionError("This class is not meant to be instantiated.")`. This aligns them with `SSLSocketFactorySingleton` and industry best practices.
+**Pattern:** For utility classes that contain only static members, the private constructor should effectively prevent instantiation by throwing an `AssertionError`. This documents intent and enforces usage patterns programmatically.

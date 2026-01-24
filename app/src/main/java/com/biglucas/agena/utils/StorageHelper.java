@@ -16,6 +16,7 @@ public class StorageHelper {
 
     private StorageHelper() {
         // This is a utility class and should not be instantiated
+        throw new AssertionError("This class is not meant to be instantiated.");
     }
 
     /**

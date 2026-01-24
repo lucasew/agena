@@ -11,6 +11,7 @@ public class DebugUIHelper {
 
     private DebugUIHelper() {
         // This is a utility class and should not be instantiated
+        throw new AssertionError("This class is not meant to be instantiated.");
     }
 
     public static boolean hasManageExternalStoragePermission(Context context) {

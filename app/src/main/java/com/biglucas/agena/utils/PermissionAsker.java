@@ -12,6 +12,7 @@ public final class PermissionAsker {
     private static final String TAG = "PermissionAsker";
     private PermissionAsker() {
         // This class is not meant to be instantiated.
+        throw new AssertionError("This class is not meant to be instantiated.");
     }
 
     public static boolean ensurePermission(Activity activity, String permission, int reason) {
