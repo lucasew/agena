@@ -44,6 +44,32 @@ import javax.net.ssl.SSLSocket;
 public class Gemini {
     private static final String TAG = "Gemini";
 
+    // Gemini Protocol Status Codes
+    // Input
+    private static final int STATUS_INPUT = 10;
+    private static final int STATUS_SENSITIVE_INPUT = 11;
+    // Success
+    private static final int STATUS_SUCCESS = 20;
+    // Redirect
+    private static final int STATUS_REDIRECT = 30;
+    // Temporary Failure
+    private static final int STATUS_TEMP_FAILURE = 40;
+    private static final int STATUS_SERVER_UNAVAILABLE = 41;
+    private static final int STATUS_CGI_ERROR = 42;
+    private static final int STATUS_PROXY_ERROR = 43;
+    private static final int STATUS_SLOW_DOWN = 44;
+    // Permanent Failure
+    private static final int STATUS_PERM_FAILURE = 50;
+    private static final int STATUS_NOT_FOUND = 51;
+    private static final int STATUS_GONE = 52;
+    private static final int STATUS_PROXY_REQUEST_REFUSED = 53;
+    private static final int STATUS_BAD_REQUEST = 59;
+    // Client Certificate Required
+    private static final int STATUS_CLIENT_CERT_REQUIRED = 60;
+    private static final int STATUS_CERT_NOT_AUTHORIZED = 61;
+    private static final int STATUS_CERT_NOT_VALID = 62;
+
+
     /**
      * Result of a download operation containing URI and display path
      */
@@ -209,13 +235,13 @@ public class Gemini {
             throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
 
         // Input required (10-19)
-        if (responseCode >= 10 && responseCode < 20) {
-            boolean sensitive = (responseCode == 11);
+        if (responseCode >= STATUS_INPUT && responseCode < STATUS_SUCCESS) {
+            boolean sensitive = (responseCode == STATUS_SENSITIVE_INPUT);
             throw new FailedGeminiRequestException.GeminiInputRequired(meta, sensitive);
         }
 
         // Success (20-29)
-        if (responseCode >= 20 && responseCode < 30) {
+        if (responseCode >= STATUS_SUCCESS && responseCode < STATUS_REDIRECT) {
             List<String> lines = new ArrayList<>();
             if (meta.startsWith("text/gemini")) {
                 while (true) {
@@ -252,7 +278,7 @@ public class Gemini {
         }
 
         // Redirect (30-39)
-        if (responseCode >= 30 && responseCode < 40) {
+        if (responseCode >= STATUS_REDIRECT && responseCode < STATUS_TEMP_FAILURE) {
             if (meta.isEmpty()) {
                 throw new FailedGeminiRequestException.GeminiInvalidResponse();
             }
@@ -265,15 +291,15 @@ public class Gemini {
         }
 
         // Temporary failure (40-49)
-        if (responseCode >= 40 && responseCode < 50) {
+        if (responseCode >= STATUS_TEMP_FAILURE && responseCode < STATUS_PERM_FAILURE) {
             switch (responseCode) {
-                case 41:
+                case STATUS_SERVER_UNAVAILABLE:
                     throw new FailedGeminiRequestException.GeminiServerUnavailable(meta);
-                case 42:
+                case STATUS_CGI_ERROR:
                     throw new FailedGeminiRequestException.GeminiCGIError(meta);
-                case 43:
+                case STATUS_PROXY_ERROR:
                     throw new FailedGeminiRequestException.GeminiProxyError(meta);
-                case 44:
+                case STATUS_SLOW_DOWN:
                     throw new FailedGeminiRequestException.GeminiSlowDown(meta);
                 default:
                     throw new FailedGeminiRequestException.GeminiTemporaryFailure(meta);
@@ -281,15 +307,15 @@ public class Gemini {
         }
 
         // Permanent failure (50-59)
-        if (responseCode >= 50 && responseCode < 60) {
+        if (responseCode >= STATUS_PERM_FAILURE && responseCode < STATUS_CLIENT_CERT_REQUIRED) {
             switch (responseCode) {
-                case 51:
+                case STATUS_NOT_FOUND:
                     throw new FailedGeminiRequestException.GeminiNotFound();
-                case 52:
+                case STATUS_GONE:
                     throw new FailedGeminiRequestException.GeminiGone();
-                case 53:
+                case STATUS_PROXY_REQUEST_REFUSED:
                     throw new FailedGeminiRequestException.GeminiProxyRequestRefused(meta);
-                case 59:
+                case STATUS_BAD_REQUEST:
                     throw new FailedGeminiRequestException.GeminiBadRequest(meta);
                 default:
                     throw new FailedGeminiRequestException.GeminiPermanentFailure(meta);
@@ -297,11 +323,11 @@ public class Gemini {
         }
 
         // Client certificate required (60-69)
-        if (responseCode >= 60 && responseCode < 70) {
+        if (responseCode >= STATUS_CLIENT_CERT_REQUIRED && responseCode < 70) {
             switch (responseCode) {
-                case 61:
+                case STATUS_CERT_NOT_AUTHORIZED:
                     throw new FailedGeminiRequestException.GeminiCertificateNotAuthorized(meta);
-                case 62:
+                case STATUS_CERT_NOT_VALID:
                     throw new FailedGeminiRequestException.GeminiCertificateNotValid(meta);
                 default:
                     throw new FailedGeminiRequestException.GeminiClientCertificateRequired(meta);
