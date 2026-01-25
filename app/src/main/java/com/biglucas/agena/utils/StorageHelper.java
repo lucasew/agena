@@ -1,12 +1,8 @@
 package com.biglucas.agena.utils;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
-import androidx.core.content.ContextCompat;
 import java.io.File;
 
 public class StorageHelper {
@@ -31,12 +27,6 @@ public class StorageHelper {
         if (!DebugUIHelper.hasManageExternalStoragePermission(context)) {
             Log.d(TAG, "Release build - using private storage");
             return null; // Use private storage for release builds
-        }
-
-        if (!hasStoragePermission(context)) {
-            Log.e(TAG, "No storage permission, falling back to private storage");
-            DebugUIHelper.showToast(context, "DB: No permission - using private storage");
-            return null;
         }
 
         try {
@@ -67,16 +57,5 @@ public class StorageHelper {
             DebugUIHelper.showToast(context, "DB: Error - using private storage");
             return null; // Fallback to private storage on any error
         }
-    }
-
-    private static boolean hasStoragePermission(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            return Environment.isExternalStorageManager();
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return ContextCompat.checkSelfPermission(context,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-        }
-        return true; // No runtime permissions needed before Marshmallow
     }
 }

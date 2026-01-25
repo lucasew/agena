@@ -56,3 +56,9 @@
 **Root Cause:** The status codes were likely hardcoded during initial implementation for speed, without defining semantic names for them.
 **Solution:** I defined `private static final int` constants for all Gemini status codes (e.g., `STATUS_SUCCESS`, `STATUS_NOT_FOUND`) and replaced the raw numbers in the `handleResponse` method.
 **Pattern:** Always use named constants for protocol status codes, error codes, or other specific values. This improves readability by making the code self-documenting and easier to update if values change.
+
+## 2026-01-25 - Remove Dead Code in StorageHelper
+**Issue:** The `StorageHelper` class contained a `hasStoragePermission` method and a corresponding check in `getDatabasePath` that were logically unreachable or redundant.
+**Root Cause:** The `getDatabasePath` method performs an initial check using `DebugUIHelper.hasManageExternalStoragePermission`. On Android < 11 (R), this returns `false`, causing an early return. On Android >= 11, it checks `Environment.isExternalStorageManager()`. The subsequent `hasStoragePermission` check duplicated this logic for Android >= 11, making it redundant. The code path for Android < 11 (checking `WRITE_EXTERNAL_STORAGE`) was unreachable because of the early return.
+**Solution:** I removed the `hasStoragePermission` method and its call in `getDatabasePath`. This allowed for the removal of 4 unused imports (`Manifest`, `PackageManager`, `Build`, `ContextCompat`).
+**Pattern:** Eliminate dead code and redundant checks. If a condition is already guaranteed by a previous check (like an API level check combined with a permission check), do not repeat it. Unreachable code paths should be removed to reduce complexity and confusion.
