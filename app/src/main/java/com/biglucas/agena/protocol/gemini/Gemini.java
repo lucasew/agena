@@ -41,6 +41,18 @@ import java.util.List;
 
 import javax.net.ssl.SSLSocket;
 
+/**
+ * Core client implementation for the Gemini protocol (gemini://).
+ * <p>
+ * This class handles the low-level details of the Gemini protocol, including:
+ * <ul>
+ *     <li>TLS connection establishment (with mandatory SNI).</li>
+ *     <li>Request formatting (`gemini://<host>/<path>\r\n`).</li>
+ *     <li>Response header parsing (Status + Meta).</li>
+ *     <li>Status code logic dispatch (Success, Redirect, Input, Error).</li>
+ *     <li>File downloads respecting Android's storage APIs.</li>
+ * </ul>
+ */
 public class Gemini {
     private static final String TAG = "Gemini";
 
@@ -101,7 +113,18 @@ public class Gemini {
     }
 
     /**
-     * Public request method that validates URI and delegates to internal request with redirect tracking
+     * Public entry point for initiating a Gemini request.
+     * <p>
+     * Validates the URI against the Gemini spec and delegates to {@link #requestInternal}
+     * to handle the request lifecycle, including redirect following.
+     *
+     * @param activity The context used for launching intents or showing Toasts.
+     * @param uri The Gemini URI to request.
+     * @return A list of strings representing the response body (if text/gemini), or empty if handled otherwise.
+     * @throws IOException If a network error occurs.
+     * @throws FailedGeminiRequestException If the protocol returns an error status.
+     * @throws NoSuchAlgorithmException If hashing algorithms are missing.
+     * @throws KeyManagementException If SSL setup fails.
      */
     public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         // Validate URI according to Gemini spec
@@ -133,7 +156,14 @@ public class Gemini {
     }
 
     /**
-     * Internal request method with redirect tracking
+     * Executes the raw network request.
+     * <p>
+     * 1. Establishes a TLS connection (SNI is explicitly enabled as required by Gemini).
+     * 2. Sends the request line (`<URL>\r\n`).
+     * 3. Parses the response header (`<STATUS> <META>`).
+     * 4. Delegates body handling to {@link #handleResponse} based on the status code.
+     *
+     * @param redirectCount Current depth of recursion for redirects (max 5).
      */
     private List<String> requestInternal(Activity activity, Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         Log.i(TAG, "Requesting: '" + uri.toString() + "' (redirect count: " + redirectCount + ")");
@@ -227,7 +257,13 @@ public class Gemini {
     }
 
     /**
-     * Handles the response based on status code
+     * Dispatches logic based on the Gemini status code family.
+     * <p>
+     * - 1x (Input): Throws exception to prompt user.
+     * - 2x (Success): Reads body. If text/gemini, returns lines. If binary, downloads it.
+     * - 3x (Redirect): Recurses into `requestInternal` with new URI.
+     * - 4x/5x (Failure): Throws specific exceptions.
+     * - 6x (Client Cert): Throws auth exception.
      */
     private List<String> handleResponse(Activity activity, Uri uri, InputStream inputStream,
                                         BufferedOutputStream outputStream, int responseCode,
@@ -340,9 +376,10 @@ public class Gemini {
     }
 
     /**
-     * Downloads a file to the public Downloads folder
-     * Uses MediaStore API for Android 10+ (no permissions needed)
-     * Uses legacy method for Android 9 and below (requires WRITE_EXTERNAL_STORAGE permission)
+     * Handles file downloads, choosing the appropriate storage strategy based on the Android version.
+     * <p>
+     * - Android 10+ (Q): Uses the MediaStore API. No permissions required.
+     * - Android 9 and below: Uses legacy external storage access. Requires WRITE_EXTERNAL_STORAGE permission.
      */
     private DownloadResult download(Activity activity, InputStream inputStream, Uri uriFile, String mimeType) throws IOException, NoSuchAlgorithmException {
         String uriString = uriFile.toString();
