@@ -31,8 +31,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A simple {@link Fragment} subclass.
- * create an instance of this fragment.
+ * Fragment responsible for parsing and rendering `text/gemini` content.
+ * <p>
+ * This class takes a list of raw Gemini strings and converts them into native Android Views
+ * (TextViews, Buttons) to build the page UI dynamically.
  */
 public class GeminiPageContentFragment extends Fragment {
 
@@ -49,6 +51,23 @@ public class GeminiPageContentFragment extends Fragment {
         this(new ArrayList<>(), Uri.parse("gemini://example.com"));
     }
 
+    /**
+     * Main parsing loop. Iterates through the content lines and builds the UI.
+     * <p>
+     * The parsing logic handles:
+     * <ul>
+     *     <li><b>Preformatted Text (```):</b> Toggles a state flag. Text inside is collected and rendered in a monospace font inside a HorizontalScrollView.</li>
+     *     <li><b>Links (=>):</b> Parsed using {@link StringTokenizer}. Resolves relative URIs against the current page URI.
+     *         <ul>
+     *             <li>Includes a fallback mechanism for malformed URIs by stripping special characters.</li>
+     *             <li>Applies a custom {@link GestureDetector} to handle Single Tap (navigate), Double Tap (new window), and Long Press (show URL).</li>
+     *         </ul>
+     *     </li>
+     *     <li><b>Headings (#):</b> Adjusted text size based on heading level (1-3).</li>
+     *     <li><b>List Items (*):</b> Prefixed with a bullet point.</li>
+     *     <li><b>Regular Text:</b> Rendered as standard paragraphs.</li>
+     * </ul>
+     */
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         LinearLayout contentColumn = this.requireView().findViewById(R.id.content_column);
