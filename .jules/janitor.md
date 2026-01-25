@@ -50,3 +50,9 @@
 **Root Cause:** This was likely a leftover from initial development or debugging sessions where quick console output was used instead of proper Android logging.
 **Solution:** I replaced all instances of `System.out` calls with `android.util.Log.d`. I also introduced a `private static final String TAG` constant to the class for consistent log tagging.
 **Pattern:** Ensure all logging in Android components uses `android.util.Log` to guarantee messages are properly routed to Logcat and can be managed (filtered/stripped) correctly. Avoid `System.out` for production code.
+
+## 2026-01-24 - Replace Magic Numbers with Constants in Gemini Protocol
+**Issue:** The `Gemini.java` class used numerous "magic numbers" (raw integer literals like 10, 20, 51) to represent Gemini protocol status codes, making the code hard to read and maintain.
+**Root Cause:** The status codes were likely hardcoded during initial implementation for speed, without defining semantic names for them.
+**Solution:** I defined `private static final int` constants for all Gemini status codes (e.g., `STATUS_SUCCESS`, `STATUS_NOT_FOUND`) and replaced the raw numbers in the `handleResponse` method.
+**Pattern:** Always use named constants for protocol status codes, error codes, or other specific values. This improves readability by making the code self-documenting and easier to update if values change.
