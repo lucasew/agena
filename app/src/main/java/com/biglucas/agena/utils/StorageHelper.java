@@ -15,13 +15,19 @@ public class StorageHelper {
     }
 
     /**
-     * Determines the optimal database path.
-     * In debug builds, it tries to use external storage to survive uninstallation.
-     * In release builds or if external storage is unavailable, it returns null,
-     * indicating that the app's private storage should be used.
+     * Determines the optimal database path based on the build configuration and permissions.
+     * <p>
+     * <b>Strategy:</b>
+     * <ul>
+     *     <li><b>Developer Mode (External Storage):</b> If {@link DebugUIHelper#hasManageExternalStoragePermission(Context)} returns true,
+     *         it attempts to use a file in the public 'Downloads/AGENA' directory. This allows the database to persist across app uninstallations,
+     *         which is critical for debugging and development continuity.</li>
+     *     <li><b>Production Mode (Private Storage):</b> If the permission is missing (standard release builds), it returns {@code null},
+     *         signaling the caller to use the app's secure private storage.</li>
+     * </ul>
      *
      * @param context The application context.
-     * @return The absolute path to the database file, or null to use private storage.
+     * @return The absolute path to the external database file, or {@code null} to indicate private storage should be used.
      */
     public static String getDatabasePath(Context context) {
         if (!DebugUIHelper.hasManageExternalStoragePermission(context)) {
