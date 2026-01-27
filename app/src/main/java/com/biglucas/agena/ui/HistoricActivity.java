@@ -16,7 +16,7 @@ import java.util.ArrayList;
 
 public class HistoricActivity extends AppCompatActivity {
 
-    private static final String TAG = "HistoricActivity";
+    private static final String TAG = HistoricActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
