@@ -62,3 +62,9 @@
 **Root Cause:** The `getDatabasePath` method performs an initial check using `DebugUIHelper.hasManageExternalStoragePermission`. On Android < 11 (R), this returns `false`, causing an early return. On Android >= 11, it checks `Environment.isExternalStorageManager()`. The subsequent `hasStoragePermission` check duplicated this logic for Android >= 11, making it redundant. The code path for Android < 11 (checking `WRITE_EXTERNAL_STORAGE`) was unreachable because of the early return.
 **Solution:** I removed the `hasStoragePermission` method and its call in `getDatabasePath`. This allowed for the removal of 4 unused imports (`Manifest`, `PackageManager`, `Build`, `ContextCompat`).
 **Pattern:** Eliminate dead code and redundant checks. If a condition is already guaranteed by a previous check (like an API level check combined with a permission check), do not repeat it. Unreachable code paths should be removed to reduce complexity and confusion.
+
+## 2026-01-27 - Remove Dead Code in Gemini Download
+**Issue:** The `downloadViaMediaStore` method in `Gemini.java` contained redundant checks for Android Q (API 29), including unreachable fallback code for older versions.
+**Root Cause:** The method is exclusively called from a block guarded by `if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)`, making the internal checks unnecessary and the `else` branches dead code.
+**Solution:** I annotated the method with `@RequiresApi(Build.VERSION_CODES.Q)` and removed the internal version checks and legacy fallback logic.
+**Pattern:** When splitting implementation based on API levels (e.g., into separate private methods), ensure the specific methods are annotated with `@RequiresApi` and do not contain redundant runtime checks that are already performed at the call site.
