@@ -62,3 +62,9 @@
 **Root Cause:** The `getDatabasePath` method performs an initial check using `DebugUIHelper.hasManageExternalStoragePermission`. On Android < 11 (R), this returns `false`, causing an early return. On Android >= 11, it checks `Environment.isExternalStorageManager()`. The subsequent `hasStoragePermission` check duplicated this logic for Android >= 11, making it redundant. The code path for Android < 11 (checking `WRITE_EXTERNAL_STORAGE`) was unreachable because of the early return.
 **Solution:** I removed the `hasStoragePermission` method and its call in `getDatabasePath`. This allowed for the removal of 4 unused imports (`Manifest`, `PackageManager`, `Build`, `ContextCompat`).
 **Pattern:** Eliminate dead code and redundant checks. If a condition is already guaranteed by a previous check (like an API level check combined with a permission check), do not repeat it. Unreachable code paths should be removed to reduce complexity and confusion.
+
+## 2026-01-27 - Replace System.out.println with Log.d in HistoricActivity
+**Issue:** The `HistoricActivity` class used `System.out.println` to log the history list, which is not standard practice in Android development.
+**Root Cause:** This was likely a leftover from debugging where quick console output was used instead of proper Android logging.
+**Solution:** I replaced the `System.out.println` call with `Log.d` and added a `TAG` constant. This ensures log messages are correctly routed to Logcat.
+**Pattern:** Always use `android.util.Log` for logging in Android components to ensure messages are properly routed and managed.

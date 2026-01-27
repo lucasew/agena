@@ -2,6 +2,7 @@ package com.biglucas.agena.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +15,8 @@ import com.biglucas.agena.utils.StacktraceDialogHandler;
 import java.util.ArrayList;
 
 public class HistoricActivity extends AppCompatActivity {
+
+    private static final String TAG = "HistoricActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +32,7 @@ public class HistoricActivity extends AppCompatActivity {
         ArrayList<String> historic = (ArrayList<String>) new DatabaseController(DatabaseController.openDatabase(this))
                 .getHistoryLines();
         try {
-            System.out.println(historic);
+            Log.d(TAG, historic.toString());
             GeminiPageContentFragment contentFragment = new GeminiPageContentFragment(historic, Uri.parse("gemini://example.com"));
             this.getSupportFragmentManager()
                     .beginTransaction()
