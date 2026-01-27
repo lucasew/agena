@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 
 import com.biglucas.agena.R;
@@ -407,6 +408,7 @@ public class Gemini {
     /**
      * Download using MediaStore API for Android 10+ (no permissions needed)
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private DownloadResult downloadViaMediaStore(Activity activity, InputStream inputStream,
                                                  String extension, String mimeType,
                                                  MessageDigest digest, byte[] buffer) throws IOException {
@@ -418,23 +420,10 @@ public class Gemini {
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                Environment.DIRECTORY_DOWNLOADS + File.separator + subdir);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH,
-                    Environment.DIRECTORY_DOWNLOADS + File.separator + subdir);
-        } else {
-            File dir = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS), subdir);
-            boolean ignored = dir.mkdirs();
-            File file = new File(dir, filename);
-            values.put(MediaStore.MediaColumns.DATA, file.getAbsolutePath());
-        }
-
-
-        Uri downloadUri = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-        }
+        Uri downloadUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
         if (downloadUri == null) {
             throw new IOException("Failed to create MediaStore entry");
         }
