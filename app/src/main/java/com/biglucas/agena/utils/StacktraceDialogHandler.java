@@ -12,10 +12,29 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * Utility to display exception stack traces in a user-facing dialog.
+ * <p>
+ * This is primarily intended for debug builds or critical error boundaries where
+ * immediate feedback to the developer/tester is required.
+ * <p>
+ * <b>Security Note:</b> Be cautious using this in production releases as it exposes
+ * internal application state and stack traces.
+ */
 public class StacktraceDialogHandler {
     private StacktraceDialogHandler() {
         // Private constructor to prevent instantiation
     }
+
+    /**
+     * Shows a dialog containing the stack trace of the provided exception.
+     * <p>
+     * Includes a "Copy" button to facilitate error reporting by copying the
+     * full stack trace to the clipboard.
+     *
+     * @param context The context to host the dialog (usually an Activity).
+     * @param exception The exception to display.
+     */
     public static void show(Context context, Exception exception) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
