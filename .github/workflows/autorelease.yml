@@ -51,6 +51,9 @@ jobs:
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
 
+    - name: Install dependencies
+      run: mise run install
+
     - name: Run codegen
       run: mise run codegen
 
@@ -75,9 +78,8 @@ jobs:
           exit 1
         fi
 
-    # Run unit tests using mise
-    - name: Run unit tests
-      run: mise run test -- --stacktrace
+    - name: Run CI (Lint & Test)
+      run: mise run ci
 
     - name: Upload test results
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -97,18 +99,7 @@ jobs:
         reporter: java-junit
         fail-on-error: true
 
-    # Build debug APK
-    - name: Build debug APK
-      run: ./gradlew assembleDebug --stacktrace
-
-    - name: Upload debug APK artifact
-      if: always()
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-      with:
-        name: debug-apk
-        path: app/build/outputs/apk/debug/*.apk
-
-    # Make release if workflow_dispatch or schedule
+    # Release Steps
     - name: Make release
       if: github.event_name != 'pull_request'
       env:
@@ -120,7 +111,16 @@ jobs:
           echo "RELEASE_VERSION=$(cat version.txt)" >> $GITHUB_ENV
         fi
 
-    # Build release APK (always, after potential version bump)
+    - name: Build debug APK
+      run: ./gradlew assembleDebug --stacktrace
+
+    - name: Upload debug APK artifact
+      if: always()
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: debug-apk
+        path: app/build/outputs/apk/debug/*.apk
+
     - name: Build release APK
       run: ./gradlew assembleRelease --stacktrace
 
@@ -131,7 +131,6 @@ jobs:
         name: release-apk
         path: app/build/outputs/apk/release/*.apk
 
-    # Create GitHub release
     - name: Create release
       if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
       env:
@@ -143,16 +142,6 @@ jobs:
           --title "$TITLE" \
           --generate-notes
 
-    # Rebuild both APKs after creating release (ensures correct version in both)
-    - name: Rebuild debug APK for release
-      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
-      run: ./gradlew assembleDebug --stacktrace
-
-    - name: Rebuild release APK for release
-      if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
-      run: ./gradlew assembleRelease --stacktrace
-
-    # Upload both APKs to GitHub release
     - name: Upload release artifacts
       if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
       env:

@@ -1,6 +1,7 @@
 [tools]
-"github:sqlc-dev/sqlc" = "1.30.0"
+"ubi:sqlc-dev/sqlc" = "1.30.0"
 java = "17"
+shellcheck = "latest"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
@@ -16,6 +17,30 @@ fi
 description = "Run all codegen tasks"
 depends = ["codegen:sqlc"]
 
+[tasks.install]
+description = "Install dependencies"
+run = "./gradlew dependencies"
+
+[tasks."lint:android"]
+description = "Run Android Lint"
+run = "./gradlew lint"
+
+[tasks."lint:shell"]
+description = "Run ShellCheck"
+run = "shellcheck make_release"
+
+[tasks.lint]
+description = "Run all linters"
+depends = ["lint:*"]
+
+[tasks.fmt]
+description = "Run all formatters"
+depends = ["fmt:*"]
+
 [tasks.test]
 description = "Run tests"
 run = "./gradlew test"
+
+[tasks.ci]
+description = "Run CI (lint + test)"
+depends = ["lint", "test"]
