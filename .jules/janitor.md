@@ -68,3 +68,9 @@
 **Root Cause:** This was likely a leftover from debugging where quick console output was used instead of proper Android logging.
 **Solution:** I replaced the `System.out.println` call with `Log.d` and added a `TAG` constant. This ensures log messages are correctly routed to Logcat.
 **Pattern:** Always use `android.util.Log` for logging in Android components to ensure messages are properly routed and managed.
+
+## 2026-01-29 - Shorten Long Log Tag in GeminiPageContentFragment
+**Issue:** The `GeminiPageContentFragment` class defined a `TAG` constant ("GeminiPageContentFragment") that exceeded the 23-character limit imposed by Android's logging system, causing "LongLogTag" lint errors.
+**Root Cause:** The tag was simply set to the full class name without considering the length limitation of `android.util.Log` on older Android versions (and enforced by lint).
+**Solution:** I shortened the `TAG` constant to "GeminiPageContent" (17 characters), which is within the allowed limit.
+**Pattern:** When defining `TAG` constants for Android logging, ensure they are 23 characters or fewer. Abbreviations or removing suffixes (like "Fragment" or "Activity") are acceptable ways to comply.
