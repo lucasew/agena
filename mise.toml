@@ -56,4 +56,8 @@ run = "./gradlew assembleRelease"
 
 [tasks.ci]
 description = "Run CI tasks"
-depends = ["lint", "test", "build:debug"]
+run = """
+mise run lint
+mise run test
+mise run build:debug
+"""
