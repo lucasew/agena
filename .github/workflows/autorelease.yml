@@ -51,6 +51,9 @@ jobs:
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
 
+    - name: Install dependencies
+      run: mise run install
+
     - name: Run codegen
       run: mise run codegen
 
@@ -75,9 +78,9 @@ jobs:
           exit 1
         fi
 
-    # Run unit tests using mise
-    - name: Run unit tests
-      run: mise run test -- --stacktrace
+    # Run CI (Lint, Test, Build Debug)
+    - name: Run CI
+      run: mise run ci -- --stacktrace
 
     - name: Upload test results
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -96,10 +99,6 @@ jobs:
         path: app/build/test-results/test*/**/*.xml
         reporter: java-junit
         fail-on-error: true
-
-    # Build debug APK
-    - name: Build debug APK
-      run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload debug APK artifact
       if: always()
@@ -122,7 +121,7 @@ jobs:
 
     # Build release APK (always, after potential version bump)
     - name: Build release APK
-      run: ./gradlew assembleRelease --stacktrace
+      run: mise run build:release -- --stacktrace
 
     - name: Upload release APK artifact
       if: always()
@@ -146,11 +145,11 @@ jobs:
     # Rebuild both APKs after creating release (ensures correct version in both)
     - name: Rebuild debug APK for release
       if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
-      run: ./gradlew assembleDebug --stacktrace
+      run: mise run build:debug -- --stacktrace
 
     - name: Rebuild release APK for release
       if: env.RELEASE_VERSION != '' && github.event_name != 'pull_request'
-      run: ./gradlew assembleRelease --stacktrace
+      run: mise run build:release -- --stacktrace
 
     # Upload both APKs to GitHub release
     - name: Upload release artifacts
