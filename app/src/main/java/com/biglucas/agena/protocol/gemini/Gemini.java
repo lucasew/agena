@@ -319,11 +319,16 @@ public class Gemini {
                 throw new FailedGeminiRequestException.GeminiInvalidResponse();
             }
             // Resolve relative URIs against the current request URI (RFC 3986)
-            URI currentUri = URI.create(uri.toString());
-            URI resolvedUri = currentUri.resolve(meta.trim());
-            Uri redirectUri = Uri.parse(resolvedUri.toString());
-            validateUri(redirectUri);
-            return requestInternal(activity, redirectUri, redirectCount + 1);
+            try {
+                URI currentUri = URI.create(uri.toString());
+                URI resolvedUri = currentUri.resolve(meta.trim());
+                Uri redirectUri = Uri.parse(resolvedUri.toString());
+                validateUri(redirectUri);
+                return requestInternal(activity, redirectUri, redirectCount + 1);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Malformed redirect URI: " + meta, e);
+                throw new FailedGeminiRequestException.GeminiInvalidResponse();
+            }
         }
 
         // Temporary failure (40-49)

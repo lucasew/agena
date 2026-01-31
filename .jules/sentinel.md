@@ -27,3 +27,8 @@
 **Vulnerability:** The application crashed when parsing a Gemini page line starting with `=>` followed only by whitespace. This caused a `java.util.NoSuchElementException` because `StringTokenizer.nextToken()` was called without checking if tokens existed. A malicious Gemini server could exploit this to crash the application (DoS).
 **Learning:** When using iterators or tokenizers like `StringTokenizer`, always verify that elements exist before attempting to retrieve them. Assumption of valid input from remote servers is dangerous.
 **Prevention:** Guard all calls to `nextToken()` with `hasMoreTokens()` (or `hasMoreElements()`). If the token is missing, handle the case gracefully (e.g., skip the line) instead of crashing.
+
+## 2026-01-31 - Prevent Denial of Service in Gemini Redirects
+**Vulnerability:** The application was vulnerable to a Denial of Service (DoS) attack when following Gemini redirects. If a server returned a redirect URI containing spaces or other invalid characters, `java.net.URI.create()` or `resolve()` would throw an unchecked `IllegalArgumentException`, crashing the application.
+**Learning:** `java.net.URI` is stricter than many other URI parsers and throws runtime exceptions on violations. When processing data from external sources (like redirect headers), these operations must always be guarded.
+**Prevention:** All calls to `URI.create()` and `resolve()` involving external input must be wrapped in `try-catch(IllegalArgumentException e)` blocks to handle malformed URIs gracefully.
