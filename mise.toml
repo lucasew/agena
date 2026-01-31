@@ -20,7 +20,7 @@ depends = ["codegen:sqlc"]
 
 [tasks."lint:android"]
 description = "Run Android Lint"
-run = "./gradlew lint"
+run = "flock .gradle.lock ./gradlew lint"
 
 [tasks."lint:shell"]
 description = "Run ShellCheck"
@@ -40,23 +40,20 @@ depends = ["fmt:*"]
 
 [tasks.install]
 description = "Install dependencies"
-run = "./gradlew dependencies"
+run = "flock .gradle.lock ./gradlew dependencies"
 
 [tasks.test]
 description = "Run tests"
-run = "./gradlew test"
+run = "flock .gradle.lock ./gradlew test"
 
 [tasks."build:debug"]
 description = "Build debug APK"
-run = "./gradlew assembleDebug"
+run = "flock .gradle.lock ./gradlew assembleDebug"
 
 [tasks."build:release"]
 description = "Build release APK"
-run = "./gradlew assembleRelease"
+run = "flock .gradle.lock ./gradlew assembleRelease"
 
 [tasks.ci]
 description = "Run CI tasks"
-run = """
-mise run lint:shell
-./gradlew lint test assembleDebug
-"""
+depends = ["lint", "test", "build:debug"]
