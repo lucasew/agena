@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
  */
 public class GeminiPageContentFragment extends Fragment {
 
-    private static final String TAG = "GeminiPageContentFragment";
+    private static final String TAG = "GeminiPageContent";
     private final ArrayList<String> content;
     private final Uri oldURI;
 

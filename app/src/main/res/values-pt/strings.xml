@@ -1,3 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    </resources>
+    <string name="file_too_large">Arquivo muito grande</string>
+    <string name="file_too_large_message">O arquivo não pode ser maior que 10MB</string>
+    <string name="error_reading_file">Erro ao ler arquivo</string>
+    <string name="error_reading_file_message_size">Não foi possível determinar o tamanho do arquivo.</string>
+    <string name="error_unsupported_scheme">Esquema não suportado: %1$s</string>
+    <string name="error_database_write">Falha ao gravar no histórico</string>
+</resources>

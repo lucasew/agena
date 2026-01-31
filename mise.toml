@@ -1,6 +1,8 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.30.0"
 java = "17"
+shellcheck = "0.10.0"
+shfmt = "3.10.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
@@ -16,6 +18,42 @@ fi
 description = "Run all codegen tasks"
 depends = ["codegen:sqlc"]
 
+[tasks."lint:android"]
+description = "Run Android Lint"
+run = "flock .gradle.lock ./gradlew lint"
+
+[tasks."lint:shell"]
+description = "Run ShellCheck"
+run = "shellcheck make_release"
+
+[tasks.lint]
+description = "Run all linters"
+depends = ["lint:*"]
+
+[tasks."fmt:shell"]
+description = "Run shfmt"
+run = "shfmt -w make_release"
+
+[tasks.fmt]
+description = "Run all formatters"
+depends = ["fmt:*"]
+
+[tasks.install]
+description = "Install dependencies"
+run = "flock .gradle.lock ./gradlew dependencies"
+
 [tasks.test]
 description = "Run tests"
-run = "./gradlew test"
+run = "flock .gradle.lock ./gradlew test"
+
+[tasks."build:debug"]
+description = "Build debug APK"
+run = "flock .gradle.lock ./gradlew assembleDebug"
+
+[tasks."build:release"]
+description = "Build release APK"
+run = "flock .gradle.lock ./gradlew assembleRelease"
+
+[tasks.ci]
+description = "Run CI tasks"
+depends = ["lint", "test", "build:debug"]
