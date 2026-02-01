@@ -1,6 +1,7 @@
 package com.biglucas.agena.ui;
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,6 +40,12 @@ public class ContentActivity extends AppCompatActivity {
 
         try {
             Uri incomingUri = getIntent().getData();
+
+            if (!ContentResolver.SCHEME_CONTENT.equals(incomingUri.getScheme())) {
+                Log.e(TAG, "Unsupported scheme: " + incomingUri.getScheme());
+                finish();
+                return;
+            }
 
             // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack
             // from a malicious application providing a massive file, which could cause an OutOfMemoryError.
