@@ -1,7 +1,6 @@
 package com.biglucas.agena.ui;
 
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -41,16 +40,10 @@ public class ContentActivity extends AppCompatActivity {
         try {
             Uri incomingUri = getIntent().getData();
 
-            if (!ContentResolver.SCHEME_CONTENT.equals(incomingUri.getScheme())) {
-                Log.e(TAG, "Unsupported scheme: " + incomingUri.getScheme());
-                finish();
-                return;
-            }
-
             // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack
             // from a malicious application providing a massive file, which could cause an OutOfMemoryError.
             // The check must be "fail-safe" - if the size cannot be determined, we must abort.
-            try (Cursor cursor = getContentResolver().query(incomingUri, null, null, null, null)) {
+            try (Cursor cursor = getContentResolver().query(incomingUri, new String[]{OpenableColumns.SIZE}, null, null, null)) {
                 // If the cursor is null or empty, we cannot determine the size. Abort.
                 if (cursor == null || !cursor.moveToFirst()) {
                     Log.e(TAG, "Could not determine file size: cursor is null or empty.");
