@@ -68,3 +68,9 @@
 **Root Cause:** This was likely a leftover from debugging where quick console output was used instead of proper Android logging.
 **Solution:** I replaced the `System.out.println` call with `Log.d` and added a `TAG` constant. This ensures log messages are correctly routed to Logcat.
 **Pattern:** Always use `android.util.Log` for logging in Android components to ensure messages are properly routed and managed.
+
+## 2026-02-01 - Fix Resource Leak in ContentActivity
+**Issue:** In `ContentActivity.java`, the `InputStream`, `InputStreamReader`, and `BufferedReader` used to read the content file were not properly closed, potentially leading to resource leaks.
+**Root Cause:** The streams were opened and used but never closed in a `finally` block or via try-with-resources.
+**Solution:** I refactored the file reading logic to use a try-with-resources block, ensuring all streams are automatically closed. I also simplified the reading loop and renamed the `BufferedReader` variable for clarity.
+**Pattern:** Always use try-with-resources when working with streams or other `AutoCloseable` resources to ensure they are properly closed, even if an exception occurs.

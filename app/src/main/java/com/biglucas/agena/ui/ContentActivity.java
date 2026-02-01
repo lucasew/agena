@@ -83,30 +83,27 @@ public class ContentActivity extends AppCompatActivity {
             }
 
             Log.d(TAG, incomingUri.toString());
-            InputStream inputStream = getContentResolver().openInputStream(incomingUri);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader dis = new BufferedReader(inputStreamReader);
-            ArrayList<String> lines = new ArrayList<>();
-            int lineCount = 0;
-            while (true) {
-                if (lineCount >= MAX_LINES) {
-                    Log.w(TAG, "File exceeds MAX_LINES, truncating");
-                    break;
-                }
-                lineCount++;
-                String line = dis.readLine();
-                if (line != null) {
+            try (InputStream inputStream = getContentResolver().openInputStream(incomingUri);
+                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                 BufferedReader reader = new BufferedReader(inputStreamReader)) {
+
+                ArrayList<String> lines = new ArrayList<>();
+                int lineCount = 0;
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (lineCount >= MAX_LINES) {
+                        Log.w(TAG, "File exceeds MAX_LINES, truncating");
+                        break;
+                    }
+                    lineCount++;
                     Log.v(TAG, line);
+                    lines.add(line);
                 }
-                if (line == null) {
-                    break;
-                }
-                lines.add(line);
+                this.getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.browser_content, new GeminiPageContentFragment(lines, this.getIntent().getData()))
+                        .commit();
             }
-            this.getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.browser_content, new GeminiPageContentFragment(lines, this.getIntent().getData()))
-                    .commit();
         } catch (Exception e) {
             Log.e(TAG, "Failed to handle intent", e);
             finish();
