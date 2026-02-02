@@ -27,3 +27,8 @@
 **Vulnerability:** The application crashed when parsing a Gemini page line starting with `=>` followed only by whitespace. This caused a `java.util.NoSuchElementException` because `StringTokenizer.nextToken()` was called without checking if tokens existed. A malicious Gemini server could exploit this to crash the application (DoS).
 **Learning:** When using iterators or tokenizers like `StringTokenizer`, always verify that elements exist before attempting to retrieve them. Assumption of valid input from remote servers is dangerous.
 **Prevention:** Guard all calls to `nextToken()` with `hasMoreTokens()` (or `hasMoreElements()`). If the token is missing, handle the case gracefully (e.g., skip the line) instead of crashing.
+
+## 2026-02-02 - Prevent Denial of Service in PageActivity
+**Vulnerability:** The application crashed when resolving relative URLs containing invalid characters (e.g., spaces) in `PageActivity.handlePageGo`. This was due to unchecked use of `URI.create()` and `URI.resolve()`, which throw `IllegalArgumentException` on malformed input. This allows a local DoS where user interaction (typing or clicking a bad link) crashes the app.
+**Learning:** `java.net.URI` is stricter than Android's `Uri` and throws runtime exceptions for invalid characters. When converting between them or handling user input, always wrap `URI` operations in try-catch blocks.
+**Prevention:** Always wrap `URI.create()` and `URI.resolve()` calls in a try-catch block catching `IllegalArgumentException`. Provide user feedback (e.g., error dialog) instead of crashing.

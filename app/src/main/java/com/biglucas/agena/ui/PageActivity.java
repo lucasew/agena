@@ -50,20 +50,28 @@ public class PageActivity extends AppCompatActivity {
         String urlToGoTo = urlText.getText().toString().trim();
 
         Uri destURL;
-        // Check if input looks like an absolute domain (not a relative path)
-        if (urlToGoTo.contains("://")) {
-            // Already has a scheme, use as-is
-            destURL = Uri.parse(urlToGoTo);
-        } else if (isAbsoluteDomain(urlToGoTo)) {
-            // Looks like a domain (e.g., "foo.bar"), add gemini:// prefix
-            destURL = Uri.parse("gemini://" + urlToGoTo);
-        } else {
-            // Treat as relative path
-            destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
-        }
+        try {
+            // Check if input looks like an absolute domain (not a relative path)
+            if (urlToGoTo.contains("://")) {
+                // Already has a scheme, use as-is
+                destURL = Uri.parse(urlToGoTo);
+            } else if (isAbsoluteDomain(urlToGoTo)) {
+                // Looks like a domain (e.g., "foo.bar"), add gemini:// prefix
+                destURL = Uri.parse("gemini://" + urlToGoTo);
+            } else {
+                // Treat as relative path
+                destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+            }
 
-        Log.d(TAG, "scheme: " + destURL.getScheme());
-        Invoker.invoke(this, destURL);
+            Log.d(TAG, "scheme: " + destURL.getScheme());
+            Invoker.invoke(this, destURL);
+        } catch (IllegalArgumentException e) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.error_invalid_uri)
+                    .setMessage(e.getMessage())
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        }
     }
 
     /**
