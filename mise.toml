@@ -38,13 +38,21 @@ run = "shfmt -w make_release"
 description = "Run all formatters"
 depends = ["fmt:*"]
 
+[tasks."install:android"]
+description = "Install Android dependencies"
+run = "flock .gradle.lock ./gradlew dependencies"
+
 [tasks.install]
 description = "Install dependencies"
-run = "flock .gradle.lock ./gradlew dependencies"
+depends = ["install:*"]
+
+[tasks."test:android"]
+description = "Run Android tests"
+run = "flock .gradle.lock ./gradlew test"
 
 [tasks.test]
 description = "Run tests"
-run = "flock .gradle.lock ./gradlew test"
+depends = ["test:*"]
 
 [tasks."build:debug"]
 description = "Build debug APK"
