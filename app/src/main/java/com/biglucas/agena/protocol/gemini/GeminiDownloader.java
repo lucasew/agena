@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 
 import com.biglucas.agena.R;
@@ -81,7 +82,7 @@ public class GeminiDownloader {
     /**
      * Download using MediaStore API for Android 10+ (no permissions needed)
      */
-    @androidx.annotation.RequiresApi(Build.VERSION_CODES.Q)
+    @RequiresApi(Build.VERSION_CODES.Q)
     private Result downloadViaMediaStore(Activity activity, InputStream inputStream,
                                                  String extension, String mimeType,
                                                  MessageDigest digest, byte[] buffer) throws IOException {
