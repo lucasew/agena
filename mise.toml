@@ -16,7 +16,7 @@ fi
 
 [tasks.codegen]
 description = "Run all codegen tasks"
-depends = ["codegen:sqlc"]
+depends = ["codegen:*"]
 
 [tasks."lint:android"]
 description = "Run Android Lint"
