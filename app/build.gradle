@@ -51,8 +51,26 @@ dependencies {
 task generateSqlc(type: Exec) {
     commandLine 'sqlc', 'generate'
     workingDir project.rootDir
+    ignoreExitValue = true
+
+    onlyIf {
+        try {
+            def result = project.exec {
+                commandLine 'which', 'sqlc'
+                ignoreExitValue = true
+                standardOutput = new ByteArrayOutputStream()
+            }
+            return result.exitValue == 0
+        } catch (Exception e) {
+            return false
+        }
+    }
 
     doLast {
+        if (executionResult.get().exitValue != 0) {
+            println "sqlc generation skipped or failed."
+            return
+        }
         def rogueFile = file("src/main/java/Queries.java")
         if (rogueFile.exists()) {
              rogueFile.delete()
