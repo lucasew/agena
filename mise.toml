@@ -16,7 +16,7 @@ fi
 
 [tasks.codegen]
 description = "Run all codegen tasks"
-depends = ["codegen:sqlc"]
+depends = ["codegen:*"]
 
 [tasks."lint:android"]
 description = "Run Android Lint"
@@ -38,13 +38,21 @@ run = "shfmt -w make_release"
 description = "Run all formatters"
 depends = ["fmt:*"]
 
+[tasks."install:android"]
+description = "Install Android dependencies"
+run = "flock .gradle.lock ./gradlew dependencies"
+
 [tasks.install]
 description = "Install dependencies"
-run = "flock .gradle.lock ./gradlew dependencies"
+depends = ["install:*"]
+
+[tasks."test:android"]
+description = "Run Android tests"
+run = "flock .gradle.lock ./gradlew test"
 
 [tasks.test]
 description = "Run tests"
-run = "flock .gradle.lock ./gradlew test"
+depends = ["test:*"]
 
 [tasks."build:debug"]
 description = "Build debug APK"
@@ -56,4 +64,5 @@ run = "flock .gradle.lock ./gradlew assembleRelease"
 
 [tasks.ci]
 description = "Run CI tasks"
-depends = ["lint", "test", "build:debug"]
+depends = ["lint", "test"]
+run = "mise run build:debug"
