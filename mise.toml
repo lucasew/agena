@@ -63,6 +63,6 @@ description = "Build release APK"
 run = "flock .gradle.lock ./gradlew assembleRelease"
 
 [tasks.ci]
-description = "Run CI tasks"
+description = "Run CI tasks (Lint, Test, Build)"
 depends = ["lint", "test"]
-run = "mise run build:debug"
+run = "flock .gradle.lock ./gradlew assembleDebug"
