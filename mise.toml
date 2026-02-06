@@ -2,7 +2,7 @@
 "github:sqlc-dev/sqlc" = "1.30.0"
 java = "17"
 shellcheck = "0.11.0"
-shfmt = "3.10.0"
+shfmt = "3.12.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
