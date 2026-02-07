@@ -12,7 +12,6 @@ import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HistoricActivity extends AppCompatActivity {
