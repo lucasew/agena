@@ -1,8 +1,11 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.30.0"
 java = "17"
+node = "lts"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
+"npm:markdownlint-cli2" = "latest"
+"npm:@taplo/cli" = "latest"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
@@ -26,6 +29,14 @@ run = "flock .gradle.lock ./gradlew lint"
 description = "Run ShellCheck"
 run = "shellcheck make_release"
 
+[tasks."lint:markdown"]
+description = "Run Markdown Lint"
+run = "markdownlint-cli2 '**/*.md' '#node_modules'"
+
+[tasks."lint:toml"]
+description = "Run Taplo Lint"
+run = "taplo check"
+
 [tasks.lint]
 description = "Run all linters"
 depends = ["lint:*"]
@@ -33,6 +44,14 @@ depends = ["lint:*"]
 [tasks."fmt:shell"]
 description = "Run shfmt"
 run = "shfmt -w make_release"
+
+[tasks."fmt:markdown"]
+description = "Run Markdown Format"
+run = "markdownlint-cli2 --fix '**/*.md' '#node_modules'"
+
+[tasks."fmt:toml"]
+description = "Run Taplo Format"
+run = "taplo fmt"
 
 [tasks.fmt]
 description = "Run all formatters"
@@ -64,5 +83,4 @@ run = "flock .gradle.lock ./gradlew assembleRelease"
 
 [tasks.ci]
 description = "Run CI tasks (Lint, Test, Build)"
-depends = ["lint", "test"]
-run = "flock .gradle.lock ./gradlew assembleDebug"
+depends = ["lint", "test", "build:debug"]

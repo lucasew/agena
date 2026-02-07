@@ -1,4 +1,4 @@
-<img align="center" src="./logo.svg" height="256" width="256"></img>
+<img align="center" src="./logo.svg" height="256" width="256" alt="Agena Logo"></img>
 
 [![Build, Test and Auto-Release](https://github.com/lucasew/agena/actions/workflows/autorelease.yml/badge.svg)](https://github.com/lucasew/agena/actions/workflows/autorelease.yml)
 
@@ -19,6 +19,7 @@
 * Comprehensive test suite with automated CI/CD testing.
 
 # Features
+
 * Images
 * Big texts
 * Hyperlinks rendered as buttons with deeplink support
@@ -30,19 +31,21 @@
 
 ✅ **Fully compliant with the Gemini Protocol Specification**
 
-- ✅ All status codes (10-69) implemented
-- ✅ Input prompts (10-11) with dialog support
-- ✅ Redirect limit (max 5)
-- ✅ URI validation (1024 byte limit)
-- ✅ TLS 1.2+ with SNI support
-- ✅ Certificate error handling (60-69)
-- ✅ Comprehensive error messages
+* ✅ All status codes (10-69) implemented
+* ✅ Input prompts (10-11) with dialog support
+* ✅ Redirect limit (max 5)
+* ✅ URI validation (1024 byte limit)
+* ✅ TLS 1.2+ with SNI support
+* ✅ Certificate error handling (60-69)
+* ✅ Comprehensive error messages
 
 # TODO
-- [ ] Full TOFU certificate persistence
-- [ ] Client certificate generation and management
+
+* [ ] Full TOFU certificate persistence
+* [ ] Client certificate generation and management
 
 # Screenshots
+
 ![Main view](./demo/1.png)
 ![Historic page](./demo/2.png)
 ![Browser view](./demo/3.png)
