@@ -27,3 +27,4 @@
 **Vulnerability:** The application crashed when parsing a Gemini page line starting with `=>` followed only by whitespace. This caused a `java.util.NoSuchElementException` because `StringTokenizer.nextToken()` was called without checking if tokens existed. A malicious Gemini server could exploit this to crash the application (DoS).
 **Learning:** When using iterators or tokenizers like `StringTokenizer`, always verify that elements exist before attempting to retrieve them. Assumption of valid input from remote servers is dangerous.
 **Prevention:** Guard all calls to `nextToken()` with `hasMoreTokens()` (or `hasMoreElements()`). If the token is missing, handle the case gracefully (e.g., skip the line) instead of crashing.
+- 2025-02-18: [DoS via malformed URI] Use try-catch(IllegalArgumentException) around java.net.URI methods like create() and resolve() to prevent crashes on user input.

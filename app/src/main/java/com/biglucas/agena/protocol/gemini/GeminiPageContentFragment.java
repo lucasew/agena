@@ -128,11 +128,16 @@ public class GeminiPageContentFragment extends Fragment {
                         u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(buttonURI.trim()).toString().trim());
                     } catch (IllegalArgumentException e) {
                         // Some sites screw up with links and i think it would be nice a fallback behaviour in these cases
-                        final String regex = "[^a-zA-Z0-9:/.-]*";
-                        final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
-                        final Matcher matcher = pattern.matcher(buttonURI);
-                        final String res = matcher.replaceAll("");
-                        u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(res).toString());
+                        try {
+                            final String regex = "[^a-zA-Z0-9:/.-]*";
+                            final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+                            final Matcher matcher = pattern.matcher(buttonURI);
+                            final String res = matcher.replaceAll("");
+                            u = Uri.parse(URI.create(finalOldURINormalized.trim()).resolve(res).toString());
+                        } catch (IllegalArgumentException e2) {
+                            Log.w(TAG, "Failed to resolve URI even after cleanup: " + buttonURI, e2);
+                            continue;
+                        }
                     }
                     final Uri uri = u;
                     button.setOnTouchListener(new View.OnTouchListener() {

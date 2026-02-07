@@ -59,7 +59,12 @@ public class PageActivity extends AppCompatActivity {
             destURL = Uri.parse("gemini://" + urlToGoTo);
         } else {
             // Treat as relative path
-            destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+            try {
+                destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+            } catch (IllegalArgumentException e) {
+                StacktraceDialogHandler.show(this, e);
+                return;
+            }
         }
 
         Log.d(TAG, "scheme: " + destURL.getScheme());
