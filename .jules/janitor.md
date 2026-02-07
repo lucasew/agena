@@ -68,3 +68,4 @@
 **Root Cause:** This was likely a leftover from debugging where quick console output was used instead of proper Android logging.
 **Solution:** I replaced the `System.out.println` call with `Log.d` and added a `TAG` constant. This ensures log messages are correctly routed to Logcat.
 **Pattern:** Always use `android.util.Log` for logging in Android components to ensure messages are properly routed and managed.
+- 2025-02-05: Prefer List interface over ArrayList concrete type in signatures to avoid unsafe casts and coupling.

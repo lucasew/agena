@@ -24,6 +24,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.IllegalFormatConversionException;
 import java.util.Objects;
 import java.util.StringTokenizer;
@@ -39,10 +40,10 @@ import java.util.regex.Pattern;
 public class GeminiPageContentFragment extends Fragment {
 
     private static final String TAG = "GeminiPageContent";
-    private final ArrayList<String> content;
+    private final List<String> content;
     private final Uri oldURI;
 
-    public GeminiPageContentFragment(ArrayList<String> list, Uri oldURI) {
+    public GeminiPageContentFragment(List<String> list, Uri oldURI) {
         this.content = list;
         this.oldURI = oldURI;
     }

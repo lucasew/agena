@@ -13,6 +13,7 @@ import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class HistoricActivity extends AppCompatActivity {
 
@@ -29,7 +30,7 @@ public class HistoricActivity extends AppCompatActivity {
         refreshHistoric();
     }
     public void refreshHistoric() {
-        ArrayList<String> historic = (ArrayList<String>) new DatabaseController(DatabaseController.openDatabase(this))
+        List<String> historic = new DatabaseController(DatabaseController.openDatabase(this))
                 .getHistoryLines();
         try {
             Log.d(TAG, historic.toString());

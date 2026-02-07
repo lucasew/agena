@@ -97,7 +97,7 @@ public class PageActivity extends AppCompatActivity {
         if (this.getSupportFragmentManager().isDestroyed()) return;
         this.getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.browser_content, new GeminiPageContentFragment(new ArrayList<>(content), this.url))
+                .replace(R.id.browser_content, new GeminiPageContentFragment(content, this.url))
                 .commit();
     }
     private void handleLoad(Exception e) {
@@ -234,15 +234,15 @@ public class PageActivity extends AppCompatActivity {
         Log.i(TAG, uri.toString());
         ((TextView)this.findViewById(R.id.browser_url)).setText(uri.toString());
         PageActivity that = this;
-        AsyncTask<String, Integer, ArrayList<String>> task = new AsyncTask<String, Integer, ArrayList<String>>() {
+        AsyncTask<String, Integer, List<String>> task = new AsyncTask<String, Integer, List<String>>() {
             private Exception exception;
-            private ArrayList<String> list;
+            private List<String> list;
 
             @Override
-            protected ArrayList<String> doInBackground(String ..._ignore) {
+            protected List<String> doInBackground(String ..._ignore) {
                 try {
                     Log.d(TAG, "* request na thread *");
-                    this.list = (ArrayList<String>) GeminiSingleton.getGemini().request(that, that.url); // gambiarra alert
+                    this.list = GeminiSingleton.getGemini().request(that, that.url); // gambiarra alert
                 } catch (Exception e) {
                     this.exception = e;
                 }
@@ -250,7 +250,7 @@ public class PageActivity extends AppCompatActivity {
             }
 
             @Override
-            protected void onPostExecute(ArrayList<String> _ignore) {
+            protected void onPostExecute(List<String> _ignore) {
                 Log.d(TAG, "* post execute *");
                 if (list != null) {
                     for (String item : list) {
