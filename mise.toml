@@ -21,7 +21,7 @@ run = "flock .gradle.lock ./gradlew lint"
 
 [tasks."lint:shell"]
 description = "Run ShellCheck"
-run = "shellcheck make_release"
+run = "shellcheck make_release scripts/codegen.sh"
 
 [tasks."lint:markdown"]
 description = "Run Markdown Lint"
