@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.biglucas.agena.R;
 
@@ -86,7 +87,7 @@ public class ContentActivity extends AppCompatActivity {
             InputStream inputStream = getContentResolver().openInputStream(incomingUri);
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader dis = new BufferedReader(inputStreamReader);
-            ArrayList<String> lines = new ArrayList<>();
+            List<String> lines = new ArrayList<>();
             int lineCount = 0;
             while (true) {
                 if (lineCount >= MAX_LINES) {
