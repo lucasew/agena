@@ -9,7 +9,7 @@ shfmt = "3.10.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
-run = "./scripts/codegen.sh"
+run = "bash scripts/codegen.sh"
 
 [tasks.codegen]
 description = "Run all codegen tasks"
