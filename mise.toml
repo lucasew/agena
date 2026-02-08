@@ -3,6 +3,9 @@
 java = "17"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
+node = "20"
+"npm:markdownlint-cli2" = "latest"
+"npm:@taplo/cli" = "latest"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
@@ -26,6 +29,14 @@ run = "flock .gradle.lock ./gradlew lint"
 description = "Run ShellCheck"
 run = "shellcheck make_release"
 
+[tasks."lint:markdown"]
+description = "Run markdownlint"
+run = "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
+
+[tasks."lint:toml"]
+description = "Run taplo lint"
+run = "taplo lint"
+
 [tasks.lint]
 description = "Run all linters"
 depends = ["lint:*"]
@@ -33,6 +44,14 @@ depends = ["lint:*"]
 [tasks."fmt:shell"]
 description = "Run shfmt"
 run = "shfmt -w make_release"
+
+[tasks."fmt:toml"]
+description = "Run taplo fmt"
+run = "taplo fmt"
+
+[tasks."fmt:markdown"]
+description = "Run markdownlint fix"
+run = "markdownlint-cli2 --fix \"**/*.md\" \"#node_modules\""
 
 [tasks.fmt]
 description = "Run all formatters"
