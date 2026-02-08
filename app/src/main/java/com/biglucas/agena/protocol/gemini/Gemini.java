@@ -42,7 +42,7 @@ import javax.net.ssl.SSLSocket;
 public class Gemini {
     private static final String TAG = "Gemini";
 
-    private String readLineFromStream(InputStream input) throws IOException, FailedGeminiRequestException {
+    String readLineFromStream(InputStream input) throws IOException, FailedGeminiRequestException {
         ArrayList<Byte> bytes = new ArrayList<>();
         int b = input.read();
         if (b == -1) {
@@ -230,15 +230,15 @@ public class Gemini {
         if (GeminiSpec.isSuccess(responseCode)) {
             List<String> lines = new ArrayList<>();
             if (meta.startsWith("text/gemini")) {
-                long totalBytes = 0;
+                long totalChars = 0;
                 while (true) {
                     String line = readLineFromStream(inputStream);
                     if (line == null) {
                         break;
                     }
-                    // Estimate size (UTF-8 bytes)
-                    totalBytes += line.length();
-                    if (totalBytes > GeminiSpec.MAX_RESPONSE_BODY_SIZE_BYTES) {
+                    // Count characters
+                    totalChars += line.length();
+                    if (totalChars > GeminiSpec.MAX_RESPONSE_BODY_LENGTH_CHARS) {
                         throw new FailedGeminiRequestException.GeminiResponseTooLarge("Response body exceeded limit");
                     }
                     Collections.addAll(lines, line.split("\n"));

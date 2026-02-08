@@ -4,11 +4,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for Denial of Service (DoS) defenses in the Gemini client.
@@ -32,16 +31,13 @@ public class GeminiDoSDefenseTest {
         InputStream input = new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8));
         Gemini gemini = new Gemini();
 
-        Method readLineMethod = Gemini.class.getDeclaredMethod("readLineFromStream", InputStream.class);
-        readLineMethod.setAccessible(true);
-
         try {
-            readLineMethod.invoke(gemini, input);
+            // Using package-private access to avoid reflection
+            gemini.readLineFromStream(input);
             fail("Should have thrown GeminiResponseTooLarge exception");
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            assertTrue("Expected GeminiResponseTooLarge, got " + cause.getClass().getSimpleName(),
-                       cause instanceof FailedGeminiRequestException.GeminiResponseTooLarge);
+        } catch (FailedGeminiRequestException.GeminiResponseTooLarge e) {
+            // Success
+            assertTrue(e.getMessage().contains("Line length exceeded limit"));
         }
     }
 }
