@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * Maps Gemini and network exceptions to user-friendly error messages.
  */
-public class GeminiErrorMapper {
+public final class GeminiErrorMapper {
 
     private GeminiErrorMapper() {
         // Private constructor to prevent instantiation
