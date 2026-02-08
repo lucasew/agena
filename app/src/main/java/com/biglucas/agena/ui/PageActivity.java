@@ -1,6 +1,7 @@
 package com.biglucas.agena.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,18 +10,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.protocol.gemini.FailedGeminiRequestException;
+import com.biglucas.agena.protocol.gemini.GeminiDownloader;
 import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
+import com.biglucas.agena.protocol.gemini.GeminiResponse;
 import com.biglucas.agena.protocol.gemini.GeminiSingleton;
+import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -220,6 +226,15 @@ public class PageActivity extends AppCompatActivity {
         builder.show();
     }
 
+    private static class LoadResult {
+        List<String> textLines;
+        GeminiDownloader.Result downloadResult;
+        boolean isDownload;
+        Exception exception;
+        Uri uri;
+        String meta;
+    }
+
     public void handlePageLoad() {
         handlePageLoad(this.url.toString());
     }
@@ -233,34 +248,72 @@ public class PageActivity extends AppCompatActivity {
         Uri uri = Uri.parse(url);
         Log.i(TAG, uri.toString());
         ((TextView)this.findViewById(R.id.browser_url)).setText(uri.toString());
-        PageActivity that = this;
-        AsyncTask<String, Integer, ArrayList<String>> task = new AsyncTask<String, Integer, ArrayList<String>>() {
-            private Exception exception;
-            private ArrayList<String> list;
 
+        // Check scheme, delegate to Invoker if not gemini
+        if (!"gemini".equals(uri.getScheme())) {
+            Invoker.invoke(this, uri);
+            handleLoad(new ArrayList<>());
+            return;
+        }
+
+        PageActivity that = this;
+        AsyncTask<String, Integer, LoadResult> task = new AsyncTask<String, Integer, LoadResult>() {
             @Override
-            protected ArrayList<String> doInBackground(String ..._ignore) {
+            protected LoadResult doInBackground(String ..._ignore) {
+                LoadResult result = new LoadResult();
                 try {
-                    Log.d(TAG, "* request na thread *");
-                    this.list = (ArrayList<String>) GeminiSingleton.getGemini().request(that, that.url); // gambiarra alert
+                    GeminiResponse response = GeminiSingleton.getGemini().request(that.url);
+                    result.uri = response.getUri();
+                    result.meta = response.getMeta();
+
+                    if (response.isText()) {
+                        result.isDownload = false;
+                        result.textLines = response.getTextBody();
+                        response.close();
+                    } else {
+                        result.isDownload = true;
+                        GeminiDownloader downloader = new GeminiDownloader();
+                        result.downloadResult = downloader.download(that, response.getInputStream(), response.getUri(), response.getMeta());
+                        response.close();
+                    }
+
+                    // Save history
+                    try {
+                        new DatabaseController(DatabaseController.openDatabase(that))
+                                .addHistoryEntry(result.uri);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to save history for URI: " + result.uri, e);
+                    }
+
                 } catch (Exception e) {
-                    this.exception = e;
+                    result.exception = e;
                 }
-                return this.list;
+                return result;
             }
 
             @Override
-            protected void onPostExecute(ArrayList<String> _ignore) {
+            protected void onPostExecute(LoadResult result) {
                 Log.d(TAG, "* post execute *");
-                if (list != null) {
-                    for (String item : list) {
-                        Log.v(TAG, item);
-                    }
+                if (result.exception != null) {
+                    that.handleLoad(result.exception);
+                    return;
                 }
-                if (list != null) {
-                    that.handleLoad(list);
+
+                if (result.isDownload) {
+                    if (result.downloadResult != null) {
+                        Toast.makeText(that, result.downloadResult.displayPath, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent();
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        intent.setAction(Intent.ACTION_VIEW);
+                        intent.setDataAndType(result.downloadResult.uri, result.meta);
+                        that.startActivity(intent);
+                    } else {
+                        Toast.makeText(that, that.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show();
+                    }
+                    that.handleLoad(new ArrayList<>()); // Show empty page
                 } else {
-                    that.handleLoad(exception);
+                    that.handleLoad(result.textLines);
                 }
             }
         };

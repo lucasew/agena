@@ -1,14 +1,8 @@
 package com.biglucas.agena.protocol.gemini;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.biglucas.agena.R;
-import com.biglucas.agena.utils.DatabaseController;
-import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.SSLSocketFactorySingleton;
 
 import java.io.BufferedInputStream;
@@ -36,7 +30,6 @@ import javax.net.ssl.SSLSocket;
  *     <li>Request formatting (`gemini://<host>/<path>\r\n`).</li>
  *     <li>Response header parsing (Status + Meta).</li>
  *     <li>Status code logic dispatch (Success, Redirect, Input, Error).</li>
- *     <li>File downloads respecting Android's storage APIs.</li>
  * </ul>
  */
 public class Gemini {
@@ -65,19 +58,18 @@ public class Gemini {
      * Validates the URI against the Gemini spec and delegates to {@link #requestInternal}
      * to handle the request lifecycle, including redirect following.
      *
-     * @param activity The context used for launching intents or showing Toasts.
      * @param uri The Gemini URI to request.
-     * @return A list of strings representing the response body (if text/gemini), or empty if handled otherwise.
+     * @return A {@link GeminiResponse} containing the response body (text lines or input stream).
      * @throws IOException If a network error occurs.
      * @throws FailedGeminiRequestException If the protocol returns an error status.
      * @throws NoSuchAlgorithmException If hashing algorithms are missing.
      * @throws KeyManagementException If SSL setup fails.
      */
-    public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+    public GeminiResponse request(Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         // Validate URI according to Gemini spec
         validateUri(uri);
         // Start request with redirect counter at 0
-        return requestInternal(activity, uri, 0);
+        return requestInternal(uri, 0);
     }
 
     /**
@@ -112,17 +104,12 @@ public class Gemini {
      *
      * @param redirectCount Current depth of recursion for redirects (max 5).
      */
-    private List<String> requestInternal(Activity activity, Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+    private GeminiResponse requestInternal(Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         Log.i(TAG, "Requesting: '" + uri.toString() + "' (redirect count: " + redirectCount + ")");
 
         // Check redirect limit (max 5 as per spec)
         if (redirectCount > GeminiSpec.MAX_REDIRECTS) {
             throw new FailedGeminiRequestException.GeminiTooManyRedirects();
-        }
-
-        if (uri.getScheme() == null || !uri.getScheme().equals("gemini")) {
-            Invoker.invokeNewWindow(activity, uri);
-            return new ArrayList<>();
         }
 
         int port = uri.getPort();
@@ -148,58 +135,59 @@ public class Gemini {
         socket.setSoTimeout(GeminiSpec.DEFAULT_TIMEOUT_MS);
         socket.startHandshake();
 
-        BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
+        BufferedOutputStream outputStream = null;
+        InputStream inputStream = null;
 
-        String cleanedEntity = uri.toString().replace("%2F", "/").trim();
-        String requestEntity = cleanedEntity + "\r\n";
-
-        outputStream.write(requestEntity.getBytes());
-        outputStream.flush();
-
-        InputStream inputStream = new BufferedInputStream(socket.getInputStream());
-        String headerLine = readLineFromStream(inputStream);
-        if (headerLine == null) {
-            Log.i(TAG, "Server did not respond with a Gemini header");
-            inputStream.close();
-            outputStream.close();
-            throw new FailedGeminiRequestException.GeminiInvalidResponse();
-        }
-
-        // Parse response code and meta
-        int responseCode;
-        String meta;
         try {
-            int spaceIndex = headerLine.indexOf(" ");
-            if (spaceIndex == -1) {
-                // No meta field, just status code
-                responseCode = Integer.parseInt(headerLine.trim());
-                meta = "";
-            } else {
-                responseCode = Integer.parseInt(headerLine.substring(0, spaceIndex));
-                meta = headerLine.substring(spaceIndex).trim();
-            }
-        } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            inputStream.close();
-            outputStream.close();
-            throw new FailedGeminiRequestException.GeminiInvalidResponse();
-        }
+            outputStream = new BufferedOutputStream(socket.getOutputStream());
 
-        Log.i(TAG, "response_code=" + responseCode + ", meta=" + meta);
+            String cleanedEntity = uri.toString().replace("%2F", "/").trim();
+            String requestEntity = cleanedEntity + "\r\n";
 
-        // Handle response based on status code ranges
-        try {
-            return handleResponse(activity, uri, inputStream, outputStream, responseCode, meta, cleanedEntity, redirectCount);
-        } finally {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                // Ignore close errors
+            outputStream.write(requestEntity.getBytes());
+            outputStream.flush();
+
+            inputStream = new BufferedInputStream(socket.getInputStream());
+            String headerLine = readLineFromStream(inputStream);
+            if (headerLine == null) {
+                Log.i(TAG, "Server did not respond with a Gemini header");
+                throw new FailedGeminiRequestException.GeminiInvalidResponse();
             }
+
+            // Parse response code and meta
+            int responseCode;
+            String meta;
             try {
-                outputStream.close();
-            } catch (IOException e) {
-                // Ignore close errors
+                int spaceIndex = headerLine.indexOf(" ");
+                if (spaceIndex == -1) {
+                    // No meta field, just status code
+                    responseCode = Integer.parseInt(headerLine.trim());
+                    meta = "";
+                } else {
+                    responseCode = Integer.parseInt(headerLine.substring(0, spaceIndex));
+                    meta = headerLine.substring(spaceIndex).trim();
+                }
+            } catch (NumberFormatException | IndexOutOfBoundsException e) {
+                throw new FailedGeminiRequestException.GeminiInvalidResponse();
             }
+
+            Log.i(TAG, "response_code=" + responseCode + ", meta=" + meta);
+
+            // Handle response based on status code ranges
+            return handleResponse(uri, inputStream, outputStream, socket, responseCode, meta, redirectCount);
+
+        } catch (Exception e) {
+            // Close resources on error
+            if (inputStream != null) {
+                try { inputStream.close(); } catch (IOException ignored) {}
+            }
+            if (outputStream != null) {
+                try { outputStream.close(); } catch (IOException ignored) {}
+            }
+            if (!socket.isClosed()) {
+                try { socket.close(); } catch (IOException ignored) {}
+            }
+            throw e;
         }
     }
 
@@ -207,14 +195,14 @@ public class Gemini {
      * Dispatches logic based on the Gemini status code family.
      * <p>
      * - 1x (Input): Throws exception to prompt user.
-     * - 2x (Success): Reads body. If text/gemini, returns lines. If binary, downloads it.
+     * - 2x (Success): Reads body. If text/gemini, returns lines. If binary, returns stream.
      * - 3x (Redirect): Recurses into `requestInternal` with new URI.
      * - 4x/5x (Failure): Throws specific exceptions.
      * - 6x (Client Cert): Throws auth exception.
      */
-    private List<String> handleResponse(Activity activity, Uri uri, InputStream inputStream,
-                                        BufferedOutputStream outputStream, int responseCode,
-                                        String meta, String cleanedEntity, int redirectCount)
+    private GeminiResponse handleResponse(Uri uri, InputStream inputStream,
+                                        BufferedOutputStream outputStream, SSLSocket socket, int responseCode,
+                                        String meta, int redirectCount)
             throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
 
         // Input required (10-19)
@@ -225,8 +213,8 @@ public class Gemini {
 
         // Success (20-29)
         if (GeminiSpec.isSuccess(responseCode)) {
-            List<String> lines = new ArrayList<>();
             if (meta.startsWith("text/gemini")) {
+                List<String> lines = new ArrayList<>();
                 while (true) {
                     String line = readLineFromStream(inputStream);
                     if (line == null) {
@@ -234,31 +222,15 @@ public class Gemini {
                     }
                     Collections.addAll(lines, line.split("\n"));
                 }
+                // Close resources for text response as we have consumed the stream
+                inputStream.close();
+                outputStream.close();
+                socket.close();
+                return new GeminiResponse(uri, meta, lines, null, null);
             } else {
-                // Download to public Downloads folder
-                GeminiDownloader downloader = new GeminiDownloader();
-                GeminiDownloader.Result result = downloader.download(activity, inputStream, Uri.parse(cleanedEntity), meta);
-                if (result != null) {
-                    activity.runOnUiThread(() -> Toast.makeText(activity, result.displayPath, Toast.LENGTH_SHORT).show());
-                    Intent intent = new Intent();
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.setDataAndType(result.uri, meta);
-                    activity.startActivity(intent);
-                } else {
-                    // Permission was denied, show retry message
-                    activity.runOnUiThread(() -> Toast.makeText(activity, activity.getResources().getString(R.string.please_repeat_action), Toast.LENGTH_SHORT).show());
-                }
+                // Return open stream for binary content
+                return new GeminiResponse(uri, meta, null, inputStream, socket);
             }
-            try {
-                new DatabaseController(DatabaseController.openDatabase(activity))
-                        .addHistoryEntry(uri);
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to save history for URI: " + uri, e);
-                activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
-            }
-            return lines;
         }
 
         // Redirect (30-39)
@@ -266,12 +238,17 @@ public class Gemini {
             if (meta.isEmpty()) {
                 throw new FailedGeminiRequestException.GeminiInvalidResponse();
             }
+            // Close resources before following redirect
+            inputStream.close();
+            outputStream.close();
+            socket.close();
+
             // Resolve relative URIs against the current request URI (RFC 3986)
             URI currentUri = URI.create(uri.toString());
             URI resolvedUri = currentUri.resolve(meta.trim());
             Uri redirectUri = Uri.parse(resolvedUri.toString());
             validateUri(redirectUri);
-            return requestInternal(activity, redirectUri, redirectCount + 1);
+            return requestInternal(redirectUri, redirectCount + 1);
         }
 
         // Temporary failure (40-49)
