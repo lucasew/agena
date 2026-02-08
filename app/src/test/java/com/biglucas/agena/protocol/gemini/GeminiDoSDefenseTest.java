@@ -8,11 +8,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+/**
+ * Unit tests for Denial of Service (DoS) defenses in the Gemini client.
+ */
 public class GeminiDoSDefenseTest {
 
+    /**
+     * Verifies that `readLineFromStream` throws an exception when a line exceeds the maximum allowed length.
+     * This prevents OOM attacks via infinitely long lines.
+     */
     @Test
     public void testReadLineFromStream_ExceedsMaxLineLength() throws Exception {
         // Create a very long line > 4096 bytes
