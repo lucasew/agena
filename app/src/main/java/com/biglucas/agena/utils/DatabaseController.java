@@ -104,7 +104,7 @@ public class DatabaseController {
      * Retrieves the browsing history as a list of Gemini-formatted strings.
      * <p>
      * <b>Nuance:</b> This method doesn't just return raw data. It returns strings formatted
-     * specifically for the {@link com.biglucas.agena.protocol.gemini.GeminiPageContentFragment}.
+     * specifically for the {@link com.biglucas.agena.ui.GeminiPageContentFragment}.
      * <br>
      * Each string is a valid Gemtext link line: {@code => <URL> <TIMESTAMP> <URL>}
      * This allows the history list to be rendered directly as a clickable Gemini page.
