@@ -16,6 +16,10 @@ public final class GeminiSpec {
     public static final int MAX_REDIRECTS = 5;
     public static final int MAX_URI_LENGTH_BYTES = 1024;
 
+    // Security Limits
+    public static final int MAX_RESPONSE_BODY_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+    public static final int MAX_LINE_LENGTH_BYTES = 4096; // 4KB
+
     // Status Code Categories (Ranges)
     public static final int CATEGORY_INPUT = 10;
     public static final int CATEGORY_SUCCESS = 20;

@@ -27,3 +27,8 @@
 **Vulnerability:** The application crashed when parsing a Gemini page line starting with `=>` followed only by whitespace. This caused a `java.util.NoSuchElementException` because `StringTokenizer.nextToken()` was called without checking if tokens existed. A malicious Gemini server could exploit this to crash the application (DoS).
 **Learning:** When using iterators or tokenizers like `StringTokenizer`, always verify that elements exist before attempting to retrieve them. Assumption of valid input from remote servers is dangerous.
 **Prevention:** Guard all calls to `nextToken()` with `hasMoreTokens()` (or `hasMoreElements()`). If the token is missing, handle the case gracefully (e.g., skip the line) instead of crashing.
+
+## 2026-01-24 - Prevent DoS via unbounded response reading in Gemini client
+**Vulnerability:** The Gemini client would read the entire response body into memory without limits, allowing a malicious server to cause an `OutOfMemoryError` (DoS) by sending an infinitely large response or an infinitely long line.
+**Learning:** Reading unbounded data from a network stream into memory is a classic DoS vector. Always impose limits on both individual line length (when parsing line-by-line) and total body size.
+**Prevention:** Enforce `MAX_LINE_LENGTH_BYTES` in stream readers and `MAX_RESPONSE_BODY_SIZE_BYTES` when buffering content. Throw an exception and abort the connection if these limits are exceeded.

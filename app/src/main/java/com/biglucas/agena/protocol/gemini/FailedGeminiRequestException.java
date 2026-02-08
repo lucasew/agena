@@ -123,6 +123,12 @@ public class FailedGeminiRequestException extends Exception {
     }
 
     // General errors
+    public static class GeminiResponseTooLarge extends FailedGeminiRequestException {
+        public GeminiResponseTooLarge(String message) {
+            super("Response too large: " + message);
+        }
+    }
+
     public static class GeminiInvalidResponse extends FailedGeminiRequestException {
         GeminiInvalidResponse() {
             super("Invalid response");
