@@ -36,7 +36,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -46,7 +46,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
     - name: Setup mise
-      uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3
+      uses: jdx/mise-action@v2
 
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
@@ -59,7 +59,7 @@ jobs:
 
     - name: Create Pull Request if there is new stuff from updaters
       if: github.event_name != 'pull_request'
-      uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725 # v8
+      uses: peter-evans/create-pull-request@v7
       id: pr_create
       with:
         commit-message: "chore: update codegen"
@@ -83,7 +83,7 @@ jobs:
       run: mise run ci -- --stacktrace
 
     - name: Upload test results
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
@@ -92,7 +92,7 @@ jobs:
           app/build/test-results/
 
     - name: Test Report
-      uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2
+      uses: dorny/test-reporter@v1
       if: always()
       with:
         name: JUnit Test Results
@@ -102,7 +102,7 @@ jobs:
 
     - name: Upload debug APK artifact
       if: always()
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@v4
       with:
         name: debug-apk
         path: app/build/outputs/apk/debug/*.apk
@@ -125,7 +125,7 @@ jobs:
 
     - name: Upload release APK artifact
       if: always()
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@v4
       with:
         name: release-apk
         path: app/build/outputs/apk/release/*.apk

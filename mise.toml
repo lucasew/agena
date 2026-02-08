@@ -31,7 +31,7 @@ run = "shellcheck make_release"
 
 [tasks."lint:markdown"]
 description = "Run markdownlint"
-run = "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#build\""
+run = "markdownlint-cli2 \"**/*.md\" \"#**/node_modules\" \"#**/build\""
 
 [tasks."lint:toml"]
 description = "Run taplo lint"
@@ -51,7 +51,7 @@ run = "taplo fmt"
 
 [tasks."fmt:markdown"]
 description = "Run markdownlint fix"
-run = "markdownlint-cli2 --fix \"**/*.md\" \"#node_modules\" \"#build\""
+run = "markdownlint-cli2 --fix \"**/*.md\" \"#**/node_modules\" \"#**/build\""
 
 [tasks.fmt]
 description = "Run all formatters"
