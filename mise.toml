@@ -3,9 +3,9 @@
 java = "17"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
-node = "20"
-"npm:markdownlint-cli2" = "latest"
-"npm:@taplo/cli" = "latest"
+node = "20.18.3"
+"npm:markdownlint-cli2" = "0.17.2"
+"npm:@taplo/cli" = "0.7.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
