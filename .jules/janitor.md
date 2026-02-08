@@ -82,3 +82,10 @@
 **Root Cause:** This was likely a leftover from debugging where quick console output was used instead of proper Android logging.
 **Solution:** I replaced the `System.out.println` call with `Log.d` and added a `TAG` constant. This ensures log messages are correctly routed to Logcat.
 **Pattern:** Always use `android.util.Log` for logging in Android components to ensure messages are properly routed and managed.
+
+## 2026-02-07 - Verify Logic Preservation when Migrating Build Tasks
+
+**Issue:** When migrating the `generateSqlc` task from Gradle to a standalone shell script (`scripts/codegen.sh`) managed by `mise`, a critical post-processing step (patching a Java file with `sed`) was initially at risk of being overlooked or incorrectly implemented.
+**Root Cause:** Build logic embedded in Gradle tasks can be complex and contain subtle but essential operations like file patching or cleanups. Migrating tool invocations (like `sqlc`) without fully porting these surrounding operations leads to regressions (e.g., missing casts causing compilation errors).
+**Solution:** I extracted the entire logic block—including `sqlc generate`, file cleanup, and `sed` patching—into a dedicated script (`scripts/codegen.sh`) and configured `mise` to run this script. This ensures the full behavior is preserved and testable independent of Gradle.
+**Pattern:** When decoupling build steps from Gradle (or any build system), treat the original task as a "black box" of behavior that must be fully replicated. Extract logic into standalone scripts rather than inline commands in configuration files to improve readability and maintainability.

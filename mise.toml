@@ -1,6 +1,9 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.30.0"
+"npm:markdownlint-cli2" = "0.12.1"
+"npm:@taplo/cli" = "0.7.0"
 java = "17"
+node = "20"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
 node = "20.18.3"
@@ -13,7 +16,7 @@ run = """
 sqlc generate
 rm -f app/src/main/java/Queries.java
 if [ -f "app/src/main/java/com/biglucas/agena/db/Queries.java" ]; then
-    sed -i 's/results.getObject(2, OffsetDateTime.class)/((com.biglucas.agena.db.wrapper.AndroidResultSet)results).getObject(2, OffsetDateTime.class)/g' app/src/main/java/com/biglucas/agena/db/Queries.java
+    sed -i "s/results.getObject(2, OffsetDateTime.class)/((com.biglucas.agena.db.wrapper.AndroidResultSet)results).getObject(2, OffsetDateTime.class)/g" app/src/main/java/com/biglucas/agena/db/Queries.java
 fi
 """
 
@@ -30,12 +33,12 @@ description = "Run ShellCheck"
 run = "shellcheck make_release"
 
 [tasks."lint:markdown"]
-description = "Run markdownlint"
-run = 'markdownlint-cli2 "**/*.md" "#**/node_modules" "#**/build"'
+description = "Run Markdown Lint"
+run = "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
 
 [tasks."lint:toml"]
-description = "Run taplo lint"
-run = "taplo lint"
+description = "Run TOML Lint (Taplo)"
+run = "taplo fmt --check"
 
 [tasks.lint]
 description = "Run all linters"
@@ -46,7 +49,7 @@ description = "Run shfmt"
 run = "shfmt -w make_release"
 
 [tasks."fmt:toml"]
-description = "Run taplo fmt"
+description = "Run Taplo Format"
 run = "taplo fmt"
 
 [tasks."fmt:markdown"]
