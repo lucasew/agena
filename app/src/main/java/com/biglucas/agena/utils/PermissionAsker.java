@@ -43,11 +43,15 @@ public final class PermissionAsker {
         Log.d(TAG, "Ensuring permission: " + permission);
         if (ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) {
             return true;
-        } else if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-            Toast.makeText(activity, activity.getResources().getString(reason), Toast.LENGTH_SHORT).show();
-        } else {
-            ActivityCompat.requestPermissions(activity, new String[]{permission}, 0);
         }
+
+        activity.runOnUiThread(() -> {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+                Toast.makeText(activity, activity.getResources().getString(reason), Toast.LENGTH_SHORT).show();
+            } else {
+                ActivityCompat.requestPermissions(activity, new String[]{permission}, 0);
+            }
+        });
         return false;
     }
 }
