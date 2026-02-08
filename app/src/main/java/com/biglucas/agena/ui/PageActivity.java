@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.protocol.gemini.FailedGeminiRequestException;
-import com.biglucas.agena.protocol.gemini.GeminiPageContentFragment;
 import com.biglucas.agena.protocol.gemini.GeminiSingleton;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.StacktraceDialogHandler;

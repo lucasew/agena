@@ -6,6 +6,9 @@ java = "17"
 node = "20"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
+node = "20.18.3"
+"npm:markdownlint-cli2" = "0.17.2"
+"npm:@taplo/cli" = "0.7.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
@@ -48,6 +51,10 @@ run = "shfmt -w make_release"
 [tasks."fmt:toml"]
 description = "Run Taplo Format"
 run = "taplo fmt"
+
+[tasks."fmt:markdown"]
+description = "Run markdownlint fix"
+run = 'markdownlint-cli2 --fix "**/*.md" "#**/node_modules" "#**/build"'
 
 [tasks.fmt]
 description = "Run all formatters"
