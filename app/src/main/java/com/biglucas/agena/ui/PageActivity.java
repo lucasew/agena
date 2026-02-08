@@ -22,6 +22,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.net.URI;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -178,37 +179,53 @@ public class PageActivity extends AppCompatActivity {
         Uri uri = Uri.parse(url);
         Log.i(TAG, uri.toString());
         ((TextView)this.findViewById(R.id.browser_url)).setText(uri.toString());
-        PageActivity that = this;
-        AsyncTask<String, Integer, ArrayList<String>> task = new AsyncTask<String, Integer, ArrayList<String>>() {
-            private Exception exception;
-            private ArrayList<String> list;
 
-            @Override
-            protected ArrayList<String> doInBackground(String ..._ignore) {
-                try {
-                    Log.d(TAG, "* request na thread *");
-                    this.list = (ArrayList<String>) GeminiSingleton.getGemini().request(that, that.url); // gambiarra alert
-                } catch (Exception e) {
-                    this.exception = e;
-                }
-                return this.list;
+        new GeminiRequestTask(this).execute();
+    }
+
+    private static class GeminiRequestTask extends AsyncTask<Void, Void, ArrayList<String>> {
+        private final WeakReference<PageActivity> activityRef;
+        private Exception exception;
+        private ArrayList<String> list;
+
+        GeminiRequestTask(PageActivity activity) {
+            this.activityRef = new WeakReference<>(activity);
+        }
+
+        @Override
+        protected ArrayList<String> doInBackground(Void... voids) {
+            PageActivity activity = activityRef.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                return null;
             }
 
-            @Override
-            protected void onPostExecute(ArrayList<String> _ignore) {
-                Log.d(TAG, "* post execute *");
-                if (list != null) {
-                    for (String item : list) {
-                        Log.v(TAG, item);
-                    }
-                }
-                if (list != null) {
-                    that.handleLoad(list);
-                } else {
-                    that.handleLoad(exception);
-                }
+            try {
+                Log.d(TAG, "* request na thread *");
+                // Use activity context and URL from activity
+                // Note: If activity is gone, we might still proceed but results are discarded
+                this.list = (ArrayList<String>) GeminiSingleton.getGemini().request(activity, activity.url);
+            } catch (Exception e) {
+                this.exception = e;
             }
-        };
-        task.execute("");
+            return this.list;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> result) {
+            Log.d(TAG, "* post execute *");
+            PageActivity activity = activityRef.get();
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                return;
+            }
+
+            if (result != null) {
+                for (String item : result) {
+                    Log.v(TAG, item);
+                }
+                activity.handleLoad(result);
+            } else {
+                activity.handleLoad(exception);
+            }
+        }
     }
 }
