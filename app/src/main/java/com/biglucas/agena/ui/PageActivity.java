@@ -21,9 +21,7 @@ import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.net.SocketTimeoutException;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -108,63 +106,10 @@ public class PageActivity extends AppCompatActivity {
             return;
         }
 
-        String errText;
         Context appctx = this.getApplicationContext();
+        String errText = GeminiErrorMapper.getErrorMessage(appctx, e);
 
-        // Network errors
-        if (e instanceof UnknownHostException) {
-            errText = appctx.getString(R.string.error_unable_to_resolve_host);
-        } else if (e instanceof SocketTimeoutException) {
-            errText = appctx.getString(R.string.error_connection_timeout);
-
-        // Temporary failures (40-49)
-        } else if (e instanceof FailedGeminiRequestException.GeminiSlowDown) {
-            errText = appctx.getString(R.string.error_slow_down) + ": " + e.getMessage();
-        } else if (e instanceof FailedGeminiRequestException.GeminiServerUnavailable) {
-            errText = appctx.getString(R.string.error_server_unavailable);
-        } else if (e instanceof FailedGeminiRequestException.GeminiCGIError) {
-            errText = Objects.requireNonNull(e.getMessage()).replaceFirst("^CGI error: CGI [Ee]rror: ", "CGI error: ");
-        } else if (e instanceof FailedGeminiRequestException.GeminiProxyError) {
-            errText = appctx.getString(R.string.error_proxy_error);
-        } else if (e instanceof FailedGeminiRequestException.GeminiTemporaryFailure) {
-            errText = appctx.getString(R.string.error_temporary_failure);
-
-        // Permanent failures (50-59)
-        } else if (e instanceof FailedGeminiRequestException.GeminiNotFound) {
-            errText = appctx.getString(R.string.error_gemini_not_found);
-        } else if (e instanceof FailedGeminiRequestException.GeminiGone) {
-            errText = appctx.getString(R.string.error_gone);
-        } else if (e instanceof FailedGeminiRequestException.GeminiProxyRequestRefused) {
-            errText = appctx.getString(R.string.error_proxy_request_refused);
-        } else if (e instanceof FailedGeminiRequestException.GeminiBadRequest) {
-            errText = appctx.getString(R.string.error_bad_request);
-        } else if (e instanceof FailedGeminiRequestException.GeminiPermanentFailure) {
-            errText = appctx.getString(R.string.error_permanent_failure);
-
-        // Client certificate errors (60-69)
-        } else if (e instanceof FailedGeminiRequestException.GeminiClientCertificateRequired) {
-            errText = appctx.getString(R.string.error_client_certificate_required);
-        } else if (e instanceof FailedGeminiRequestException.GeminiCertificateNotAuthorized) {
-            errText = appctx.getString(R.string.error_certificate_not_authorized);
-        } else if (e instanceof FailedGeminiRequestException.GeminiCertificateNotValid) {
-            errText = appctx.getString(R.string.error_certificate_not_valid);
-
-        // Redirect errors
-        } else if (e instanceof FailedGeminiRequestException.GeminiTooManyRedirects) {
-            errText = appctx.getString(R.string.error_too_many_redirects);
-
-        // URI validation errors
-        } else if (e instanceof FailedGeminiRequestException.GeminiInvalidUri) {
-            errText = appctx.getString(R.string.error_invalid_uri) + ": " + e.getMessage();
-
-        // Other Gemini errors
-        } else if (e instanceof FailedGeminiRequestException.GeminiInvalidResponse) {
-            errText = appctx.getString(R.string.error_gemini_invalid_response);
-        } else if (e instanceof FailedGeminiRequestException.GeminiUnimplementedCase) {
-            errText = appctx.getString(R.string.error_gemini_unimplemented);
-
-        // Generic error
-        } else {
+        if (errText == null) {
             errText = appctx.getString(R.string.error_generic);
             StacktraceDialogHandler.show(this, e);
         }
