@@ -1,11 +1,11 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.30.0"
 java = "17"
-node = "lts"
+node = "22.12.0"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
-"npm:markdownlint-cli2" = "latest"
-"npm:@taplo/cli" = "latest"
+"npm:markdownlint-cli2" = "0.20.0"
+"npm:@taplo/cli" = "0.7.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
