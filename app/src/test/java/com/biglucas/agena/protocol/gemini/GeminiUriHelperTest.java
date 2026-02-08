@@ -47,23 +47,6 @@ public class GeminiUriHelperTest {
     public void testSpecialCharsRemoval() {
         // Test removing special chars
         String base = "gemini://example.com/";
-        String badTarget = "f@#oo$bar";
-        // @ is allowed in userinfo but not in path usually without encoding? No @ is allowed in pchar.
-        // # is fragment.
-        // $ is sub-delims, allowed.
-
-        // Let's use chars that cause URI.create to fail AND are in the regex [^a-zA-Z0-9:/.-]
-        // The regex allows : / . -
-        // It removes everything else.
-        // So @ # $ are removed.
-
-        // Wait, URI.create allows @ $ in path.
-        // But if URI.create SUCCEEDS, fallback is NOT used.
-        // So resolve("gemini://example.com/", "foo$bar") -> "gemini://example.com/foo$bar".
-
-        // To trigger fallback, URI.create must fail.
-        // Space, control chars, < > " { } | \ ^ ` [ ]
-
         String reallyBadTarget = "foo<bar>";
         // < > not allowed. URI.create throws IAE.
         // Regex removes < >. -> foobar.
