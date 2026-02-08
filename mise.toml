@@ -9,7 +9,16 @@ shfmt = "3.10.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
-run = "bash scripts/codegen.sh"
+run = """
+bash -c '
+set -e
+sqlc generate
+rm -f app/src/main/java/Queries.java
+if [ -f "app/src/main/java/com/biglucas/agena/db/Queries.java" ]; then
+    sed -i "s/results.getObject(2, OffsetDateTime.class)/((com.biglucas.agena.db.wrapper.AndroidResultSet)results).getObject(2, OffsetDateTime.class)/g" app/src/main/java/com/biglucas/agena/db/Queries.java
+fi
+'
+"""
 
 [tasks.codegen]
 description = "Run all codegen tasks"
@@ -21,7 +30,7 @@ run = "flock .gradle.lock ./gradlew lint"
 
 [tasks."lint:shell"]
 description = "Run ShellCheck"
-run = "shellcheck make_release scripts/codegen.sh"
+run = "shellcheck make_release"
 
 [tasks."lint:markdown"]
 description = "Run Markdown Lint"
