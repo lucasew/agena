@@ -31,7 +31,7 @@ run = "shellcheck make_release"
 
 [tasks."lint:markdown"]
 description = "Run Markdown Lint"
-run = "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
+run = 'markdownlint-cli2 "**/*.md" "#**/node_modules" "#**/build"'
 
 [tasks."lint:toml"]
 description = "Run TOML Lint (Taplo)"
@@ -83,5 +83,9 @@ run = "flock .gradle.lock ./gradlew assembleRelease"
 
 [tasks.ci]
 description = "Run CI tasks (Lint, Test, Build)"
-depends = ["lint", "test"]
-run = "flock .gradle.lock ./gradlew assembleDebug"
+run = '''
+set -e
+mise run lint
+mise run test
+flock .gradle.lock ./gradlew assembleDebug "$@"
+'''
