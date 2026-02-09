@@ -84,6 +84,7 @@ run = "flock .gradle.lock ./gradlew assembleRelease"
 [tasks.ci]
 description = "Run CI tasks (Lint, Test, Build)"
 run = '''
+set -e
 mise run lint
 mise run test
 flock .gradle.lock ./gradlew assembleDebug "$@"
