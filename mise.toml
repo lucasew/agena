@@ -86,5 +86,5 @@ description = "Run CI tasks (Lint, Test, Build)"
 run = """
 mise run lint
 mise run test
-flock .gradle.lock ./gradlew assembleDebug "$@"
+flock .gradle.lock ./gradlew assembleDebug
 """
