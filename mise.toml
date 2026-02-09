@@ -1,11 +1,14 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.30.0"
-"npm:markdownlint-cli2" = "0.20.0"
+"npm:markdownlint-cli2" = "0.12.1"
 "npm:@taplo/cli" = "0.7.0"
 java = "17"
-node = "22.12.0"
+node = "20"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
+node = "20.18.3"
+"npm:markdownlint-cli2" = "0.17.2"
+"npm:@taplo/cli" = "0.7.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
@@ -31,7 +34,7 @@ run = "shellcheck make_release"
 
 [tasks."lint:markdown"]
 description = "Run Markdown Lint"
-run = 'markdownlint-cli2 "**/*.md" "#**/node_modules" "#**/build"'
+run = "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
 
 [tasks."lint:toml"]
 description = "Run TOML Lint (Taplo)"
@@ -83,4 +86,5 @@ run = "flock .gradle.lock ./gradlew assembleRelease"
 
 [tasks.ci]
 description = "Run CI tasks (Lint, Test, Build)"
-depends = ["lint", "test", "build:debug"]
+depends = ["lint", "test"]
+run = "flock .gradle.lock ./gradlew assembleDebug"
