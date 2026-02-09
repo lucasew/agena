@@ -42,6 +42,16 @@ import javax.net.ssl.SSLSocket;
 public class Gemini {
     private static final String TAG = "Gemini";
 
+    /**
+     * Reads a single line of text from the input stream, decoding as UTF-8.
+     * <p>
+     * Reads bytes until a newline character (0xA) or EOF is reached.
+     * The resulting bytes are decoded using the system's default charset (UTF-8 on Android).
+     *
+     * @param input The source input stream.
+     * @return The line content as a String, or null if EOF is reached immediately.
+     * @throws IOException If an I/O error occurs.
+     */
     private String readLineFromStream(InputStream input) throws IOException {
         ArrayList<Byte> bytes = new ArrayList<>();
         int b = input.read();
@@ -103,14 +113,30 @@ public class Gemini {
     }
 
     /**
-     * Executes the raw network request.
+     * Executes the raw network request handling connection setup and redirects recursively.
      * <p>
-     * 1. Establishes a TLS connection (SNI is explicitly enabled as required by Gemini).
-     * 2. Sends the request line (`<URL>\r\n`).
-     * 3. Parses the response header (`<STATUS> <META>`).
-     * 4. Delegates body handling to {@link #handleResponse} based on the status code.
+     * This method performs the following steps:
+     * <ol>
+     *     <li>Validates the scheme (must be 'gemini').</li>
+     *     <li>Establishes a secure TLS connection.
+     *         <ul>
+     *             <li>Explicitly sets SNI (Server Name Indication) as required by the Gemini spec.</li>
+     *             <li>Sets a connection timeout.</li>
+     *         </ul>
+     *     </li>
+     *     <li>Sends the request line (`&lt;URL&gt;\r\n`).</li>
+     *     <li>Parses the response header (`&lt;STATUS&gt; &lt;META&gt;`).</li>
+     *     <li>Delegates further processing to {@link #handleResponse}.</li>
+     * </ol>
      *
-     * @param redirectCount Current depth of recursion for redirects (max 5).
+     * @param activity      The context for UI operations (e.g. Toasts).
+     * @param uri           The URI to request.
+     * @param redirectCount Current recursion depth for redirect handling. Throws {@link FailedGeminiRequestException.GeminiTooManyRedirects} if limit is exceeded.
+     * @return A list of strings representing the response content (for text/gemini).
+     * @throws IOException                  On network errors.
+     * @throws FailedGeminiRequestException On protocol errors (status != 20).
+     * @throws NoSuchAlgorithmException     If SSL algorithms are missing.
+     * @throws KeyManagementException       If SSL initialization fails.
      */
     private List<String> requestInternal(Activity activity, Uri uri, int redirectCount) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         Log.i(TAG, "Requesting: '" + uri.toString() + "' (redirect count: " + redirectCount + ")");
@@ -204,13 +230,21 @@ public class Gemini {
     }
 
     /**
-     * Dispatches logic based on the Gemini status code family.
-     * <p>
-     * - 1x (Input): Throws exception to prompt user.
-     * - 2x (Success): Reads body. If text/gemini, returns lines. If binary, downloads it.
-     * - 3x (Redirect): Recurses into `requestInternal` with new URI.
-     * - 4x/5x (Failure): Throws specific exceptions.
-     * - 6x (Client Cert): Throws auth exception.
+     * Dispatches the response handling logic based on the status code family.
+     *
+     * @param activity      The context for UI operations.
+     * @param uri           The original request URI.
+     * @param inputStream   The socket input stream to read the body from.
+     * @param outputStream  The socket output stream (needed for closing).
+     * @param responseCode  The parsed status code (e.g., 20, 31, 51).
+     * @param meta          The meta string (MIME type for success, redirect URL, or error message).
+     * @param cleanedEntity The sanitized URI string used for display/logic.
+     * @param redirectCount The current redirect recursion depth.
+     * @return A list of strings if the response is text content, otherwise handles side effects (download, error).
+     * @throws IOException                  If reading from the stream fails.
+     * @throws FailedGeminiRequestException If the status code indicates failure or requires input.
+     * @throws NoSuchAlgorithmException     If hashing fails during download.
+     * @throws KeyManagementException       If SSL fails during redirect.
      */
     private List<String> handleResponse(Activity activity, Uri uri, InputStream inputStream,
                                         BufferedOutputStream outputStream, int responseCode,

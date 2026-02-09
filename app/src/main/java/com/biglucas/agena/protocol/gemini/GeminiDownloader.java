@@ -80,7 +80,26 @@ public class GeminiDownloader {
     }
 
     /**
-     * Download using MediaStore API for Android 10+ (no permissions needed)
+     * Performs a download using the Android 10+ MediaStore API (Scoped Storage).
+     * <p>
+     * This method does not require storage permissions as it writes to the app's own
+     * contribution to the 'Downloads' collection.
+     * <p>
+     * It performs the following actions:
+     * <ul>
+     *     <li>Creates a new entry in {@link MediaStore.Downloads} with the filename and MIME type.</li>
+     *     <li>Writes the input stream to the output stream provided by the ContentResolver.</li>
+     *     <li>Simultaneously computes the SHA-256 hash of the downloaded content.</li>
+     * </ul>
+     *
+     * @param activity    The context used to access ContentResolver.
+     * @param inputStream The source input stream.
+     * @param extension   The file extension (e.g., "gmi", "pdf").
+     * @param mimeType    The MIME type of the content.
+     * @param digest      The MessageDigest instance to update with downloaded bytes.
+     * @param buffer      A shared buffer for reading/writing to avoid allocation churn.
+     * @return A {@link Result} containing the content URI and display path.
+     * @throws IOException If the MediaStore entry cannot be created or written to.
      */
     @RequiresApi(Build.VERSION_CODES.Q)
     private Result downloadViaMediaStore(Activity activity, InputStream inputStream,
@@ -124,7 +143,27 @@ public class GeminiDownloader {
     }
 
     /**
-     * Legacy download method for Android 9 and below (requires WRITE_EXTERNAL_STORAGE permission)
+     * Performs a download using the legacy File API for Android 9 and below.
+     * <p>
+     * This method requires {@link Manifest.permission#WRITE_EXTERNAL_STORAGE} permission.
+     * It writes directly to the public Downloads directory.
+     * <p>
+     * Flow:
+     * <ol>
+     *     <li>Checks for the required permission. Returns null if not granted.</li>
+     *     <li>Ensures the 'AGENA' subdirectory exists in Downloads.</li>
+     *     <li>Downloads to a temporary file first to ensure atomicity.</li>
+     *     <li>Computes the SHA-256 hash during download.</li>
+     *     <li>Renames the temporary file to its hash (content-addressable naming strategy).</li>
+     * </ol>
+     *
+     * @param activity    The context used for permission checks and file access.
+     * @param inputStream The source input stream.
+     * @param extension   The file extension.
+     * @param digest      The MessageDigest instance.
+     * @param buffer      A shared buffer.
+     * @return A {@link Result} with the file URI and path, or null if permission is denied.
+     * @throws IOException If file creation or writing fails.
      */
     private Result downloadLegacy(Activity activity, InputStream inputStream,
                                           String extension, MessageDigest digest, byte[] buffer) throws IOException {
