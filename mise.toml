@@ -5,7 +5,7 @@
 java = "17"
 node = "22.12.0"
 shellcheck = "0.11.0"
-shfmt = "3.10.0"
+shfmt = "3.12.0"
 
 [tasks."codegen:sqlc"]
 description = "Run SQLC code generation"
