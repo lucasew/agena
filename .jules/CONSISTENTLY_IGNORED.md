@@ -11,3 +11,35 @@ This file lists patterns of changes that have been consistently rejected by huma
 **- Files Affected:** Potentially any file dealing with Android runtime permissions.
 
 ---
+
+## IGNORE: Unpinned Mise Tools
+
+**- Pattern:** Using "latest", "lts", or loose version constraints (e.g., `node = "lts"`, `markdownlint-cli2 = "latest"`) in `mise.toml`.
+**- Justification:** CI/CD requires deterministic environments. Tools must be pinned to exact versions (e.g., `node = "22.12.0"`) to ensure stability and reproducibility.
+**- Files Affected:** `mise.toml`
+
+---
+
+## IGNORE: Manual URI Parsing and Resolution
+
+**- Pattern:** Manually parsing or resolving URIs using `java.net.URI.create()` or `resolve()` (often with try-catch blocks) in Activities or Fragments.
+**- Justification:** Use `com.biglucas.agena.protocol.gemini.GeminiUriHelper`, which encapsulates URI logic, sanitization, and exception handling. Ad-hoc implementations are error-prone and redundant.
+**- Files Affected:** `GeminiPageContentFragment.java`, `PageActivity.java`, `Gemini.java`
+
+---
+
+## IGNORE: Janitor Scope Creep
+
+**- Pattern:** Janitor PRs that introduce logic changes (e.g., `@RequiresApi`, `try-with-resources`), refactor code structure (e.g., changing method signatures), or add features/security fixes.
+**- Justification:** Janitor tasks are strictly for non-functional cleanups (e.g., removing unused imports, fixing typos, formatting). Any change to runtime behavior or API structure belongs in a Refactor or Sentinel task.
+**- Files Affected:** Any file touched by a Janitor PR.
+
+---
+
+## IGNORE: Verbose Janitor Journal Entries
+
+**- Pattern:** Adding multi-line, verbose entries (with `##` headers) to `.jules/janitor.md`.
+**- Justification:** The project standards strictly require a single-line format: `- YYYY-MM-DD: [pattern]`. Verbose entries clutter the file and violate the convention.
+**- Files Affected:** `.jules/janitor.md`
+
+---
