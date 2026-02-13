@@ -3,7 +3,7 @@
 "npm:markdownlint-cli2" = "0.20.0"
 "npm:@taplo/cli" = "0.7.0"
 java = "17"
-node = "22.12.0"
+node = "22.22.0"
 shellcheck = "0.11.0"
 shfmt = "3.10.0"
 
