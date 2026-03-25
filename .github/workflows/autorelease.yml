@@ -160,3 +160,4 @@ jobs:
       run: |
         gh release upload "$TAG" app/build/outputs/apk/debug/*.apk --clobber
         gh release upload "$TAG" app/build/outputs/apk/release/*.apk --clobber
+# Automated CI setup by Arrumador
