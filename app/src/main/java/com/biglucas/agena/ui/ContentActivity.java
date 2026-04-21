@@ -16,9 +16,22 @@ import java.util.ArrayList;
 
 import com.biglucas.agena.R;
 
+/**
+ * Activity responsible for handling intent data to display the contents of a local file.
+ * It primarily handles {@code VIEW} intents for external files (like downloaded {@code .gmi} files)
+ * and safely loads their contents into the UI.
+ */
 public class ContentActivity extends AppCompatActivity {
     private static final String TAG = "ContentActivity";
+
+    /**
+     * Maximum number of lines to read from the file to prevent excessive memory usage.
+     */
     private static final int MAX_LINES = 10000;
+
+    /**
+     * Maximum allowed file size (10 MB) to protect against DoS attacks from malicious payloads.
+     */
     private static final long MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
     @Override
@@ -28,6 +41,12 @@ public class ContentActivity extends AppCompatActivity {
         handleIntentOpen();
     }
 
+    /**
+     * Reads the file URI provided by the intent, performs fail-safe size validations,
+     * and iteratively reads the file contents up to {@link #MAX_LINES}.
+     * <p>
+     * Displays error dialogues if the file is too large or the size cannot be verified securely.
+     */
     private void handleIntentOpen() {
         if (getIntent().getData() == null) {
             Log.e(TAG, "No data in intent, finishing activity");

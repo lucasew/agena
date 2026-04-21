@@ -26,6 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Main activity acting as the browser wrapper for Gemini protocol pages.
+ * Handles user navigation, relative/absolute URL resolution, and triggers background
+ * requests to fetch and render content using the Gemini protocol.
+ */
 public class PageActivity extends AppCompatActivity {
     private static final String TAG = "PageActivity";
 
@@ -165,9 +170,18 @@ public class PageActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Helper to initiate a load of the current URL.
+     */
     public void handlePageLoad() {
         handlePageLoad(this.url.toString());
     }
+
+    /**
+     * Initializes the page loading UI state and triggers the background fetch task.
+     *
+     * @param url The target URI string to load.
+     */
     public void handlePageLoad(String url) {
         Log.d(TAG, "page load");
         if (this.getSupportFragmentManager().isDestroyed()) return;
@@ -182,6 +196,13 @@ public class PageActivity extends AppCompatActivity {
         new GeminiRequestTask(this).execute();
     }
 
+    /**
+     * Background task to execute the Gemini network request.
+     * <p>
+     * Utilizes a {@link WeakReference} to the enclosing activity to avoid holding
+     * a strong reference during the network call, preventing memory leaks if the
+     * activity is destroyed before the request completes.
+     */
     private static class GeminiRequestTask extends AsyncTask<Void, Void, ArrayList<String>> {
         private final WeakReference<PageActivity> activityRef;
         private Exception exception;
