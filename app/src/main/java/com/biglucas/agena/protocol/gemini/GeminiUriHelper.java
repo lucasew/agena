@@ -3,6 +3,7 @@ package com.biglucas.agena.protocol.gemini;
 import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.biglucas.agena.utils.ErrorReporter;
 
 /**
  * Utility class for handling Gemini URIs.
@@ -31,6 +32,7 @@ public class GeminiUriHelper {
              // If base URI is invalid, we can't resolve against it. Return target or throw?
              // Original code assumed base was valid (it came from android.net.Uri).
              // Let's assume base is valid or return target if not relative.
+             ErrorReporter.reportException("GeminiUriHelper", "Invalid base URI: " + baseUriString, e);
              return target;
         }
 
@@ -56,6 +58,7 @@ public class GeminiUriHelper {
                 return URI.create(baseUriString.trim()).resolve(sanitizedTarget).toString();
             } catch (IllegalArgumentException ex) {
                 // If still fails, return original target or empty string to avoid crash
+                ErrorReporter.reportException("GeminiUriHelper", "Failed to resolve even after sanitization: " + target, ex);
                 return target;
             }
         }

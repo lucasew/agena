@@ -7,10 +7,12 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.biglucas.agena.R;
+import android.content.pm.ApplicationInfo;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import com.biglucas.agena.utils.ErrorReporter;
 
 /**
  * Utility to display exception stack traces in a user-facing dialog.
@@ -36,6 +38,18 @@ public class StacktraceDialogHandler {
      * @param exception The exception to display.
      */
     public static void show(Context context, Exception exception) {
+        // Always report to telemetry/logs so the error is never lost
+        ErrorReporter.reportException("StacktraceDialog", "An error occurred", exception);
+
+        // CWE-209: Information Exposure Through an Error Message
+        // Only show detailed stack traces to developers/testers (indicated by FLAG_DEBUGGABLE).
+        // Production users will only see a generic error message.
+        boolean isDebuggable = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        if (!isDebuggable) {
+            Toast.makeText(context, "An unexpected error occurred. It has been logged.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setPositiveButton("OK", null);
         builder.setTitle(exception.getClass().getName());

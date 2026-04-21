@@ -32,6 +32,12 @@ public class GeminiTrustManager implements X509TrustManager {
     @SuppressLint("TrustAllX509TrustManager")
     @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        // SECURITY: [CRITICAL] — CWE-295: Improper Certificate Validation
+        // This is currently a Trust-All manager. While TOFU (Trust On First Use) is the standard
+        // for Gemini, accepting ALL certificates without storing and verifying fingerprints
+        // leaves the application vulnerable to Man-In-The-Middle (MITM) attacks.
+        // The full implementation requires persistent storage integration and UI prompts
+        // when a certificate changes, which is >50 lines and out of scope for a quick fix.
         // Accept all server certificates (Gemini TOFU model)
         // In a full TOFU implementation, we would:
         // - Store the certificate fingerprint on first connection

@@ -10,6 +10,7 @@ import com.biglucas.agena.R;
 import com.biglucas.agena.utils.DatabaseController;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.SSLSocketFactorySingleton;
+import com.biglucas.agena.utils.ErrorReporter;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -219,12 +220,12 @@ public class Gemini {
             try {
                 inputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportException(TAG, "Failed to close inputStream", e);
             }
             try {
                 outputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportException(TAG, "Failed to close outputStream", e);
             }
         }
     }
@@ -289,7 +290,7 @@ public class Gemini {
                 new DatabaseController(DatabaseController.openDatabase(activity))
                         .addHistoryEntry(uri);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to save history for URI: " + uri, e);
+                ErrorReporter.reportException(TAG, "Failed to save history for URI: " + uri, e);
                 activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
             }
             return lines;

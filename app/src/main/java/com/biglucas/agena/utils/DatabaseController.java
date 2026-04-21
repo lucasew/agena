@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import java.io.File;
+import com.biglucas.agena.utils.ErrorReporter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +79,7 @@ public class DatabaseController {
             try {
                 return SQLiteDatabase.openOrCreateDatabase(new File(dbPath), null);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to open external database, falling back to private storage", e);
+                ErrorReporter.reportException(TAG, "Failed to open external database, falling back to private storage", e);
                 // Fallback to private storage if external fails for any reason
             }
         }
