@@ -105,7 +105,7 @@ jobs:
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: debug-apk
-        path: app/build/outputs/apk/debug/*.apk
+        path: app/build/outputs/apk/debug/*.apk*
 
     # Make release if workflow_dispatch or schedule
     - name: Make release
@@ -128,7 +128,7 @@ jobs:
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: release-apk
-        path: app/build/outputs/apk/release/*.apk
+        path: app/build/outputs/apk/release/*.apk*
 
     # Create GitHub release
     - name: Create release
@@ -158,5 +158,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TAG: v${{ env.RELEASE_VERSION }}
       run: |
-        gh release upload "$TAG" app/build/outputs/apk/debug/*.apk --clobber
-        gh release upload "$TAG" app/build/outputs/apk/release/*.apk --clobber
+        gh release upload "$TAG" app/build/outputs/apk/debug/*.apk* --clobber
+        gh release upload "$TAG" app/build/outputs/apk/release/*.apk* --clobber
