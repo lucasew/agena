@@ -5,10 +5,11 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     tools:context=".ui.GeminiPageContentFragment"
-    android:layout_marginStart="8dp"
-    android:layout_marginLeft="8dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginRight="8dp">
+    android:paddingStart="8dp"
+    android:paddingLeft="8dp"
+    android:paddingEnd="8dp"
+    android:paddingRight="8dp"
+    android:clipToPadding="false">
 
     <LinearLayout
         android:id="@+id/content_column"
