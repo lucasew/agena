@@ -1,21 +1,11 @@
 package com.biglucas.agena.protocol.gemini;
 
-/**
- * Base exception for all protocol-level errors encountered during a Gemini request.
- * <p>
- * This class hierarchy maps directly to the Gemini protocol status codes (10-69).
- * Subclasses encapsulate the specific error condition and any associated meta-information
- * provided by the server.
- */
 public class FailedGeminiRequestException extends Exception {
     FailedGeminiRequestException(String reason) {
         super(reason);
     }
 
-    /**
-     * Represents status codes in the 1x range (Input Required).
-     * Indicates the server requires user input to proceed.
-     */
+    // Input exceptions (10-19)
     public static class GeminiInputRequired extends FailedGeminiRequestException {
         private final String prompt;
         private final boolean sensitive;
@@ -37,21 +27,14 @@ public class FailedGeminiRequestException extends Exception {
 
     // Success (20-29) - not exceptions
 
-    /**
-     * Represents a local enforcement of the maximum redirect limit.
-     * While 3x status codes are redirects, the protocol client limits consecutive
-     * redirects to prevent infinite loops (usually a max of 5).
-     */
+    // Redirects (30-39) - handled internally
     public static class GeminiTooManyRedirects extends FailedGeminiRequestException {
         public GeminiTooManyRedirects() {
             super("Too many redirects (max 5)");
         }
     }
 
-    /**
-     * Represents status codes in the 4x range (Temporary Failure).
-     * Indicates a failure that might be resolved by retrying the request later.
-     */
+    // Temporary failures (40-49)
     public static class GeminiTemporaryFailure extends FailedGeminiRequestException {
         public GeminiTemporaryFailure(String message) {
             super("Temporary failure: " + message);
@@ -89,10 +72,7 @@ public class FailedGeminiRequestException extends Exception {
         }
     }
 
-    /**
-     * Represents status codes in the 5x range (Permanent Failure).
-     * Indicates a persistent error; retrying the exact same request will likely fail again.
-     */
+    // Permanent failures (50-59)
     public static class GeminiPermanentFailure extends FailedGeminiRequestException {
         public GeminiPermanentFailure(String message) {
             super("Permanent failure: " + message);
@@ -123,10 +103,7 @@ public class FailedGeminiRequestException extends Exception {
         }
     }
 
-    /**
-     * Represents status codes in the 6x range (Client Certificate Required).
-     * Indicates the requested resource requires mutual TLS authentication.
-     */
+    // Client certificate errors (60-69)
     public static class GeminiClientCertificateRequired extends FailedGeminiRequestException {
         public GeminiClientCertificateRequired(String message) {
             super("Client certificate required: " + message);
@@ -145,19 +122,12 @@ public class FailedGeminiRequestException extends Exception {
         }
     }
 
-    /**
-     * Thrown when the server's response header is completely malformed or unparseable.
-     */
+    // General errors
     public static class GeminiInvalidResponse extends FailedGeminiRequestException {
         GeminiInvalidResponse() {
             super("Invalid response");
         }
     }
-
-    /**
-     * Thrown when the provided URI does not conform to the Gemini specification
-     * (e.g., exceeds max length, contains userinfo, or invalid scheme).
-     */
 
     public static class GeminiInvalidUri extends FailedGeminiRequestException {
         public GeminiInvalidUri(String message) {
