@@ -37,5 +37,4 @@
     <string name="explain_permission_storage">Eu preciso de permissão de armazenamento para salvar arquivos baixados de sites, como imagens.</string>
     <string name="please_repeat_action">Estado das permissões alterado. Por favor tente esta operação novamente.</string>
     <string name="historic">Histórico</string>
-    <string name="app_description">Navegador gemini</string>
 </resources>
