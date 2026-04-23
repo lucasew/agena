@@ -1,10 +1,12 @@
-package com.biglucas.agena.utils;
+package com.biglucas.agena.protocol.gemini;
 
 import android.annotation.SuppressLint;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+
+import com.biglucas.agena.utils.SecurityProvider;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;

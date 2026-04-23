@@ -1,9 +1,11 @@
-package com.biglucas.agena.utils;
+package com.biglucas.agena.db;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import com.biglucas.agena.utils.StorageHelper;
+import com.biglucas.agena.utils.ErrorReporter;
 import android.net.Uri;
 import android.util.Log;
 
@@ -78,7 +80,7 @@ public class DatabaseController {
             try {
                 return SQLiteDatabase.openOrCreateDatabase(new File(dbPath), null);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to open external database, falling back to private storage", e);
+                ErrorReporter.reportException(TAG, "Failed to open external database, falling back to private storage", e);
                 // Fallback to private storage if external fails for any reason
             }
         }

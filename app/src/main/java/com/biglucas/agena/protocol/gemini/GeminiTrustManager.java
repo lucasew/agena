@@ -1,4 +1,4 @@
-package com.biglucas.agena.utils;
+package com.biglucas.agena.protocol.gemini;
 
 import android.annotation.SuppressLint;
 

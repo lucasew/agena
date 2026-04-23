@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import com.biglucas.agena.R;
+import com.biglucas.agena.utils.ErrorReporter;
 
 public class ContentActivity extends AppCompatActivity {
     private static final String TAG = "ContentActivity";
@@ -30,7 +31,7 @@ public class ContentActivity extends AppCompatActivity {
 
     private void handleIntentOpen() {
         if (getIntent().getData() == null) {
-            Log.e(TAG, "No data in intent, finishing activity");
+            ErrorReporter.reportError(TAG, "No data in intent, finishing activity");
             finish();
             return;
         }
@@ -38,46 +39,8 @@ public class ContentActivity extends AppCompatActivity {
         try {
             Uri incomingUri = getIntent().getData();
 
-            // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack
-            // from a malicious application providing a massive file, which could cause an OutOfMemoryError.
-            // The check must be "fail-safe" - if the size cannot be determined, we must abort.
-            try (Cursor cursor = getContentResolver().query(incomingUri, null, null, null, null)) {
-                // If the cursor is null or empty, we cannot determine the size. Abort.
-                if (cursor == null || !cursor.moveToFirst()) {
-                    Log.e(TAG, "Could not determine file size: cursor is null or empty.");
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.error_reading_file)
-                            .setMessage(R.string.error_reading_file_message_size)
-                            .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
-                            .setOnCancelListener(dialogInterface -> finish())
-                            .show();
-                    return;
-                }
-
-                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
-                // If the size column doesn't exist or is null, we cannot determine the size. Abort.
-                if (sizeIndex == -1 || cursor.isNull(sizeIndex)) {
-                    Log.e(TAG, "Could not determine file size: size column not found or is null.");
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.error_reading_file)
-                            .setMessage(R.string.error_reading_file_message_size)
-                            .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
-                            .setOnCancelListener(dialogInterface -> finish())
-                            .show();
-                    return;
-                }
-
-                long fileSize = cursor.getLong(sizeIndex);
-                if (fileSize > MAX_FILE_SIZE_BYTES) {
-                    Log.w(TAG, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
-                    new AlertDialog.Builder(this)
-                            .setTitle(R.string.file_too_large)
-                            .setMessage(R.string.file_too_large_message)
-                            .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
-                            .setOnCancelListener(dialogInterface -> finish())
-                            .show();
-                    return;
-                }
+            if (!validateFileSizeSafe(incomingUri)) {
+                return;
             }
 
             Log.d(TAG, incomingUri.toString());
@@ -106,8 +69,58 @@ public class ContentActivity extends AppCompatActivity {
                     .replace(R.id.browser_content, new GeminiPageContentFragment(lines, this.getIntent().getData()))
                     .commit();
         } catch (Exception e) {
-            Log.e(TAG, "Failed to handle intent", e);
+            ErrorReporter.reportException(TAG, "Failed to handle intent", e);
             finish();
         }
+    }
+
+    /**
+     * VULNERABILITY PREVENTION: Before reading the file, we must check its size to prevent a DoS attack
+     * from a malicious application providing a massive file, which could cause an OutOfMemoryError.
+     * The check must be "fail-safe" - if the size cannot be determined, we must abort.
+     *
+     * @param incomingUri The URI of the file to check.
+     * @return true if the file is safe to read, false otherwise.
+     */
+    private boolean validateFileSizeSafe(Uri incomingUri) {
+        try (Cursor cursor = getContentResolver().query(incomingUri, null, null, null, null)) {
+            // If the cursor is null or empty, we cannot determine the size. Abort.
+            if (cursor == null || !cursor.moveToFirst()) {
+                ErrorReporter.reportError(TAG, "Could not determine file size: cursor is null or empty.");
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.error_reading_file)
+                        .setMessage(R.string.error_reading_file_message_size)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                        .setOnCancelListener(dialogInterface -> finish())
+                        .show();
+                return false;
+            }
+
+            int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+            // If the size column doesn't exist or is null, we cannot determine the size. Abort.
+            if (sizeIndex == -1 || cursor.isNull(sizeIndex)) {
+                ErrorReporter.reportError(TAG, "Could not determine file size: size column not found or is null.");
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.error_reading_file)
+                        .setMessage(R.string.error_reading_file_message_size)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                        .setOnCancelListener(dialogInterface -> finish())
+                        .show();
+                return false;
+            }
+
+            long fileSize = cursor.getLong(sizeIndex);
+            if (fileSize > MAX_FILE_SIZE_BYTES) {
+                Log.w(TAG, "File size " + fileSize + " exceeds limit of " + MAX_FILE_SIZE_BYTES);
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.file_too_large)
+                        .setMessage(R.string.file_too_large_message)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> finish())
+                        .setOnCancelListener(dialogInterface -> finish())
+                        .show();
+                return false;
+            }
+        }
+        return true;
     }
 }
