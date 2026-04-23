@@ -26,6 +26,8 @@ jobs:
   build-test-release:
     name: Build, Test and Release
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       contents: write
       packages: write
@@ -46,7 +48,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
     - name: Setup mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3
 
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
@@ -92,7 +94,7 @@ jobs:
           app/build/test-results/
 
     - name: Test Report
-      uses: dorny/test-reporter@v3
+      uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2
       if: always()
       with:
         name: JUnit Test Results
