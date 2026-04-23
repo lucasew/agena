@@ -7,7 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.biglucas.agena.R;
-import com.biglucas.agena.utils.DatabaseController;
+import com.biglucas.agena.db.DatabaseController;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.SSLSocketFactorySingleton;
 
@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.net.ssl.SSLSocket;
+import com.biglucas.agena.utils.ErrorReporter;
 
 /**
  * Core client implementation for the Gemini protocol (gemini://).
@@ -289,7 +290,7 @@ public class Gemini {
                 new DatabaseController(DatabaseController.openDatabase(activity))
                         .addHistoryEntry(uri);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to save history for URI: " + uri, e);
+                ErrorReporter.reportException(TAG, "Failed to save history for URI: " + uri, e);
                 activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
             }
             return lines;

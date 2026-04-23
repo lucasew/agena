@@ -8,7 +8,7 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.biglucas.agena.R;
-import com.biglucas.agena.utils.DatabaseController;
+import com.biglucas.agena.db.DatabaseController;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 
 import java.util.ArrayList;
