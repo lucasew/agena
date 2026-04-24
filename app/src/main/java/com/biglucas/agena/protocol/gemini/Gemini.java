@@ -73,13 +73,14 @@ public class Gemini {
      * Public entry point for initiating a Gemini request.
      * <p>
      * Validates the URI against the Gemini spec and delegates to {@link #requestInternal}
-     * to handle the request lifecycle, including redirect following.
+     * to handle the request lifecycle, including redirect following up to the
+     * {@link GeminiSpec#MAX_REDIRECTS} limit.
      *
      * @param activity The context used for launching intents or showing Toasts.
      * @param uri The Gemini URI to request.
      * @return A list of strings representing the response body (if text/gemini), or empty if handled otherwise.
      * @throws IOException If a network error occurs.
-     * @throws FailedGeminiRequestException If the protocol returns an error status.
+     * @throws FailedGeminiRequestException If the protocol returns an error status, including hitting the max redirect limit.
      * @throws NoSuchAlgorithmException If hashing algorithms are missing.
      * @throws KeyManagementException If SSL setup fails.
      */
@@ -113,28 +114,24 @@ public class Gemini {
     }
 
     /**
-     * Executes the raw network request handling connection setup and redirects recursively.
+     * Internal method to perform the actual Gemini network request recursively.
      * <p>
-     * This method performs the following steps:
+     * This method orchestrates the full connection lifecycle:
      * <ol>
-     *     <li>Validates the scheme (must be 'gemini').</li>
-     *     <li>Establishes a secure TLS connection.
-     *         <ul>
-     *             <li>Explicitly sets SNI (Server Name Indication) as required by the Gemini spec.</li>
-     *             <li>Sets a connection timeout.</li>
-     *         </ul>
-     *     </li>
-     *     <li>Sends the request line (`&lt;URL&gt;\r\n`).</li>
-     *     <li>Parses the response header (`&lt;STATUS&gt; &lt;META&gt;`).</li>
-     *     <li>Delegates further processing to {@link #handleResponse}.</li>
+     *     <li>Checks redirect limits against {@link GeminiSpec#MAX_REDIRECTS}.</li>
+     *     <li>Establishes a TLS connection, explicitly injecting SNI (Server Name Indication)
+     *         as required by the Gemini specification for virtual hosting.</li>
+     *     <li>Configures socket timeouts using {@link GeminiSpec#DEFAULT_TIMEOUT_MS}.</li>
+     *     <li>Transmits the request and parses the header into status code and meta string.</li>
+     *     <li>Delegates to {@link #handleResponse} to process the content or side effects.</li>
      * </ol>
      *
-     * @param activity      The context for UI operations (e.g. Toasts).
+     * @param activity      The activity context.
      * @param uri           The URI to request.
-     * @param redirectCount Current recursion depth for redirect handling. Throws {@link FailedGeminiRequestException.GeminiTooManyRedirects} if limit is exceeded.
-     * @return A list of strings representing the response content (for text/gemini).
-     * @throws IOException                  On network errors.
-     * @throws FailedGeminiRequestException On protocol errors (status != 20).
+     * @param redirectCount The current redirect depth (used to prevent infinite loops).
+     * @return A list of strings if text content, otherwise empty.
+     * @throws IOException                  On network errors or timeout.
+     * @throws FailedGeminiRequestException On protocol errors (status != 20) or if the max redirect limit is reached.
      * @throws NoSuchAlgorithmException     If SSL algorithms are missing.
      * @throws KeyManagementException       If SSL initialization fails.
      */
