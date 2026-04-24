@@ -92,7 +92,10 @@ public class AndroidPreparedStatement implements PreparedStatement {
     public boolean execute(String sql) throws SQLException {
         String trimmed = sql.trim().toUpperCase();
         if (trimmed.startsWith("SELECT")) {
-             db.rawQuery(sql, null); // Just execute, result ignored for now as return is boolean
+             Cursor cursor = db.rawQuery(sql, null); // Just execute, result ignored for now as return is boolean
+             if (cursor != null) {
+                 cursor.close();
+             }
              return true;
         } else {
              db.execSQL(sql);
