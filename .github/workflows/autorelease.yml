@@ -26,6 +26,8 @@ jobs:
   build-test-release:
     name: Build, Test and Release
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       contents: write
       packages: write
