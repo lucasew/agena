@@ -92,3 +92,4 @@
 
 - 2025-02-09: Ensure tool versions in configuration files are unique and pinned to exact versions to maintain environment stability.
 - 2026-04-24: Always close Cursors from rawQuery and remove unused resources.
+- 2026-04-24: Add FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true to GitHub workflows using deprecated Node.js 20 actions.
