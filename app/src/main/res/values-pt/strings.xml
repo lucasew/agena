@@ -1,3 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    </resources>
+    <string name="app_description">Navegador gemini</string>
+    <string name="start_navigating">Iniciar Navegação</string>
+    <string name="warning_icon">Apenas um ícone de aviso para deixar explícito que algo inesperado aconteceu</string>
+    <string name="more_information">Mais infomações</string>
+    <string name="copy_stacktrace">Copiar</string>
+    <string name="stacktrace_copied">Stack trace copiado para a área de transferência</string>
+    <string name="error_generic">Erro genérico não especificado/tratado</string>
+    <string name="error_unable_to_resolve_host">Não foi possível resolver o host. Não foi encontrado pelo DNS.</string>
+    <string name="error_connection_timeout">Tempo limite expirado conectando ao servidor. Existe realmente um servidor Gemini ali?</string>
+    <string name="error_gemini_not_found">Conteúdo não encontrado</string>
+    <string name="error_gemini_invalid_response">Servidor retornou uma resposta inválida</string>
+    <string name="error_gemini_unimplemented">Pormenor do protocolo Gemini não implementado (ainda)</string>
+    <string name="error_dont_know_how_to_handle_content_type">Não sei como tratar este conteúdo</string>
+    <string name="error_gone">Sumiu</string>
+    <string name="error_temporary_failure">Falha temporária do servidor. Tente novamente mais tarde.</string>
+    <string name="error_server_unavailable">Servidor indisponível. Tente novamente mais tarde.</string>
+    <string name="error_proxy_error">Erro de proxy</string>
+    <string name="error_slow_down">Limite de taxa atingido. Por favor, diminua a velocidade.</string>
+    <string name="error_permanent_failure">Falha permanente</string>
+    <string name="error_proxy_request_refused">Requisição de proxy recusada</string>
+    <string name="error_bad_request">Requisição inválida</string>
+    <string name="error_client_certificate_required">Certificado de cliente necessário</string>
+    <string name="error_certificate_not_authorized">Certificado não autorizado</string>
+    <string name="error_certificate_not_valid">Certificado não válido</string>
+    <string name="error_too_many_redirects">Muitos redirecionamentos (máximo 5)</string>
+    <string name="error_invalid_uri">URI inválida</string>
+    <string name="input_prompt_title">Entrada Necessária</string>
+    <string name="input_prompt_ok">OK</string>
+    <string name="input_prompt_cancel">Cancelar</string>
+    <string name="explain_permission_storage">Preciso de permissão de armazenamento para gravar ficheiros descarregados de sites, como imagens.</string>
+    <string name="please_repeat_action">Estado das permissões alterado. Por favor tente esta operação novamente.</string>
+    <string name="historic">Histórico</string>
+</resources>
