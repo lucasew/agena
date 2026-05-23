@@ -1,167 +1,126 @@
 package com.biglucas.agena.utils;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
-
-import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages the application's history database.
+ * <p>
+ * This controller handles the SQLite database used to store browsing history.
+ * It supports a dual-storage strategy:
+ * <ul>
+ *     <li><b>External Storage:</b> (Debug/Dev only) Used if the 'manage external storage' permission is granted.
+ *         Allows the database to survive app uninstalls, facilitating development and debugging.</li>
+ *     <li><b>Private Storage:</b> (Release/Default) Used in standard production builds.
+ *         The database is sandboxed within the app's private directory and cleared on uninstall.</li>
+ * </ul>
+ * <p>
+ * This class requires an open {@link SQLiteDatabase} instance to function.
+ */
 public class DatabaseController {
     private static final String TAG = "DatabaseController";
-    private static final String FILENAME = "history";
+    private static final String TABLE_HISTORY = "history";
+    private static final String COLUMN_URL = "url";
+    private static final String COLUMN_ACCESSED = "accessed";
+
+    private static final String SQL_CREATE_HISTORY_TABLE =
+        "CREATE TABLE IF NOT EXISTS " + TABLE_HISTORY + " (" +
+            COLUMN_URL + " TEXT, " +
+            COLUMN_ACCESSED + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+            ");";
+
+    private static final String SQL_INSERT_HISTORY_URL =
+        "INSERT INTO " + TABLE_HISTORY + " (" + COLUMN_URL + ") VALUES (?);";
+
+    private static final String SQL_SELECT_ALL_HISTORY_ORDERED =
+        "SELECT * FROM " + TABLE_HISTORY + " ORDER BY " + COLUMN_ACCESSED + " DESC;";
+
+    /**
+     * Format string for history entries rendered as Gemini links.
+     * Format: "=> [URL] [TIMESTAMP] [URL]"
+     * This creates a clickable link in a Gemini page where the link text is "TIMESTAMP URL".
+     */
+    private static final String HISTORY_LINE_FORMAT = "=> %s %s %s";
+    private static final String PRIVATE_HISTORY_FILENAME = "history";
     final SQLiteDatabase db;
 
     public DatabaseController(SQLiteDatabase db) {
         this.db = db;
-        db.execSQL("create table if not exists history (url text, accessed timestamp default CURRENT_TIMESTAMP);");
+        db.execSQL(SQL_CREATE_HISTORY_TABLE);
     }
 
     /**
      * Opens or creates the history database.
-     * In debug builds, tries to store in Downloads/AGENA to survive uninstallation.
-     * Falls back to private directory if external storage is not accessible.
-     * In release builds, always uses the app's private directory.
+     * <p>
+     * Delegates path resolution to {@link StorageHelper#getDatabasePath(Context)}.
+     * <p>
+     * <b>Flow:</b>
+     * 1. Checks if external storage should be used (Developer Mode).
+     * 2. Attempts to open the external database file.
+     * 3. Falls back to private internal storage if external storage is unavailable,
+     *    permission is denied, or an error occurs.
+     *
+     * @param context The application context.
+     * @return An open, writable {@link SQLiteDatabase} instance.
      */
     public static SQLiteDatabase openDatabase(Context context) {
-        // Detect debug build by checking if MANAGE_EXTERNAL_STORAGE permission exists in manifest
-        // This permission is only declared in src/debug/AndroidManifest.xml
-        boolean isDebug = hasManageExternalStoragePermission(context);
+        String dbPath = StorageHelper.getDatabasePath(context);
 
-        Log.d(TAG, "openDatabase called - isDebug: " + isDebug + ", SDK_INT: " + Build.VERSION.SDK_INT);
-
-        if (isDebug) {
-            // Debug: Try to save in Downloads/AGENA so it survives uninstallation
-
-            boolean hasPermission = false;
-
-            // Android 11+ (API 30+): Check MANAGE_EXTERNAL_STORAGE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                hasPermission = Environment.isExternalStorageManager();
-                Log.d(TAG, "Android 11+ - MANAGE_EXTERNAL_STORAGE: " + hasPermission);
-            }
-            // Android 6-10 (API 23-29): Check WRITE_EXTERNAL_STORAGE
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                hasPermission = ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-                Log.d(TAG, "Android 6-10 - WRITE_EXTERNAL_STORAGE: " + hasPermission);
-            }
-            // Android < 6: No runtime permissions needed
-            else {
-                hasPermission = true;
-                Log.d(TAG, "Android < 6 - No runtime permissions needed");
-            }
-
-            if (!hasPermission) {
-                Log.e(TAG, "No storage permission, falling back to private storage");
-                showToast(context, "DB: No permission - using private storage");
-                return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
-            }
-
+        if (dbPath != null) {
             try {
-                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                File agenaDir = new File(downloadsDir, "AGENA");
-
-                Log.d(TAG, "Downloads dir: " + downloadsDir.getAbsolutePath());
-                Log.d(TAG, "AGENA dir: " + agenaDir.getAbsolutePath());
-                Log.d(TAG, "AGENA dir exists: " + agenaDir.exists());
-
-                // Ensure directory exists and is writable
-                if (!agenaDir.exists()) {
-                    boolean created = agenaDir.mkdirs();
-                    Log.d(TAG, "mkdirs() result: " + created);
-                    if (!created) {
-                        Log.e(TAG, "Failed to create AGENA directory, falling back to private storage");
-                        showToast(context, "DB: Failed to create dir - using private storage");
-                        return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
-                    }
-                }
-
-                // Check if directory is writable
-                boolean canWrite = agenaDir.canWrite();
-                Log.d(TAG, "Directory canWrite: " + canWrite);
-                if (!canWrite) {
-                    Log.e(TAG, "AGENA directory not writable, falling back to private storage");
-                    showToast(context, "DB: Dir not writable - using private storage");
-                    return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
-                }
-
-                File dbFile = new File(agenaDir, "history.db");
-                String dbPath = dbFile.getAbsolutePath();
-                Log.i(TAG, "✅ Opening database at: " + dbPath);
-                showToast(context, "✅ DB at: Downloads/AGENA/history.db");
-                return SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+                return SQLiteDatabase.openOrCreateDatabase(new File(dbPath), null);
             } catch (Exception e) {
-                // If any error occurs (permissions, etc), fall back to private storage
-                Log.e(TAG, "Error accessing Downloads directory: " + e.getMessage(), e);
-                showToast(context, "DB: Error - using private storage");
-                return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
+                Log.e(TAG, "Failed to open external database, falling back to private storage", e);
+                // Fallback to private storage if external fails for any reason
             }
-        } else {
-            // Release: Use private directory for better security
-            Log.d(TAG, "Release build - using private storage");
-            return context.openOrCreateDatabase(FILENAME, Context.MODE_PRIVATE, null);
         }
+
+        // Default to private storage
+        return context.openOrCreateDatabase(PRIVATE_HISTORY_FILENAME, Context.MODE_PRIVATE, null);
     }
 
-    private static boolean hasManageExternalStoragePermission(Context context) {
-        try {
-            String[] permissions = context.getPackageManager()
-                .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
-                .requestedPermissions;
-
-            if (permissions != null) {
-                for (String permission : permissions) {
-                    if ("android.permission.MANAGE_EXTERNAL_STORAGE".equals(permission)) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error checking permissions: " + e.getMessage());
-        }
-        return false;
-    }
-
-    private static void showToast(final Context context, final String message) {
-        // Only show toasts in debug builds
-        boolean isDebug = hasManageExternalStoragePermission(context);
-        if (!isDebug) {
-            Log.d(TAG, "Toast (release build, hidden): " + message);
-            return;
-        }
-
-        // Show toast on main thread
-        if (context instanceof android.app.Activity) {
-            ((android.app.Activity) context).runOnUiThread(() -> Toast.makeText(context, message, Toast.LENGTH_LONG).show());
-        } else {
-            // If not an Activity context, just log
-            Log.d(TAG, "Toast (no activity): " + message);
-        }
-    }
+    /**
+     * Adds a visited URI to the history database.
+     * <p>
+     * Uses a parameterized SQL query to safely insert the URI, preventing SQL injection.
+     * The timestamp is automatically generated by the database (`DEFAULT CURRENT_TIMESTAMP`).
+     *
+     * @param uri The URI to add to history.
+     */
     public void addHistoryEntry(Uri uri) {
         Log.d(TAG, "Saving to history: " + uri.toString());
-        this.db.execSQL("insert into history (url) values (?)", new String[]{uri.toString()});
+        this.db.execSQL(SQL_INSERT_HISTORY_URL, new String[]{uri.toString()});
     }
+
+    /**
+     * Retrieves the browsing history as a list of Gemini-formatted strings.
+     * <p>
+     * <b>Nuance:</b> This method doesn't just return raw data. It returns strings formatted
+     * specifically for the {@link com.biglucas.agena.ui.GeminiPageContentFragment}.
+     * <br>
+     * Each string is a valid Gemtext link line: {@code => <URL> <TIMESTAMP> <URL>}
+     * This allows the history list to be rendered directly as a clickable Gemini page.
+     *
+     * @return A list of Gemtext link lines representing the history, ordered by most recent first.
+     */
     public List<String> getHistoryLines() {
         ArrayList<String> list = new ArrayList<>();
-        Cursor cursor = this.db.rawQuery("select * from history order by accessed desc", null);
+        Cursor cursor = this.db.rawQuery(SQL_SELECT_ALL_HISTORY_ORDERED, null);
         Log.d(TAG, "getHistoryLines - found " + cursor.getCount() + " entries");
+        int urlColumnIndex = cursor.getColumnIndex(COLUMN_URL);
+        int accessedColumnIndex = cursor.getColumnIndex(COLUMN_ACCESSED);
         while (cursor.moveToNext()) {
-            @SuppressLint("Range") String uri = cursor.getString(cursor.getColumnIndex("url"));
-            @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("accessed"));
-            String toAdd = String.format("=> %s %s %s", uri, timestamp, uri);
+            String uri = cursor.getString(urlColumnIndex);
+            String timestamp = cursor.getString(accessedColumnIndex);
+            String toAdd = String.format(HISTORY_LINE_FORMAT, uri, timestamp, uri);
             Log.d(TAG, "History entry: " + toAdd);
             list.add(toAdd);
         }

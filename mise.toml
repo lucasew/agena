@@ -1,2 +1,87 @@
 [tools]
+"github:sqlc-dev/sqlc" = "1.31.1"
+"npm:markdownlint-cli2" = "0.20.0"
+"npm:@taplo/cli" = "0.7.0"
 java = "17"
+node = "22.12.0"
+shellcheck = "0.11.0"
+shfmt = "3.10.0"
+
+[tasks."codegen:sqlc"]
+description = "Run SQLC code generation"
+run = """
+sqlc generate
+rm -f app/src/main/java/Queries.java
+if [ -f "app/src/main/java/com/biglucas/agena/db/Queries.java" ]; then
+    sed -i "s/results.getObject(2, OffsetDateTime.class)/((com.biglucas.agena.db.wrapper.AndroidResultSet)results).getObject(2, OffsetDateTime.class)/g" app/src/main/java/com/biglucas/agena/db/Queries.java
+fi
+"""
+
+[tasks.codegen]
+description = "Run all codegen tasks"
+depends = ["codegen:*"]
+
+[tasks."lint:android"]
+description = "Run Android Lint"
+run = "flock .gradle.lock ./gradlew lint"
+
+[tasks."lint:shell"]
+description = "Run ShellCheck"
+run = "shellcheck make_release"
+
+[tasks."lint:markdown"]
+description = "Run Markdown Lint"
+run = "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
+
+[tasks."lint:toml"]
+description = "Run TOML Lint (Taplo)"
+run = "taplo fmt --check"
+
+[tasks.lint]
+description = "Run all linters"
+depends = ["lint:*"]
+
+[tasks."fmt:shell"]
+description = "Run shfmt"
+run = "shfmt -w make_release"
+
+[tasks."fmt:toml"]
+description = "Run Taplo Format"
+run = "taplo fmt"
+
+[tasks."fmt:markdown"]
+description = "Run markdownlint fix"
+run = 'markdownlint-cli2 --fix "**/*.md" "#**/node_modules" "#**/build"'
+
+[tasks.fmt]
+description = "Run all formatters"
+depends = ["fmt:*"]
+
+[tasks."install:android"]
+description = "Install Android dependencies"
+run = "flock .gradle.lock ./gradlew dependencies"
+
+[tasks.install]
+description = "Install dependencies"
+depends = ["install:*"]
+
+[tasks."test:android"]
+description = "Run Android tests"
+run = "flock .gradle.lock ./gradlew test"
+
+[tasks.test]
+description = "Run tests"
+depends = ["test:*"]
+
+[tasks."build:debug"]
+description = "Build debug APK"
+run = "flock .gradle.lock ./gradlew assembleDebug"
+
+[tasks."build:release"]
+description = "Build release APK"
+run = "flock .gradle.lock ./gradlew assembleRelease"
+
+[tasks.ci]
+description = "Run CI tasks (Lint, Test, Build)"
+depends = ["lint", "test"]
+run = "flock .gradle.lock ./gradlew assembleDebug"

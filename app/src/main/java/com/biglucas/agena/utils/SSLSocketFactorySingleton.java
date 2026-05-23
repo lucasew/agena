@@ -31,67 +31,36 @@ import javax.net.ssl.X509TrustManager;
  * A full TOFU implementation would persist first-seen certificates and alert on changes.
  */
 public class SSLSocketFactorySingleton {
-    private static SSLSocketFactory factory = null;
+    private static volatile SSLSocketFactory factory = null;
+
+    private SSLSocketFactorySingleton() {
+        // This class is not meant to be instantiated.
+        throw new AssertionError("This class is not meant to be instantiated.");
+    }
 
     /**
      * Returns a singleton SSLSocketFactory configured for Gemini protocol.
      * The factory uses TLS 1.2+ and accepts all certificates per Gemini's TOFU model.
      */
     public static SSLSocketFactory getSSLSocketFactory() throws NoSuchAlgorithmException, KeyManagementException {
-        if (factory != null) {
-            return factory;
+        if (factory == null) {
+            synchronized (SSLSocketFactorySingleton.class) {
+                if (factory == null) {
+                    // Add Conscrypt security provider for modern TLS support on older Android versions
+                    SecurityProvider.addConscryptIfAvailable();
+
+                    // Use "TLS" context which supports TLS 1.2+ (specific version negotiated during handshake)
+                    // Note: On modern Android (API 20+), this defaults to TLS 1.2 or higher
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+
+                    // Initialize with permissive trust manager (TOFU-style, accepts all certificates)
+                    X509TrustManager[] trustManagers = {new GeminiTrustManager()};
+                    sslContext.init(null, trustManagers, null);
+
+                    SSLSocketFactorySingleton.factory = sslContext.getSocketFactory();
+                }
+            }
         }
-
-        // Add Conscrypt security provider for modern TLS support on older Android versions
-        SecurityProvider.addConscryptIfAvailable();
-
-        // Use "TLS" context which supports TLS 1.2+ (specific version negotiated during handshake)
-        // Note: On modern Android (API 20+), this defaults to TLS 1.2 or higher
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-
-        // Initialize with permissive trust manager (TOFU-style, accepts all certificates)
-        X509TrustManager[] trustManagers = {new SSLSocketFactorySingleton.GeminiTrustManager()};
-        sslContext.init(null, trustManagers, null);
-
-        SSLSocketFactorySingleton.factory = sslContext.getSocketFactory();
         return factory;
-    }
-
-    /**
-     * Trust manager that accepts all certificates, implementing a simplified TOFU model.
-     *
-     * In the Gemini ecosystem, self-signed certificates are the norm, and the recommended
-     * approach is TOFU (Trust On First Use). This implementation accepts all certificates,
-     * which is appropriate for Gemini but would not be suitable for traditional HTTPS.
-     *
-     * A complete TOFU implementation would:
-     * 1. Store certificate fingerprints on first connection
-     * 2. Verify certificates match stored fingerprints on subsequent connections
-     * 3. Alert users when certificates change
-     *
-     * This is left as a future enhancement.
-     */
-    @SuppressLint("CustomX509TrustManager")
-    private static class GeminiTrustManager implements X509TrustManager {
-        @SuppressLint("TrustAllX509TrustManager")
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) {
-            // Accept all client certificates (Gemini TOFU model)
-        }
-
-        @SuppressLint("TrustAllX509TrustManager")
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {
-            // Accept all server certificates (Gemini TOFU model)
-            // In a full TOFU implementation, we would:
-            // - Store the certificate fingerprint on first connection
-            // - Verify it matches on subsequent connections
-            // - Alert the user if it changes
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[0];
-        }
     }
 }

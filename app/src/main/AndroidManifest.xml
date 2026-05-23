@@ -43,7 +43,6 @@
 
                 <data android:mimeType="text/*" />
                 <data android:mimeType="application/*" />
-                <data android:scheme="file" />
                 <data android:scheme="content" />
             </intent-filter>
         </activity>
