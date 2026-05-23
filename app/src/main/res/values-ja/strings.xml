@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_description">Geminiブラウザー</string>
+    <string name="start_navigating">ナビゲーションを開始する</string>
+    <string name="more_information">より詳しい情報</string>
+    <string name="copy_stacktrace">コピー</string>
+    <string name="error_generic">エラー</string>
+    <string name="error_connection_timeout">サーバーとの接続がタイムアウトしました。本当にGeminiサーバーですか？</string>
+    <string name="error_gemini_not_found">コンテンツがみつかりませんでした</string>
+    <string name="error_temporary_failure">一時的にサーバーに不具合が発生しました。また試してください。</string>
+    <string name="error_server_unavailable">サーバーが存在しません。もう一度試してください。</string>
+    <string name="error_proxy_error">プロキシエラー</string>
+    <string name="error_gone">行なった</string>
+    <string name="input_prompt_ok">OK</string>
+    <string name="input_prompt_cancel">キャンセル</string>
+    <string name="historic">歴史的な</string>
+    <string name="error_bad_request">よくないリクエスト</string>
+    <string name="error_invalid_uri">無効なURI</string>
+    <string name="input_prompt_title">入力が必要</string>
+    <string name="warning_icon">予期せぬ事態が発生したことを明確に示すための警告アイコンです</string>
+    <string name="stacktrace_copied">スタックトレースがクリップボードにコピーされました</string>
+    <string name="error_unable_to_resolve_host">ホスト名を解決できませんでした。DNSで検出されませんでした。</string>
+    <string name="error_gemini_invalid_response">サーバーが無効な応答を返しました</string>
+    <string name="error_gemini_unimplemented">Geminiプロトコルの詳細は（まだ）実装されていません</string>
+    <string name="error_dont_know_how_to_handle_content_type">このコンテンツをどう扱えばいいのかわかりません</string>
+    <string name="error_slow_down">速度制限があります。速度を落としてください。</string>
+    <string name="error_permanent_failure">長期的な故障</string>
+    <string name="error_proxy_request_refused">プロキシリクエストが拒否されました</string>
+    <string name="error_client_certificate_required">クライアント証明書が必要です</string>
+    <string name="error_certificate_not_authorized">証明書が承認されていません</string>
+    <string name="error_certificate_not_valid">証明書が無効です</string>
+    <string name="error_too_many_redirects">リダイレクトが多すぎます（最大5件）</string>
+    <string name="explain_permission_storage">画像などサイトからダウンロードしたファイルを保存するためのストレージ権限が必要です。</string>
+    <string name="please_repeat_action">権限の状態が変更されました。操作をやり直してください。</string>
+</resources>
