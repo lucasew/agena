@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.biglucas.agena"
-        minSdk 21
+        minSdk 23
         targetSdk 34
         versionCode 401
         versionName "0.4.1"
@@ -29,6 +29,9 @@ android {
     }
     buildFeatures {
         viewBinding true
+    }
+    lint {
+        disable 'MissingTranslation'
     }
 }
 
