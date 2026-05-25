@@ -36,4 +36,7 @@
     <string name="file_too_large_message">ファイルは10MBより大きくできません</string>
     <string name="error_reading_file">ファイル読み込み中にエラーが発生</string>
     <string name="error_database_write">歴史を書くのに失敗しました</string>
+
+    <string name="error_reading_file_message_size">ファイルサイズを決定できませんでした。</string>
+    <string name="error_unsupported_scheme">サポートされていないスキーム: %1$s</string>
 </resources>
