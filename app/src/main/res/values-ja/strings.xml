@@ -32,11 +32,8 @@
     <string name="error_too_many_redirects">リダイレクトが多すぎます（最大5件）</string>
     <string name="explain_permission_storage">画像などサイトからダウンロードしたファイルを保存するためのストレージ権限が必要です。</string>
     <string name="please_repeat_action">権限の状態が変更されました。操作をやり直してください。</string>
-
-    <string name="file_too_large">ファイルが大きすぎます</string>
-    <string name="file_too_large_message">ファイルは10MBより大きくすることはできません</string>
-    <string name="error_reading_file">ファイルの読み込みエラー</string>
-    <string name="error_reading_file_message_size">ファイルサイズを決定できませんでした。</string>
-    <string name="error_unsupported_scheme">サポートされていないスキーム: %1$s</string>
-    <string name="error_database_write">履歴への書き込みに失敗しました</string>
+    <string name="file_too_large">ファイルサイズが大きすぎます</string>
+    <string name="file_too_large_message">ファイルは10MBより大きくできません</string>
+    <string name="error_reading_file">ファイル読み込み中にエラーが発生</string>
+    <string name="error_database_write">歴史を書くのに失敗しました</string>
 </resources>
