@@ -23,7 +23,7 @@ depends = ["codegen:*"]
 
 [tasks."lint:android"]
 description = "Run Android Lint"
-run = "flock .gradle.lock ./gradlew lint"
+run = "flock .gradle.lock ./gradlew --no-daemon lint"
 
 [tasks."lint:shell"]
 description = "Run ShellCheck"
@@ -59,7 +59,7 @@ depends = ["fmt:*"]
 
 [tasks."install:android"]
 description = "Install Android dependencies"
-run = "flock .gradle.lock ./gradlew dependencies"
+run = "flock .gradle.lock ./gradlew --no-daemon dependencies"
 
 [tasks.install]
 description = "Install dependencies"
@@ -67,7 +67,7 @@ depends = ["install:*"]
 
 [tasks."test:android"]
 description = "Run Android tests"
-run = "flock .gradle.lock ./gradlew test"
+run = "flock .gradle.lock ./gradlew --no-daemon test"
 
 [tasks.test]
 description = "Run tests"
@@ -75,11 +75,11 @@ depends = ["test:*"]
 
 [tasks."build:debug"]
 description = "Build debug APK"
-run = "flock .gradle.lock ./gradlew assembleDebug"
+run = "flock .gradle.lock ./gradlew --no-daemon assembleDebug"
 
 [tasks."build:release"]
 description = "Build release APK"
-run = "flock .gradle.lock ./gradlew assembleRelease"
+run = "flock .gradle.lock ./gradlew --no-daemon assembleRelease"
 
 [tasks.ci]
 description = "Run CI tasks (Lint, Test, Build)"
@@ -87,5 +87,5 @@ run = '''
 #!/usr/bin/env bash
 mise run lint
 mise run test
-flock .gradle.lock ./gradlew assembleDebug "$@"
+flock .gradle.lock ./gradlew --no-daemon assembleDebug "$@"
 '''
