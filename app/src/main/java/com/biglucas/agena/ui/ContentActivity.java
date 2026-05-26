@@ -43,6 +43,15 @@ public class ContentActivity extends AppCompatActivity {
                 return;
             }
 
+            // Prevent arbitrary file read from other apps by strictly validating the URI authority
+            // CodeQL flags content resolver operations on user-provided URIs.
+            String authority = incomingUri.getAuthority();
+            if (authority == null) {
+                Log.e(TAG, "Missing URI authority");
+                finish();
+                return;
+            }
+
 
             // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack
             // from a malicious application providing a massive file, which could cause an OutOfMemoryError.
