@@ -1,0 +1,7 @@
+--- .jules/sentinel.md
++++ .jules/sentinel.md
+@@ -32,5 +32,6 @@
+ **Learning:** When using iterators or tokenizers like `StringTokenizer`, always verify that elements exist before attempting to retrieve them. Assumption of valid input from remote servers is dangerous.
+ **Prevention:** Guard all calls to `nextToken()` with `hasMoreTokens()` (or `hasMoreElements()`). If the token is missing, handle the case gracefully (e.g., skip the line) instead of crashing.
++
+ - 2026-05-26: [Medium] Unclosed streams in Activity Intent handlers can cause resource leaks and DoS.
