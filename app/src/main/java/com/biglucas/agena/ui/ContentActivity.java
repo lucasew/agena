@@ -81,25 +81,26 @@ public class ContentActivity extends AppCompatActivity {
             }
 
             Log.d(TAG, incomingUri.toString());
-            InputStream inputStream = getContentResolver().openInputStream(incomingUri);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader dis = new BufferedReader(inputStreamReader);
             ArrayList<String> lines = new ArrayList<>();
-            int lineCount = 0;
-            while (true) {
-                if (lineCount >= MAX_LINES) {
-                    Log.w(TAG, "File exceeds MAX_LINES, truncating");
-                    break;
+            try (InputStream inputStream = getContentResolver().openInputStream(incomingUri);
+                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                 BufferedReader dis = new BufferedReader(inputStreamReader)) {
+                int lineCount = 0;
+                while (true) {
+                    if (lineCount >= MAX_LINES) {
+                        Log.w(TAG, "File exceeds MAX_LINES, truncating");
+                        break;
+                    }
+                    lineCount++;
+                    String line = dis.readLine();
+                    if (line != null) {
+                        Log.v(TAG, line);
+                    }
+                    if (line == null) {
+                        break;
+                    }
+                    lines.add(line);
                 }
-                lineCount++;
-                String line = dis.readLine();
-                if (line != null) {
-                    Log.v(TAG, line);
-                }
-                if (line == null) {
-                    break;
-                }
-                lines.add(line);
             }
             this.getSupportFragmentManager()
                     .beginTransaction()
