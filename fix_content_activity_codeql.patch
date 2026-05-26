@@ -1,0 +1,11 @@
+--- app/src/main/java/com/biglucas/agena/ui/ContentActivity.java
++++ app/src/main/java/com/biglucas/agena/ui/ContentActivity.java
+@@ -48,7 +48,7 @@
+             // CodeQL flags content resolver operations on user-provided URIs.
+             String authority = incomingUri.getAuthority();
+-            if (authority == null) {
++            if (authority == null || !(authority.equals(getPackageName()) || authority.equals(getPackageName() + ".provider"))) {
+                 Log.e(TAG, "Missing URI authority");
+                 finish();
+                 return;
+             }
