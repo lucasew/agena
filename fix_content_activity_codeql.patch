@@ -1,18 +1,11 @@
 --- app/src/main/java/com/biglucas/agena/ui/ContentActivity.java
 +++ app/src/main/java/com/biglucas/agena/ui/ContentActivity.java
-@@ -43,6 +43,14 @@
+@@ -48,7 +48,7 @@
+             // CodeQL flags content resolver operations on user-provided URIs.
+             String authority = incomingUri.getAuthority();
+-            if (authority == null) {
++            if (authority == null || !authority.equals(getPackageName())) {
+                 Log.e(TAG, "Missing URI authority");
+                 finish();
                  return;
              }
-
-+            // Prevent arbitrary file read from other apps by strictly validating the URI authority
-+            // CodeQL flags content resolver operations on user-provided URIs. We ensure it's either our own
-+            // FileProvider or a standard document provider before proceeding.
-+            String authority = incomingUri.getAuthority();
-+            if (authority == null) {
-+                Log.e(TAG, "Missing URI authority");
-+                finish();
-+                return;
-+            }
-+
-
-             // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack

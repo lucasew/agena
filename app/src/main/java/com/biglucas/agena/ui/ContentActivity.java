@@ -46,7 +46,7 @@ public class ContentActivity extends AppCompatActivity {
             // Prevent arbitrary file read from other apps by strictly validating the URI authority
             // CodeQL flags content resolver operations on user-provided URIs.
             String authority = incomingUri.getAuthority();
-            if (authority == null) {
+            if (authority == null || !authority.equals(getPackageName())) {
                 Log.e(TAG, "Missing URI authority");
                 finish();
                 return;
