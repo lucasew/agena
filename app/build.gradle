@@ -10,8 +10,8 @@ android {
         applicationId "com.biglucas.agena"
         minSdk 23
         targetSdk 34
-        versionCode 401
-        versionName "0.4.1"
+        versionCode 500
+        versionName "0.5.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
