@@ -37,6 +37,12 @@ public class ContentActivity extends AppCompatActivity {
 
         try {
             Uri incomingUri = getIntent().getData();
+            if (incomingUri == null || !"content".equals(incomingUri.getScheme())) {
+                Log.e(TAG, "Unsupported URI scheme or null URI");
+                finish();
+                return;
+            }
+
 
             // VULNERABILITY: Before reading the file, we must check its size to prevent a DoS attack
             // from a malicious application providing a massive file, which could cause an OutOfMemoryError.
