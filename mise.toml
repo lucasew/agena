@@ -1,6 +1,6 @@
 [tools]
 "github:sqlc-dev/sqlc" = "1.31.1"
-"npm:markdownlint-cli2" = "0.20.0"
+"npm:markdownlint-cli2" = "0.22.1"
 "npm:@taplo/cli" = "0.7.0"
 java = "temurin-17.0.14+7"
 node = "22.12.0"
