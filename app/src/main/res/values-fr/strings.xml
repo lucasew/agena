@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_description">Navigateur Gemini</string>
     <string name="start_navigating">Débuter la navigation</string>
     <string name="warning_icon">Juste une icône d\'avertissement pour rendre explicite que quelque chose s\'est mal déroulé</string>
     <string name="more_information">Plus d\'information</string>

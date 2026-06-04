@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">AGENA</string>
-    <string name="app_description">Gemini browser</string>
     <!-- Strings used for fragments for navigation -->
     <string name="start_navigating">Start Navigating</string>
 
