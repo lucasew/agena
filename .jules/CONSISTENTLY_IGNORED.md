@@ -59,6 +59,7 @@ This file lists patterns of changes that have been consistently rejected by huma
 **- Files Affected:** `.jules/janitor.md`
 
 ---
+
 ## IGNORE: Over-Centralizing Error Reporting
 
 **- Pattern:** Attempting to create an `ErrorReporter.java` or similar centralized error-handling utility and retroactively replacing functional `Log.e` or exception-handling blocks across the codebase.
@@ -66,6 +67,7 @@ This file lists patterns of changes that have been consistently rejected by huma
 **- Files Affected:** `app/src/main/java/com/biglucas/agena/utils/ErrorReporter.java` (and files modified to use it).
 
 ---
+
 ## IGNORE: Retrofitting Extensive Javadoc to Internal Components
 
 **- Pattern:** Adding extensive Javadoc comments to existing internal activities (e.g., `ContentActivity.java`, `PageActivity.java`) or internal protocol implementations.
@@ -73,6 +75,7 @@ This file lists patterns of changes that have been consistently rejected by huma
 **- Files Affected:** `app/src/main/java/**/*.java`
 
 ---
+
 ## IGNORE: Moving DatabaseController without architectural mandate
 
 **- Pattern:** Moving `DatabaseController.java` from `com.biglucas.agena.utils` to `com.biglucas.agena.db`.
