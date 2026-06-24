@@ -1,3 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_description">செமினி உலாவி</string>
+    <string name="start_navigating">வழிசெலுத்தலைத் தொடங்குங்கள்</string>
+    <string name="warning_icon">எதிர்பாராத ஒன்று நடந்தது என்பதை தெளிவுபடுத்த ஒரு முன்னறிவிப்பு படவுரு</string>
+    <string name="more_information">மேலும் செய்தி</string>
+    <string name="copy_stacktrace">நகலெடு</string>
+    <string name="stacktrace_copied">ச்டாக் ட்ரேச் இடைநிலைப்பலகைக்கு நகலெடுக்கப்பட்டது</string>
+    <string name="error_generic">பொதுவான குறிப்பிடப்படாத / கையாளப்படாத பிழை</string>
+    <string name="error_unable_to_resolve_host">ஓச்டைத் தீர்க்க முடியவில்லை. இது DNS ஆல் கண்டுபிடிக்கப்படவில்லை.</string>
+    <string name="error_connection_timeout">சேவையகத்துடன் இணைக்கும் போது நேரம் முடிந்தது. உண்மையில் செமினி சர்வர் உள்ளதா?</string>
+    <string name="error_gemini_not_found">உள்ளடக்கம் கிடைக்கவில்லை</string>
+    <string name="error_gemini_invalid_response">சேவையகம் தவறான பதிலை வழங்கியது</string>
+    <string name="error_gemini_unimplemented">செமினி புரோட்டோகால் விவரம் செயல்படுத்தப்படவில்லை (இன்னும்)</string>
+    <string name="error_dont_know_how_to_handle_content_type">இந்த உள்ளடக்கத்தை எவ்வாறு கையாள்வது என்று எனக்குத் தெரியவில்லை</string>
+    <string name="error_gone">போய்விட்டது</string>
+    <string name="error_temporary_failure">தற்காலிக சர்வர் தோல்வி. பிறகு முயற்சிக்கவும்.</string>
+    <string name="error_server_unavailable">சேவையகம் கிடைக்கவில்லை. பிறகு முயற்சிக்கவும்.</string>
+    <string name="error_proxy_error">பதிலாள் பிழை</string>
+    <string name="error_slow_down">வரையறுக்கப்பட்ட விகிதம். தயவுசெய்து வேகத்தை குறைக்கவும்.</string>
+    <string name="error_permanent_failure">நிரந்தர தோல்வி</string>
+    <string name="error_proxy_request_refused">பதிலாள் கோரிக்கை நிராகரிக்கப்பட்டது</string>
+    <string name="error_bad_request">தவறான கோரிக்கை</string>
+    <string name="error_client_certificate_required">வாடிக்கையாளர் சான்றிதழ் தேவை</string>
+    <string name="error_certificate_not_authorized">சான்றிதழ் அங்கீகரிக்கப்படவில்லை</string>
+    <string name="error_certificate_not_valid">சான்றிதழ் செல்லாது</string>
+    <string name="error_too_many_redirects">பல வழிமாற்றுகள் (அதிகபட்சம் 5)</string>
+    <string name="error_invalid_uri">தவறான யூரி</string>
+    <string name="input_prompt_title">உள்ளீடு தேவை</string>
+    <string name="input_prompt_ok">சரி</string>
+    <string name="input_prompt_cancel">ரத்துசெய்</string>
+    <string name="explain_permission_storage">படங்கள் போன்ற தளங்களிலிருந்து பதிவிறக்கம் செய்யப்பட்ட கோப்புகளைச் சேமிக்க எனக்கு சேமிப்பக இசைவு தேவை.</string>
+    <string name="please_repeat_action">இசைவு நிலை மாறிவிட்டது. அறுவை சிகிச்சையை மீண்டும் முயற்சிக்கவும்.</string>
+    <string name="historic">வரலாற்று சிறப்புமிக்கது</string>
+    <string name="file_too_large">கோப்பு மிகவும் பெரியது</string>
+    <string name="file_too_large_message">கோப்பு 10MB ஐ விட அதிகமாக இருக்கக்கூடாது</string>
+    <string name="error_reading_file">கோப்பைப் படிப்பதில் பிழை</string>
+    <string name="error_reading_file_message_size">கோப்பு அளவை தீர்மானிக்க முடியவில்லை.</string>
+    <string name="error_unsupported_scheme">ஆதரிக்கப்படாத திட்டம்: %1$s</string>
+    <string name="error_database_write">வரலாற்றில் எழுத முடியவில்லை</string>
 </resources>
