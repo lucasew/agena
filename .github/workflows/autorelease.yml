@@ -46,7 +46,7 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
     - name: Setup mise
-      uses: jdx/mise-action@146a28175021df8ca24f8ee1828cc2a60f980bd5 # v3
+      uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3
 
     - name: Grant execute permissions
       run: chmod +x gradlew make_release
