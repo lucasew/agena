@@ -11,3 +11,43 @@ This file lists patterns of changes that have been consistently rejected by huma
 **- Files Affected:** Potentially any file dealing with Android runtime permissions.
 
 ---
+
+## IGNORE: Forcing Node 24 in GitHub Actions
+
+**- Pattern:** Adding `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` to `.github/workflows/autorelease.yml`.
+**- Justification:** This environment variable override breaks the CI pipeline because the project relies on specific versions of GitHub actions that are expected to run in their native environments. Forcing Node 24 causes unintended side effects.
+**- Files Affected:** `.github/workflows/autorelease.yml`
+
+---
+
+## IGNORE: Removing unused `app_description` string resource
+
+**- Pattern:** Removing the `<string name="app_description">` resource from `strings.xml` and related localization files.
+**- Justification:** Although it appears unused to static analysis tools, removing `app_description` is consistently rejected as it is a required resource. Removing it causes unnecessary churn and localization issues.
+**- Files Affected:** `app/src/main/res/values*/strings.xml`
+
+---
+
+## IGNORE: Moving DatabaseController without architectural mandate
+
+**- Pattern:** Moving `DatabaseController.java` from `com.biglucas.agena.utils` to `com.biglucas.agena.db`.
+**- Justification:** The current location is considered stable. Moving it creates unnecessary package churn and requires updating all imports across the app for little practical benefit.
+**- Files Affected:** `app/src/main/java/com/biglucas/agena/utils/DatabaseController.java` and all files importing it.
+
+---
+
+## IGNORE: Retrofitting Extensive Javadoc to Internal Components
+
+**- Pattern:** Adding extensive Javadoc comments to existing internal activities (e.g., `ContentActivity.java`, `PageActivity.java`) or internal protocol implementations.
+**- Justification:** "Docs" agents frequently propose adding verbose Javadoc to internal components that don't represent public APIs. These PRs are rejected because they create code noise without adding equivalent value for a simple internal codebase.
+**- Files Affected:** `app/src/main/java/**/*.java`
+
+---
+
+## IGNORE: Agent Scope Creep
+
+**- Pattern:** PRs where an agent (e.g., Docs, Denoiser) modifies files outside its strictly defined persona scope.
+**- Justification:** Each agent persona has a specific purpose. Scope creep violates the operational contract and mixes concerns, making PRs harder to review and riskier to merge. Changes must align strictly with the agent's stated mission.
+**- Files Affected:** Any file outside the agent's explicit allowed paths or logical scope.
+
+---
