@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.biglucas.agena.utils.ErrorReporter;
+
 /**
  * Utility class for handling Gemini URIs.
  * <p>
@@ -31,6 +33,7 @@ public class GeminiUriHelper {
              // If base URI is invalid, we can't resolve against it. Return target or throw?
              // Original code assumed base was valid (it came from android.net.Uri).
              // Let's assume base is valid or return target if not relative.
+             ErrorReporter.reportError("GeminiUriHelper", "Invalid base URI: " + baseUriString, e);
              return target;
         }
 
@@ -45,6 +48,7 @@ public class GeminiUriHelper {
             return URI.create(baseUriString.trim()).resolve(target.trim()).toString();
         } catch (IllegalArgumentException e) {
             // Fallback for malformed URIs
+            ErrorReporter.reportError("GeminiUriHelper", "Malformed URI in resolve, attempting sanitization", e);
             // Some sites have invalid characters in links. We strip them and retry.
             final String regex = "[^a-zA-Z0-9:/.-]*";
             final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
@@ -56,6 +60,7 @@ public class GeminiUriHelper {
                 return URI.create(baseUriString.trim()).resolve(sanitizedTarget).toString();
             } catch (IllegalArgumentException ex) {
                 // If still fails, return original target or empty string to avoid crash
+                ErrorReporter.reportError("GeminiUriHelper", "Sanitized URI resolution failed", ex);
                 return target;
             }
         }

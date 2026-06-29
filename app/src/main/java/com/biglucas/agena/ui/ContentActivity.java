@@ -9,6 +9,8 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.biglucas.agena.utils.ErrorReporter;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,7 +32,7 @@ public class ContentActivity extends AppCompatActivity {
 
     private void handleIntentOpen() {
         if (getIntent().getData() == null) {
-            Log.e(TAG, "No data in intent, finishing activity");
+            ErrorReporter.reportError(TAG, "No data in intent, finishing activity");
             finish();
             return;
         }
@@ -44,7 +46,7 @@ public class ContentActivity extends AppCompatActivity {
             try (Cursor cursor = getContentResolver().query(incomingUri, null, null, null, null)) {
                 // If the cursor is null or empty, we cannot determine the size. Abort.
                 if (cursor == null || !cursor.moveToFirst()) {
-                    Log.e(TAG, "Could not determine file size: cursor is null or empty.");
+                    ErrorReporter.reportError(TAG, "Could not determine file size: cursor is null or empty.");
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.error_reading_file)
                             .setMessage(R.string.error_reading_file_message_size)
@@ -57,7 +59,7 @@ public class ContentActivity extends AppCompatActivity {
                 int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
                 // If the size column doesn't exist or is null, we cannot determine the size. Abort.
                 if (sizeIndex == -1 || cursor.isNull(sizeIndex)) {
-                    Log.e(TAG, "Could not determine file size: size column not found or is null.");
+                    ErrorReporter.reportError(TAG, "Could not determine file size: size column not found or is null.");
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.error_reading_file)
                             .setMessage(R.string.error_reading_file_message_size)
@@ -106,7 +108,7 @@ public class ContentActivity extends AppCompatActivity {
                     .replace(R.id.browser_content, new GeminiPageContentFragment(lines, this.getIntent().getData()))
                     .commit();
         } catch (Exception e) {
-            Log.e(TAG, "Failed to handle intent", e);
+            ErrorReporter.reportError(TAG, "Failed to handle intent", e);
             finish();
         }
     }

@@ -78,7 +78,7 @@ public class DatabaseController {
             try {
                 return SQLiteDatabase.openOrCreateDatabase(new File(dbPath), null);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to open external database, falling back to private storage", e);
+                ErrorReporter.reportError(TAG, "Failed to open external database, falling back to private storage", e);
                 // Fallback to private storage if external fails for any reason
             }
         }

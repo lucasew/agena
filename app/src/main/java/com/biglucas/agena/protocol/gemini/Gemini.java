@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.utils.DatabaseController;
+import com.biglucas.agena.utils.ErrorReporter;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.SSLSocketFactorySingleton;
 
@@ -219,12 +220,12 @@ public class Gemini {
             try {
                 inputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportError(TAG, "Failed to close input stream", e);
             }
             try {
                 outputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportError(TAG, "Failed to close output stream", e);
             }
         }
     }
@@ -289,7 +290,7 @@ public class Gemini {
                 new DatabaseController(DatabaseController.openDatabase(activity))
                         .addHistoryEntry(uri);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to save history for URI: " + uri, e);
+                ErrorReporter.reportError(TAG, "Failed to save history for URI: " + uri, e);
                 activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
             }
             return lines;
