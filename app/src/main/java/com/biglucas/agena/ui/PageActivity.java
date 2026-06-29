@@ -20,7 +20,7 @@ import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.net.URI;
+import com.biglucas.agena.protocol.gemini.GeminiUriHelper;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class PageActivity extends AppCompatActivity {
             destURL = Uri.parse("gemini://" + urlToGoTo);
         } else {
             // Treat as relative path
-            destURL = Uri.parse(URI.create(this.url.toString()).resolve(urlToGoTo).toString());
+            destURL = Uri.parse(GeminiUriHelper.resolve(this.url.toString(), urlToGoTo));
         }
 
         Log.d(TAG, "scheme: " + destURL.getScheme());
