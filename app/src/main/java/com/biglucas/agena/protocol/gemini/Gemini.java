@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+import com.biglucas.agena.utils.ErrorReporter;
 import android.widget.Toast;
 
 import com.biglucas.agena.R;
@@ -218,12 +219,12 @@ public class Gemini {
             try {
                 inputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportError(TAG, "Error closing stream", e);
             }
             try {
                 outputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportError(TAG, "Error closing stream", e);
             }
         }
     }
@@ -288,7 +289,7 @@ public class Gemini {
                 new DatabaseController(DatabaseController.openDatabase(activity))
                         .addHistoryEntry(uri);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to save history for URI: " + uri, e);
+                ErrorReporter.reportError(TAG, "Failed to save history for URI: " + uri, e);
                 activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
             }
             return lines;
