@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error checking permissions: " + e.getMessage());
+            com.biglucas.agena.utils.ErrorReporter.reportError(TAG, "Error checking permissions: " + e.getMessage(), e);
         }
         return false;
     }
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.setData(Uri.parse("package:" + getPackageName()));
                     startActivity(intent);
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to open settings: " + e.getMessage());
+                    com.biglucas.agena.utils.ErrorReporter.reportError(TAG, "Failed to open settings: " + e.getMessage(), e);
                     Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                     startActivity(intent);
                 }
@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Storage permission denied. History will use private storage.", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Log.e(TAG, "grantResults array is empty!");
+                com.biglucas.agena.utils.ErrorReporter.reportError(TAG, "grantResults array is empty!");
             }
         }
     }

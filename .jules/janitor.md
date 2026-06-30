@@ -92,3 +92,4 @@
 
 - 2025-02-09: Ensure tool versions in configuration files are unique and pinned to exact versions to maintain environment stability.
 - 2026-06-29: Replaced manual java.net.URI parsing with GeminiUriHelper.resolve to ensure consistent malformed URI handling.
+- 2024-05-31: Centralized error reporting via ErrorReporter is established. Log.e usage updated.
