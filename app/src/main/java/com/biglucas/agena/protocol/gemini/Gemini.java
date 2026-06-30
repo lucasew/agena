@@ -26,6 +26,8 @@ import java.util.List;
 
 import javax.net.ssl.SSLSocket;
 
+import com.biglucas.agena.utils.ErrorReporter;
+
 /**
  * Core client implementation for the Gemini protocol (gemini://).
  * <p>
@@ -218,12 +220,12 @@ public class Gemini {
             try {
                 inputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportError(TAG, "Error closing input stream", e);
             }
             try {
                 outputStream.close();
             } catch (IOException e) {
-                // Ignore close errors
+                ErrorReporter.reportError(TAG, "Error closing output stream", e);
             }
         }
     }
@@ -288,7 +290,7 @@ public class Gemini {
                 new DatabaseController(DatabaseController.openDatabase(activity))
                         .addHistoryEntry(uri);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to save history for URI: " + uri, e);
+                ErrorReporter.reportError(TAG, "Failed to save history for URI: " + uri, e);
                 activity.runOnUiThread(() -> Toast.makeText(activity, R.string.error_database_write, Toast.LENGTH_SHORT).show());
             }
             return lines;
