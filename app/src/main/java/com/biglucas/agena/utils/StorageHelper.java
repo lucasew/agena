@@ -41,14 +41,14 @@ public class StorageHelper {
 
             if (!agenaDir.exists()) {
                 if (!agenaDir.mkdirs()) {
-                    Log.e(TAG, "Failed to create AGENA directory, falling back to private storage");
+                    ErrorReporter.reportError(TAG, "Failed to create AGENA directory, falling back to private storage");
                     DebugUIHelper.showToast(context, "DB: Failed to create dir - using private storage");
                     return null;
                 }
             }
 
             if (!agenaDir.canWrite()) {
-                Log.e(TAG, "AGENA directory not writable, falling back to private storage");
+                ErrorReporter.reportError(TAG, "AGENA directory not writable, falling back to private storage");
                 DebugUIHelper.showToast(context, "DB: Dir not writable - using private storage");
                 return null;
             }
@@ -59,7 +59,7 @@ public class StorageHelper {
             DebugUIHelper.showToast(context, "✅ DB at: Downloads/AGENA/" + HISTORY_FILENAME);
             return dbPath;
         } catch (Exception e) {
-            Log.e(TAG, "Error accessing Downloads directory: " + e.getMessage(), e);
+            ErrorReporter.reportError(TAG, "Error accessing Downloads directory: " + e.getMessage(), e);
             DebugUIHelper.showToast(context, "DB: Error - using private storage");
             return null; // Fallback to private storage on any error
         }
