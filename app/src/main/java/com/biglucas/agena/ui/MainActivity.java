@@ -67,13 +67,12 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, "🔍 DEBUG: Checking permissions... SDK=" + Build.VERSION.SDK_INT, Toast.LENGTH_LONG).show();
+        Log.d(TAG, "Checking permissions... SDK=" + Build.VERSION.SDK_INT);
 
         Log.d(TAG, "SDK_INT: " + Build.VERSION.SDK_INT);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Log.d(TAG, "Android version < 6.0, no runtime permissions needed");
-            Toast.makeText(this, "⚠️ DEBUG: Android < 6.0, no permissions needed", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -83,12 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (Environment.isExternalStorageManager()) {
                 Log.d(TAG, "MANAGE_EXTERNAL_STORAGE already granted!");
-                Toast.makeText(this, "✅ DEBUG: All files access granted! DB will use Downloads/AGENA", Toast.LENGTH_LONG).show();
             } else {
                 Log.d(TAG, "MANAGE_EXTERNAL_STORAGE not granted, opening settings");
-                Toast.makeText(this,
-                    "📁 DEBUG: Need 'All files access' permission.\n\nOpening Settings...\n\nEnable: Allow management of all files",
-                    Toast.LENGTH_LONG).show();
 
                 try {
                     Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
@@ -111,14 +106,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (!hasPermission) {
             Log.d(TAG, "Permission not granted, requesting...");
-            Toast.makeText(this, "🔐 DEBUG: Requesting storage permission...", Toast.LENGTH_LONG).show();
 
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     STORAGE_PERMISSION_CODE);
         } else {
             Log.d(TAG, "Permission already granted!");
-            Toast.makeText(this, "✅ DEBUG: Storage permission already granted!", Toast.LENGTH_LONG).show();
         }
     }
 
