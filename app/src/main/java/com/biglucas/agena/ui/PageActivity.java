@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.biglucas.agena.R;
 import com.biglucas.agena.protocol.gemini.FailedGeminiRequestException;
 import com.biglucas.agena.protocol.gemini.GeminiSingleton;
+import com.biglucas.agena.utils.ErrorReporter;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -111,6 +112,7 @@ public class PageActivity extends AppCompatActivity {
 
         if (errText == null) {
             errText = appctx.getString(R.string.error_generic);
+            ErrorReporter.reportError(TAG, "Failed to load page", e);
             StacktraceDialogHandler.show(this, e);
         }
 
