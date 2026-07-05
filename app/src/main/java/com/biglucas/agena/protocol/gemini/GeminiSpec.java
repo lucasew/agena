@@ -10,6 +10,10 @@ package com.biglucas.agena.protocol.gemini;
 public final class GeminiSpec {
     private GeminiSpec() {} // Prevent instantiation
 
+    // Protocol constants
+    public static final String CRLF = "\r\n";
+    public static final String DOWNLOAD_DIRECTORY_NAME = "AGENA";
+
     // Network defaults
     public static final int DEFAULT_PORT = 1965;
     public static final int DEFAULT_TIMEOUT_MS = 5000;

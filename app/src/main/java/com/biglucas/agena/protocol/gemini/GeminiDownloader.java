@@ -109,7 +109,7 @@ public class GeminiDownloader {
 
         // Generate filename with timestamp
         String filename = "agena_" + System.currentTimeMillis() + "." + extension;
-        String subdir = "AGENA";
+        String subdir = GeminiSpec.DOWNLOAD_DIRECTORY_NAME;
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
@@ -136,7 +136,7 @@ public class GeminiDownloader {
         }
 
         String hash = new BigInteger(1, digest.digest()).toString(16);
-        String displayPath = Environment.DIRECTORY_DOWNLOADS + "/AGENA/" + filename;
+        String displayPath = Environment.DIRECTORY_DOWNLOADS + "/" + GeminiSpec.DOWNLOAD_DIRECTORY_NAME + "/" + filename;
         Log.i(TAG, "Downloaded to: " + displayPath + " (hash: " + hash + ")");
 
         return new Result(downloadUri, displayPath);
@@ -151,7 +151,7 @@ public class GeminiDownloader {
      * Flow:
      * <ol>
      *     <li>Checks for the required permission. Returns null if not granted.</li>
-     *     <li>Ensures the 'AGENA' subdirectory exists in Downloads.</li>
+     *     <li>Ensures the subdirectory exists in Downloads.</li>
      *     <li>Downloads to a temporary file first to ensure atomicity.</li>
      *     <li>Computes the SHA-256 hash during download.</li>
      *     <li>Renames the temporary file to its hash (content-addressable naming strategy).</li>
@@ -172,7 +172,7 @@ public class GeminiDownloader {
             return null; // Permission denied
         }
 
-        File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AGENA");
+        File agenaPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), GeminiSpec.DOWNLOAD_DIRECTORY_NAME);
         if (!agenaPath.exists() && !agenaPath.mkdirs()) {
             throw new IOException("Failed to create directory: " + agenaPath.getAbsolutePath());
         }
