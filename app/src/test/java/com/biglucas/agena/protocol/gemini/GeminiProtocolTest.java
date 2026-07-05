@@ -159,11 +159,11 @@ public class GeminiProtocolTest {
     public void testRequestFormat() {
         // Request should be: <URL>\r\n
         String url = "gemini://example.com/";
-        String request = url + "\r\n";
+        String request = url + GeminiSpec.CRLF;
 
-        assertTrue("Request should end with CRLF", request.endsWith("\r\n"));
+        assertTrue("Request should end with CRLF", request.endsWith(GeminiSpec.CRLF));
         assertTrue("Request should contain URL", request.contains(url));
-        assertEquals("Request format should be URL + CRLF", url + "\r\n", request);
+        assertEquals("Request format should be URL + CRLF", url + GeminiSpec.CRLF, request);
     }
 
     @Test
@@ -210,7 +210,7 @@ public class GeminiProtocolTest {
     @Test
     public void testLineTermination() {
         // Test both CRLF and LF are valid line terminators
-        String lineCRLF = "test line\r\n";
+        String lineCRLF = "test line" + GeminiSpec.CRLF;
         String lineLF = "test line\n";
 
         assertTrue("CRLF should be valid terminator", lineCRLF.contains("\n"));

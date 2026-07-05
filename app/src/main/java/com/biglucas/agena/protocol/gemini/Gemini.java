@@ -178,7 +178,7 @@ public class Gemini {
         BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
 
         String cleanedEntity = uri.toString().replace("%2F", "/").trim();
-        String requestEntity = cleanedEntity + "\r\n";
+        String requestEntity = cleanedEntity + GeminiSpec.CRLF;
 
         outputStream.write(requestEntity.getBytes());
         outputStream.flush();
