@@ -3,12 +3,14 @@ package com.biglucas.agena.utils;
 import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
+
+import com.biglucas.agena.protocol.gemini.GeminiSpec;
+
 import java.io.File;
 
 public class StorageHelper {
     private static final String TAG = "StorageHelper";
     public static final String HISTORY_FILENAME = "history.db";
-    private static final String AGENA_DIR_NAME = "AGENA";
 
     private StorageHelper() {
         // This is a utility class and should not be instantiated
@@ -37,7 +39,7 @@ public class StorageHelper {
 
         try {
             File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File agenaDir = new File(downloadsDir, AGENA_DIR_NAME);
+            File agenaDir = new File(downloadsDir, GeminiSpec.DOWNLOAD_DIRECTORY_NAME);
 
             if (!agenaDir.exists()) {
                 if (!agenaDir.mkdirs()) {
