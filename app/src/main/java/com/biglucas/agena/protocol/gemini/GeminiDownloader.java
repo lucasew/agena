@@ -101,6 +101,14 @@ public class GeminiDownloader {
      * @return A {@link Result} containing the content URI and display path.
      * @throws IOException If the MediaStore entry cannot be created or written to.
      */
+    private void writeAndHashStream(InputStream inputStream, OutputStream outputStream, MessageDigest digest, byte[] buffer) throws IOException {
+        int len;
+        while ((len = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, len);
+            digest.update(buffer, 0, len);
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     private Result downloadViaMediaStore(Activity activity, InputStream inputStream,
                                                  String extension, String mimeType,
@@ -127,11 +135,7 @@ public class GeminiDownloader {
                 throw new IOException("Failed to open output stream");
             }
 
-            int len;
-            while ((len = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, len);
-                digest.update(buffer, 0, len);
-            }
+            writeAndHashStream(inputStream, outputStream, digest, buffer);
             outputStream.flush();
         }
 
@@ -180,11 +184,7 @@ public class GeminiDownloader {
         File tempPath = File.createTempFile("agena", "." + extension, agenaPath);
 
         try (BufferedOutputStream outputStream = new BufferedOutputStream(new java.io.FileOutputStream(tempPath))) {
-            int len;
-            while ((len = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, len);
-                digest.update(buffer, 0, len);
-            }
+            writeAndHashStream(inputStream, outputStream, digest, buffer);
             outputStream.flush();
         }
 
