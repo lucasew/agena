@@ -218,9 +218,6 @@ public class PageActivity extends AppCompatActivity {
             }
 
             if (result != null) {
-                for (String item : result) {
-                    Log.v(TAG, item);
-                }
                 activity.handleLoad(result);
             } else {
                 activity.handleLoad(exception);
