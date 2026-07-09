@@ -137,7 +137,8 @@ public class GeminiUriValidationTest {
 
         assertEquals("Resolved URI should have gemini scheme", "gemini", relativeUri.getScheme());
         assertEquals("Resolved URI should have correct host", "cities.yesterweb.org", relativeUri.getHost());
-        assertEquals("Resolved URI should have correct path and query", "/signup?lucasew", relativeUri.getRawPath() + "?" + relativeUri.getRawQuery());
+        assertEquals("Resolved URI should have correct path and query", "/signup?lucasew",
+                relativeUri.getRawPath() + "?" + relativeUri.getRawQuery());
     }
 
     @Test
