@@ -62,4 +62,8 @@
 
     <!-- Database errors -->
     <string name="error_database_write">Failed to write to history</string>
+
+    <!-- Debug storage permission feedback -->
+    <string name="storage_permission_granted">Storage permission granted! History will persist across uninstalls.</string>
+    <string name="storage_permission_denied">Storage permission denied. History will use private storage.</string>
 </resources>
