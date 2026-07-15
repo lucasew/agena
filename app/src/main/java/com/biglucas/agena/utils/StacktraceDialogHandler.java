@@ -37,7 +37,7 @@ public class StacktraceDialogHandler {
      */
     public static void show(Context context, Exception exception) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setPositiveButton("OK", null);
+        builder.setPositiveButton(R.string.input_prompt_ok, null);
         builder.setTitle(exception.getClass().getName());
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
