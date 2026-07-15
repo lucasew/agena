@@ -23,7 +23,7 @@ public final class Invoker {
         } catch (ActivityNotFoundException e) {
             new MaterialAlertDialogBuilder(activity)
                     .setTitle(R.string.error_dont_know_how_to_handle_content_type)
-                    .setPositiveButton("OK", null)
+                    .setPositiveButton(R.string.input_prompt_ok, null)
                     .setMessage(uri.toString())
                     .show();
         }
@@ -70,7 +70,7 @@ public final class Invoker {
             new MaterialAlertDialogBuilder(activity)
                 .setTitle(R.string.error_invalid_uri)
                 .setMessage(uri.toString())
-                .setPositiveButton("OK", null)
+                .setPositiveButton(R.string.input_prompt_ok, null)
                 .show();
             return;
         }
