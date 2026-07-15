@@ -50,6 +50,47 @@ public class GeminiDownloader {
         }
     }
 
+
+    /**
+     * Derives a file extension from a URI path (not the full URI string).
+     * <p>
+     * Previous logic split the full URI on {@code '.'}, so host labels
+     * (e.g. {@code example.com}) became the extension when the path had no
+     * dotted filename. That produced invalid MediaStore display names such as
+     * {@code agena_….com}.
+     *
+     * @param path Absolute path component of the resource URI (e.g. {@code /docs/a.pdf}).
+     * @return Lowercase extension without the leading dot, or {@code "bin"} when
+     *         the path has no usable extension.
+     */
+    static String extensionFromPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return "bin";
+        }
+        String trimmed = path;
+        while (trimmed.endsWith("/")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+            if (trimmed.isEmpty()) {
+                return "bin";
+            }
+        }
+        int slash = trimmed.lastIndexOf('/');
+        String lastSegment = slash >= 0 ? trimmed.substring(slash + 1) : trimmed;
+        if (lastSegment.isEmpty()) {
+            return "bin";
+        }
+        int dot = lastSegment.lastIndexOf('.');
+        // Require a non-empty suffix after the last dot, and not a leading-dot name (".hidden").
+        if (dot <= 0 || dot >= lastSegment.length() - 1) {
+            return "bin";
+        }
+        String ext = lastSegment.substring(dot + 1);
+        if (ext.indexOf('/') >= 0 || ext.indexOf('\\') >= 0) {
+            return "bin";
+        }
+        return ext.toLowerCase(java.util.Locale.ROOT);
+    }
+
     /**
      * Handles file downloads, choosing the appropriate storage strategy based on the Android version.
      * <p>
@@ -63,8 +104,7 @@ public class GeminiDownloader {
         }
         Log.i(TAG, "Downloading: " + uriString);
 
-        String[] sectors = uriString.split("\\.");
-        String extension = sectors.length > 0 ? sectors[sectors.length - 1] : "bin";
+        String extension = extensionFromPath(uriFile.getPath());
 
         // Calculate hash while downloading
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
