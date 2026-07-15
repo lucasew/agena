@@ -121,7 +121,6 @@ public class DatabaseController {
             String uri = cursor.getString(urlColumnIndex);
             String timestamp = cursor.getString(accessedColumnIndex);
             String toAdd = String.format(HISTORY_LINE_FORMAT, uri, timestamp, uri);
-            Log.d(TAG, "History entry: " + toAdd);
             list.add(toAdd);
         }
         cursor.close();

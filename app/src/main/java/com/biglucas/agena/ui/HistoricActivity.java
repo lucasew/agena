@@ -31,7 +31,7 @@ public class HistoricActivity extends AppCompatActivity {
         ArrayList<String> historic = (ArrayList<String>) new DatabaseController(DatabaseController.openDatabase(this))
                 .getHistoryLines();
         try {
-            Log.d(TAG, historic.toString());
+            Log.d(TAG, "Rendering history entries: " + historic.size());
             GeminiPageContentFragment contentFragment = new GeminiPageContentFragment(historic, Uri.parse("gemini://example.com"));
             this.getSupportFragmentManager()
                     .beginTransaction()
