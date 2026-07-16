@@ -1,6 +1,7 @@
 package com.biglucas.agena.protocol.gemini;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +19,10 @@ public class GeminiUriHelper {
      * This method attempts to resolve the target URI using standard {@link URI#resolve(String)}.
      * If that fails due to {@link IllegalArgumentException} (common with malformed characters in Gemini links),
      * it attempts to sanitize the target URI by removing invalid characters and retries resolution.
+     * <p>
+     * Paths that do not end in {@code /} or {@code .gmi} are treated as directories (a trailing slash is
+     * applied to the path component only). Appending {@code /} to the full URI string would corrupt
+     * query strings used after Gemini status 10 input responses.
      *
      * @param baseUriString The base URI string (e.g., the current page URL).
      * @param target The target URI string (relative or absolute).
@@ -34,15 +39,10 @@ public class GeminiUriHelper {
              return target;
         }
 
-        String path = base.getPath();
-        // Preserve original logic: if path doesn't end in / or .gmi, append /
-        // This forces directory semantics for paths that don't look like files
-        if (path != null && !path.endsWith("/") && !path.endsWith(".gmi")) {
-             baseUriString = String.format("%s/", baseUriString);
-        }
+        base = withDirectorySemantics(base);
 
         try {
-            return URI.create(baseUriString.trim()).resolve(target.trim()).toString();
+            return base.resolve(target.trim()).toString();
         } catch (IllegalArgumentException e) {
             // Fallback for malformed URIs
             // Some sites have invalid characters in links. We strip them and retry.
@@ -53,11 +53,35 @@ public class GeminiUriHelper {
 
             // Retry resolution with sanitized target
             try {
-                return URI.create(baseUriString.trim()).resolve(sanitizedTarget).toString();
+                return base.resolve(sanitizedTarget).toString();
             } catch (IllegalArgumentException ex) {
                 // If still fails, return original target or empty string to avoid crash
                 return target;
             }
+        }
+    }
+
+    /**
+     * When the path does not look like a file ({@code .gmi}) and has no trailing slash, append a
+     * slash to the path only so relative links resolve under that path. Query and fragment are kept.
+     */
+    private static URI withDirectorySemantics(URI base) {
+        String path = base.getPath();
+        if (path == null || path.endsWith("/") || path.endsWith(".gmi")) {
+            return base;
+        }
+        String newPath = path.isEmpty() ? "/" : path + "/";
+        try {
+            return new URI(
+                    base.getScheme(),
+                    base.getAuthority(),
+                    newPath,
+                    base.getQuery(),
+                    base.getFragment()
+            );
+        } catch (URISyntaxException e) {
+            // Keep the original base if reconstruction fails (should not happen for valid URIs).
+            return base;
         }
     }
 }

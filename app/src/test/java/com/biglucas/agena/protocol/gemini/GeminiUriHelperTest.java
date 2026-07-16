@@ -52,4 +52,34 @@ public class GeminiUriHelperTest {
         // Regex removes < >. -> foobar.
         assertEquals("gemini://example.com/foobar", GeminiUriHelper.resolve(base, reallyBadTarget));
     }
+
+    @Test
+    public void testResolveRelativePreservesQueryDirectorySemantics() {
+        // After a Gemini input (10) response the page URI often carries a query string.
+        // Directory slash must apply to the path only, not the full string (which would corrupt the query).
+        String base = "gemini://example.com/cgi?user-input";
+        String target = "bar";
+        assertEquals("gemini://example.com/cgi/bar", GeminiUriHelper.resolve(base, target));
+    }
+
+    @Test
+    public void testResolveRelativeWithQueryAndExistingSlash() {
+        String base = "gemini://example.com/cgi/?user-input";
+        String target = "bar";
+        assertEquals("gemini://example.com/cgi/bar", GeminiUriHelper.resolve(base, target));
+    }
+
+    @Test
+    public void testResolveAbsoluteIgnoresBaseQuery() {
+        String base = "gemini://example.com/cgi?user-input";
+        String target = "gemini://other.com/baz";
+        assertEquals("gemini://other.com/baz", GeminiUriHelper.resolve(base, target));
+    }
+
+    @Test
+    public void testHostOnlyBaseGetsRootSlash() {
+        String base = "gemini://example.com";
+        String target = "index.gmi";
+        assertEquals("gemini://example.com/index.gmi", GeminiUriHelper.resolve(base, target));
+    }
 }
