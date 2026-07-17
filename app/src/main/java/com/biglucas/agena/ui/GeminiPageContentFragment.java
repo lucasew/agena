@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 
 import com.biglucas.agena.R;
 import com.biglucas.agena.protocol.gemini.GeminiUriHelper;
+import com.biglucas.agena.protocol.gemini.GemtextParser;
 import com.biglucas.agena.utils.Invoker;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.button.MaterialButton;
@@ -57,20 +58,17 @@ public class GeminiPageContentFragment extends Fragment {
     }
 
     /**
-     * Main parsing loop. Iterates through the content lines and builds the UI.
+     * Builds the page UI from gemtext source lines.
      * <p>
-     * The parsing logic handles:
+     * Structural parsing (including preformatted fences) is delegated to
+     * {@link GemtextParser}; this method only maps elements to Android views:
      * <ul>
-     *     <li><b>Preformatted Text (```):</b> Toggles a state flag. Text inside is collected and rendered in a monospace font inside a HorizontalScrollView.</li>
-     *     <li><b>Links (=>):</b> Parsed using {@link StringTokenizer}. Resolves relative URIs against the current page URI.
-     *         <ul>
-     *             <li>Includes a fallback mechanism for malformed URIs using {@link GeminiUriHelper}.</li>
-     *             <li>Applies a custom {@link GestureDetector} to handle Single Tap (navigate), Double Tap (new window), and Long Press (show URL).</li>
-     *         </ul>
-     *     </li>
-     *     <li><b>Headings (#):</b> Adjusted text size based on heading level (1-3).</li>
-     *     <li><b>List Items (*):</b> Prefixed with a bullet point.</li>
-     *     <li><b>Regular Text:</b> Rendered as standard paragraphs.</li>
+     *     <li><b>Preformatted:</b> Monospace text in a {@link HorizontalScrollView}.</li>
+     *     <li><b>Links (=>):</b> {@link MaterialButton} with {@link GestureDetector}
+     *         for single tap (navigate), double tap (new window), long press (show URL).</li>
+     *     <li><b>Headings (#):</b> Text size scaled by heading level.</li>
+     *     <li><b>List Items (*):</b> Prefixed with a bullet.</li>
+     *     <li><b>Regular Text:</b> Standard paragraphs.</li>
      * </ul>
      */
     @Override
@@ -78,34 +76,18 @@ public class GeminiPageContentFragment extends Fragment {
         LinearLayout contentColumn = this.requireView().findViewById(R.id.content_column);
         contentColumn.removeAllViewsInLayout();
 
-        String monospaceText = null;
-
-        for (String item : this.content) {
-            // Handle preformatted text block start/end
-            if (item.startsWith("```")) {
-                if (monospaceText != null) {
-                    addPreformattedBlock(contentColumn, monospaceText);
-                    monospaceText = null;
-                } else {
-                    monospaceText = "";
-                }
+        for (GemtextParser.Element element : GemtextParser.parse(this.content)) {
+            if (element instanceof GemtextParser.Preformatted) {
+                addPreformattedBlock(contentColumn, ((GemtextParser.Preformatted) element).text);
                 continue;
             }
 
-            // Accumulate preformatted text
-            if (monospaceText != null) {
-                monospaceText = String.format("%s\n%s", monospaceText, item);
-                continue;
-            }
-
-            // Handle Links
+            String item = ((GemtextParser.Line) element).raw;
             if (item.startsWith("=>")) {
                 addLinkButton(contentColumn, item);
-                continue;
+            } else {
+                addTextElement(contentColumn, item);
             }
-
-            // Handle Headings, Lists, and Regular Text
-            addTextElement(contentColumn, item);
         }
     }
 
