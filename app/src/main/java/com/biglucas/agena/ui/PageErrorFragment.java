@@ -14,25 +14,60 @@ import com.biglucas.agena.R;
 import com.biglucas.agena.utils.DebugUIHelper;
 import com.biglucas.agena.utils.StacktraceDialogHandler;
 
+import java.io.Serializable;
+
+/**
+ * Displays a Gemini page load error and optionally a stack trace dialog.
+ * <p>
+ * Error text and exception are stored in fragment arguments so they survive
+ * configuration changes and process death recreation (the no-arg constructor
+ * is used by the framework in those cases).
+ */
 public class PageErrorFragment extends Fragment {
 
-    private final Exception exception;
-    private final String error;
+    private static final String ARG_ERROR = "error";
+    private static final String ARG_EXCEPTION = "exception";
 
     public PageErrorFragment() {
-        this.exception = new Exception();
-        this.error = "";
+        // Required empty public constructor for fragment recreation
     }
 
     public PageErrorFragment(String error, Exception e) {
-        this.error = error;
-        this.exception = e;
+        Bundle args = new Bundle();
+        args.putString(ARG_ERROR, error != null ? error : "");
+        if (e != null) {
+            args.putSerializable(ARG_EXCEPTION, e);
+        }
+        setArguments(args);
+    }
+
+    @NonNull
+    private String errorText() {
+        Bundle args = getArguments();
+        if (args == null) {
+            return "";
+        }
+        String error = args.getString(ARG_ERROR);
+        return error != null ? error : "";
+    }
+
+    @NonNull
+    private Exception errorException() {
+        Bundle args = getArguments();
+        if (args == null) {
+            return new Exception();
+        }
+        Serializable serialized = args.getSerializable(ARG_EXCEPTION);
+        if (serialized instanceof Exception) {
+            return (Exception) serialized;
+        }
+        return new Exception();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         TextView label = view.findViewById(R.id.page_error_label);
-        label.setText(this.error);
+        label.setText(errorText());
 
         Button moreInfoBtn = view.findViewById(R.id.more_information_button);
 
@@ -44,7 +79,7 @@ public class PageErrorFragment extends Fragment {
             return;
         }
         moreInfoBtn.setOnClickListener(v -> {
-            StacktraceDialogHandler.show(requireContext(), this.exception);
+            StacktraceDialogHandler.show(requireContext(), errorException());
         });
     }
 
