@@ -58,8 +58,7 @@ public class AndroidPreparedStatement implements PreparedStatement {
 
         // If it's a SELECT, we should use rawQuery, but execute() is generic.
         // If it starts with SELECT, assume query.
-        String trimmed = sql.trim().toUpperCase();
-        if (trimmed.startsWith("SELECT")) {
+        if (isSelect(sql)) {
              executeQuery(); // But execute() returns boolean
              return true; // Result set available
         } else {
@@ -89,8 +88,7 @@ public class AndroidPreparedStatement implements PreparedStatement {
 
     @Override
     public boolean execute(String sql) throws SQLException {
-        String trimmed = sql.trim().toUpperCase();
-        if (trimmed.startsWith("SELECT")) {
+        if (isSelect(sql)) {
              db.rawQuery(sql, null); // Just execute, result ignored for now as return is boolean
              return true;
         } else {
@@ -101,20 +99,23 @@ public class AndroidPreparedStatement implements PreparedStatement {
 
     @Override
     public void setString(int parameterIndex, String x) throws SQLException {
-        ensureCapacity(parameterIndex);
-        bindArgs.set(parameterIndex - 1, x);
+        bind(parameterIndex, x);
     }
 
     @Override
     public void setInt(int parameterIndex, int x) throws SQLException {
-        ensureCapacity(parameterIndex);
-        bindArgs.set(parameterIndex - 1, x);
+        bind(parameterIndex, x);
     }
 
     @Override
     public void setLong(int parameterIndex, long x) throws SQLException {
+        bind(parameterIndex, x);
+    }
+
+    /** Grow {@link #bindArgs} and store a positional parameter (1-based JDBC index). */
+    private void bind(int parameterIndex, Object value) {
         ensureCapacity(parameterIndex);
-        bindArgs.set(parameterIndex - 1, x);
+        bindArgs.set(parameterIndex - 1, value);
     }
 
     private void ensureCapacity(int index) {
@@ -123,25 +124,30 @@ public class AndroidPreparedStatement implements PreparedStatement {
         }
     }
 
+    /** True when {@code sql} looks like a SELECT (shared by both {@code execute} overloads). */
+    private static boolean isSelect(String sql) {
+        return sql.trim().toUpperCase().startsWith("SELECT");
+    }
+
     // --- Stubs ---
 
-    @Override public void setNull(int parameterIndex, int sqlType) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, null); }
-    @Override public void setBoolean(int parameterIndex, boolean x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x ? 1 : 0); }
-    @Override public void setByte(int parameterIndex, byte x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setShort(int parameterIndex, short x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setFloat(int parameterIndex, float x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setDouble(int parameterIndex, double x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setBytes(int parameterIndex, byte[] x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setDate(int parameterIndex, Date x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setTime(int parameterIndex, Time x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
+    @Override public void setNull(int parameterIndex, int sqlType) throws SQLException { bind(parameterIndex, null); }
+    @Override public void setBoolean(int parameterIndex, boolean x) throws SQLException { bind(parameterIndex, x ? 1 : 0); }
+    @Override public void setByte(int parameterIndex, byte x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setShort(int parameterIndex, short x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setFloat(int parameterIndex, float x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setDouble(int parameterIndex, double x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setBytes(int parameterIndex, byte[] x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setDate(int parameterIndex, Date x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setTime(int parameterIndex, Time x) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException { bind(parameterIndex, x); }
     @Override public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException { }
     @Override public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException { }
     @Override public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException { }
     @Override public void clearParameters() throws SQLException { bindArgs.clear(); }
-    @Override public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
-    @Override public void setObject(int parameterIndex, Object x) throws SQLException { ensureCapacity(parameterIndex); bindArgs.set(parameterIndex - 1, x); }
+    @Override public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException { bind(parameterIndex, x); }
+    @Override public void setObject(int parameterIndex, Object x) throws SQLException { bind(parameterIndex, x); }
     @Override public void addBatch() throws SQLException { }
     @Override public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException { }
     @Override public void setRef(int parameterIndex, Ref x) throws SQLException { }
