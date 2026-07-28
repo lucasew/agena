@@ -1,7 +1,6 @@
 package com.biglucas.agena.db.wrapper;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -25,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class AndroidResultSet implements ResultSet {
     private final Cursor cursor;
