@@ -43,27 +43,53 @@ public class StorageHelper {
 
             if (!agenaDir.exists()) {
                 if (!agenaDir.mkdirs()) {
-                    ErrorReporter.reportError(TAG, "Failed to create AGENA directory, falling back to private storage");
-                    DebugUIHelper.showToast(context, "DB: Failed to create dir - using private storage");
-                    return null;
+                    return fallBackToPrivateStorage(
+                            context,
+                            "Failed to create AGENA directory, falling back to private storage",
+                            "DB: Failed to create dir - using private storage");
                 }
             }
 
             if (!agenaDir.canWrite()) {
-                ErrorReporter.reportError(TAG, "AGENA directory not writable, falling back to private storage");
-                DebugUIHelper.showToast(context, "DB: Dir not writable - using private storage");
-                return null;
+                return fallBackToPrivateStorage(
+                        context,
+                        "AGENA directory not writable, falling back to private storage",
+                        "DB: Dir not writable - using private storage");
             }
 
             File dbFile = new File(agenaDir, HISTORY_FILENAME);
             String dbPath = dbFile.getAbsolutePath();
             Log.i(TAG, "✅ Using database at: " + dbPath);
-            DebugUIHelper.showToast(context, "✅ DB at: Downloads/AGENA/" + HISTORY_FILENAME);
+            DebugUIHelper.showToast(
+                    context,
+                    "✅ DB at: Downloads/" + GeminiSpec.DOWNLOAD_DIRECTORY_NAME + "/" + HISTORY_FILENAME);
             return dbPath;
         } catch (Exception e) {
-            ErrorReporter.reportError(TAG, "Error accessing Downloads directory: " + e.getMessage(), e);
-            DebugUIHelper.showToast(context, "DB: Error - using private storage");
-            return null; // Fallback to private storage on any error
+            return fallBackToPrivateStorage(
+                    context,
+                    "Error accessing Downloads directory: " + e.getMessage(),
+                    "DB: Error - using private storage",
+                    e);
         }
+    }
+
+    /**
+     * Logs a path-resolution failure, shows a debug toast, and signals private storage.
+     *
+     * @return always {@code null} so callers can {@code return} the helper directly
+     */
+    private static String fallBackToPrivateStorage(Context context, String logMessage, String toastMessage) {
+        return fallBackToPrivateStorage(context, logMessage, toastMessage, null);
+    }
+
+    private static String fallBackToPrivateStorage(
+            Context context, String logMessage, String toastMessage, Throwable cause) {
+        if (cause != null) {
+            ErrorReporter.reportError(TAG, logMessage, cause);
+        } else {
+            ErrorReporter.reportError(TAG, logMessage);
+        }
+        DebugUIHelper.showToast(context, toastMessage);
+        return null;
     }
 }
