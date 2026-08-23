@@ -35,7 +35,7 @@ public class GeminiExceptionTest {
         FailedGeminiRequestException.GeminiTooManyRedirects exception =
                 new FailedGeminiRequestException.GeminiTooManyRedirects();
 
-        assertEquals("Too many redirects (max 5)", exception.getMessage());
+        assertEquals("Too many redirects (max " + GeminiSpec.MAX_REDIRECTS + ")", exception.getMessage());
     }
 
     @Test

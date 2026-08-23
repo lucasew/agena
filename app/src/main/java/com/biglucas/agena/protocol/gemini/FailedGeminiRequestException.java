@@ -30,7 +30,7 @@ public class FailedGeminiRequestException extends Exception {
     // Redirects (30-39) - handled internally
     public static class GeminiTooManyRedirects extends FailedGeminiRequestException {
         public GeminiTooManyRedirects() {
-            super("Too many redirects (max 5)");
+            super("Too many redirects (max " + GeminiSpec.MAX_REDIRECTS + ")");
         }
     }
 
