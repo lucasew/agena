@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="warning_icon">അപ്രതീക്ഷിതമായി എന്തോ സംഭവിച്ചു എന്ന് വ്യക്തമാക്കുന്നതിനുള്ള ഒരു മുന്നറിയിപ്പ് ഐക്കൺ മാത്രം</string>
+    <string name="more_information">കൂടുതൽ വിവരങ്ങൾ</string>
+    <string name="stacktrace_copied">സ്റ്റാക്ക് ട്രെയ്‌സ് ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തി</string>
 </resources>
