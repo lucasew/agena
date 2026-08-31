@@ -21,12 +21,9 @@ import com.biglucas.agena.R;
 import com.biglucas.agena.protocol.gemini.GeminiUriHelper;
 import com.biglucas.agena.protocol.gemini.GemtextParser;
 import com.biglucas.agena.utils.Invoker;
-import com.biglucas.agena.utils.StacktraceDialogHandler;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
-import java.util.IllegalFormatConversionException;
-import java.util.StringTokenizer;
 
 /**
  * Fragment responsible for parsing and rendering `text/gemini` content.
@@ -60,14 +57,14 @@ public class GeminiPageContentFragment extends Fragment {
     /**
      * Builds the page UI from gemtext source lines.
      * <p>
-     * Structural parsing (including preformatted fences) is delegated to
+     * Structural parsing (fences, links, headings, lists) is delegated to
      * {@link GemtextParser}; this method only maps elements to Android views:
      * <ul>
      *     <li><b>Preformatted:</b> Monospace text in a {@link HorizontalScrollView}.</li>
-     *     <li><b>Links (=>):</b> {@link MaterialButton} with {@link GestureDetector}
+     *     <li><b>Links:</b> {@link MaterialButton} with {@link GestureDetector}
      *         for single tap (navigate), double tap (new window), long press (show URL).</li>
-     *     <li><b>Headings (#):</b> Text size scaled by heading level.</li>
-     *     <li><b>List Items (*):</b> Prefixed with a bullet.</li>
+     *     <li><b>Headings:</b> Text size scaled by heading level.</li>
+     *     <li><b>List Items:</b> Prefixed with a bullet.</li>
      *     <li><b>Regular Text:</b> Standard paragraphs.</li>
      * </ul>
      */
@@ -79,14 +76,15 @@ public class GeminiPageContentFragment extends Fragment {
         for (GemtextParser.Element element : GemtextParser.parse(this.content)) {
             if (element instanceof GemtextParser.Preformatted) {
                 addPreformattedBlock(contentColumn, ((GemtextParser.Preformatted) element).text);
-                continue;
-            }
-
-            String item = ((GemtextParser.Line) element).raw;
-            if (item.startsWith("=>")) {
-                addLinkButton(contentColumn, item);
-            } else {
-                addTextElement(contentColumn, item);
+            } else if (element instanceof GemtextParser.Link) {
+                addLinkButton(contentColumn, (GemtextParser.Link) element);
+            } else if (element instanceof GemtextParser.Heading) {
+                addHeading(contentColumn, (GemtextParser.Heading) element);
+            } else if (element instanceof GemtextParser.ListItem) {
+                addTextView(contentColumn, String.format("○ %s", ((GemtextParser.ListItem) element).text),
+                        textSizeBaseline);
+            } else if (element instanceof GemtextParser.Text) {
+                addTextView(contentColumn, ((GemtextParser.Text) element).raw, textSizeBaseline);
             }
         }
     }
@@ -103,35 +101,16 @@ public class GeminiPageContentFragment extends Fragment {
         container.addView(horizontalScrollView);
     }
 
-    private void addLinkButton(LinearLayout container, String item) {
-        try {
-            StringTokenizer tokenizer = new StringTokenizer(item.substring(2));
-            if (!tokenizer.hasMoreTokens()) {
-                return;
-            }
-            String buttonURI = tokenizer.nextToken().trim();
-            String label = "";
-            while (tokenizer.hasMoreElements()) {
-                label = String.format("%s %s", label, tokenizer.nextToken());
-            }
-            label = label.trim();
-            if (label.isEmpty()) {
-                label = buttonURI;
-            }
+    private void addLinkButton(LinearLayout container, GemtextParser.Link link) {
+        MaterialButton button = new MaterialButton(this.requireContext());
+        button.setText(link.label);
+        button.setAllCaps(false);
 
-            MaterialButton button = new MaterialButton(this.requireContext());
-            button.setText(label);
-            button.setAllCaps(false);
+        String resolvedUriString = GeminiUriHelper.resolve(this.oldURI.toString(), link.target);
+        final Uri uri = Uri.parse(resolvedUriString);
 
-            // Use GeminiUriHelper for resolution
-            String resolvedUriString = GeminiUriHelper.resolve(this.oldURI.toString(), buttonURI);
-            final Uri uri = Uri.parse(resolvedUriString);
-
-            button.setOnTouchListener(createLinkTouchListener(uri));
-            container.addView(button);
-        } catch (IllegalFormatConversionException e) {
-            StacktraceDialogHandler.show(getContext(), e);
-        }
+        button.setOnTouchListener(createLinkTouchListener(uri));
+        container.addView(button);
     }
 
     private View.OnTouchListener createLinkTouchListener(final Uri uri) {
@@ -166,39 +145,22 @@ public class GeminiPageContentFragment extends Fragment {
         };
     }
 
-    private void addTextElement(LinearLayout container, String item) {
+    private void addHeading(LinearLayout container, GemtextParser.Heading heading) {
+        float size;
+        switch (heading.level) {
+            case 1: size = textSizeBaseline * (20f / 11f); break;
+            case 2: size = textSizeBaseline * (16f / 11f); break;
+            case 3: size = textSizeBaseline * (14f / 11f); break;
+            case 4: size = textSizeBaseline * (12f / 11f); break;
+            default: size = textSizeBaseline;
+        }
+        addTextView(container, heading.text, size);
+    }
+
+    private void addTextView(LinearLayout container, String text, float size) {
         TextView tv = new TextView(this.getContext());
-
-        int headingLevels = 0;
-        int cutoutLevels = 0;
-        for (int i = 0; i < item.length(); i++) {
-            if (item.charAt(i) != '#') {
-                break;
-            }
-            headingLevels++;
-        }
-        if (headingLevels > 0) {
-            cutoutLevels += headingLevels;
-        }
-
-        switch (headingLevels) {
-            case 1: tv.setTextSize(textSizeBaseline * (20f/11f)); break;
-            case 2: tv.setTextSize(textSizeBaseline * (16f/11f)); break;
-            case 3: tv.setTextSize(textSizeBaseline * (14f/11f)); break;
-            case 4: tv.setTextSize(textSizeBaseline * (12f/11f)); break;
-            default: tv.setTextSize(textSizeBaseline);
-        }
-
-        if (item.startsWith("*")) {
-            cutoutLevels += 1;
-        }
-
-        String labelText = item.substring(cutoutLevels).trim();
-        if (item.startsWith("*")) {
-            labelText = String.format("○ %s", labelText);
-        }
-
-        tv.setText(labelText);
+        tv.setTextSize(size);
+        tv.setText(text);
         container.addView(tv);
     }
 }

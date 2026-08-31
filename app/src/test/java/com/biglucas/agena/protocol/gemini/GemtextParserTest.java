@@ -18,17 +18,21 @@ public class GemtextParserTest {
     }
 
     @Test
-    public void plainLinesPassThrough() {
+    public void plainLinesAreClassified() {
         List<GemtextParser.Element> elements = GemtextParser.parse(Arrays.asList(
                 "# Heading",
                 "Hello",
                 "=> /link Label"
         ));
         assertEquals(3, elements.size());
-        assertTrue(elements.get(0) instanceof GemtextParser.Line);
-        assertEquals("# Heading", ((GemtextParser.Line) elements.get(0)).raw);
-        assertEquals("Hello", ((GemtextParser.Line) elements.get(1)).raw);
-        assertEquals("=> /link Label", ((GemtextParser.Line) elements.get(2)).raw);
+        assertTrue(elements.get(0) instanceof GemtextParser.Heading);
+        assertEquals(1, ((GemtextParser.Heading) elements.get(0)).level);
+        assertEquals("Heading", ((GemtextParser.Heading) elements.get(0)).text);
+        assertTrue(elements.get(1) instanceof GemtextParser.Text);
+        assertEquals("Hello", ((GemtextParser.Text) elements.get(1)).raw);
+        assertTrue(elements.get(2) instanceof GemtextParser.Link);
+        assertEquals("/link", ((GemtextParser.Link) elements.get(2)).target);
+        assertEquals("Label", ((GemtextParser.Link) elements.get(2)).label);
     }
 
     @Test
@@ -42,10 +46,10 @@ public class GemtextParserTest {
                 "after"
         ));
         assertEquals(3, elements.size());
-        assertEquals("before", ((GemtextParser.Line) elements.get(0)).raw);
+        assertEquals("before", ((GemtextParser.Text) elements.get(0)).raw);
         assertTrue(elements.get(1) instanceof GemtextParser.Preformatted);
         assertEquals("line1\nline2", ((GemtextParser.Preformatted) elements.get(1)).text);
-        assertEquals("after", ((GemtextParser.Line) elements.get(2)).raw);
+        assertEquals("after", ((GemtextParser.Text) elements.get(2)).raw);
     }
 
     @Test
@@ -58,7 +62,7 @@ public class GemtextParserTest {
                 "code b"
         ));
         assertEquals(2, elements.size());
-        assertEquals("intro", ((GemtextParser.Line) elements.get(0)).raw);
+        assertEquals("intro", ((GemtextParser.Text) elements.get(0)).raw);
         assertTrue(elements.get(1) instanceof GemtextParser.Preformatted);
         assertEquals("code a\ncode b", ((GemtextParser.Preformatted) elements.get(1)).text);
     }
@@ -83,5 +87,60 @@ public class GemtextParserTest {
         ));
         assertEquals(1, elements.size());
         assertEquals("print(1)", ((GemtextParser.Preformatted) elements.get(0)).text);
+    }
+
+    @Test
+    public void linkJoinsMultiWordLabel() {
+        List<GemtextParser.Element> elements = GemtextParser.parse(
+                Collections.singletonList("=> /path  Foo   Bar"));
+        GemtextParser.Link link = (GemtextParser.Link) elements.get(0);
+        assertEquals("/path", link.target);
+        assertEquals("Foo Bar", link.label);
+    }
+
+    @Test
+    public void headingLevelCountsLeadingHashes() {
+        List<GemtextParser.Element> elements = GemtextParser.parse(Arrays.asList(
+                "## Two",
+                "#### Four"
+        ));
+        assertEquals(2, ((GemtextParser.Heading) elements.get(0)).level);
+        assertEquals("Two", ((GemtextParser.Heading) elements.get(0)).text);
+        assertEquals(4, ((GemtextParser.Heading) elements.get(1)).level);
+        assertEquals("Four", ((GemtextParser.Heading) elements.get(1)).text);
+    }
+
+    @Test
+    public void linkWithoutLabelUsesTarget() {
+        List<GemtextParser.Element> elements = GemtextParser.parse(Collections.singletonList("=> /only"));
+        assertEquals(1, elements.size());
+        GemtextParser.Link link = (GemtextParser.Link) elements.get(0);
+        assertEquals("/only", link.target);
+        assertEquals("/only", link.label);
+    }
+
+    @Test
+    public void emptyLinkLineIsOmitted() {
+        List<GemtextParser.Element> elements = GemtextParser.parse(Arrays.asList("=>", "=>   ", "kept"));
+        assertEquals(1, elements.size());
+        assertEquals("kept", ((GemtextParser.Text) elements.get(0)).raw);
+    }
+
+    @Test
+    public void listItemStripsMarker() {
+        List<GemtextParser.Element> elements = GemtextParser.parse(Collections.singletonList("* item"));
+        assertEquals(1, elements.size());
+        assertEquals("item", ((GemtextParser.ListItem) elements.get(0)).text);
+    }
+
+    @Test
+    public void headingHashInPreformattedIsNotAHeading() {
+        List<GemtextParser.Element> elements = GemtextParser.parse(Arrays.asList(
+                "```",
+                "# not a heading",
+                "```"
+        ));
+        assertEquals(1, elements.size());
+        assertEquals("# not a heading", ((GemtextParser.Preformatted) elements.get(0)).text);
     }
 }
