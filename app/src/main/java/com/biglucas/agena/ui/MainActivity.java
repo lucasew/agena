@@ -127,9 +127,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Permission result: " + (granted ? "GRANTED" : "DENIED"));
 
                 if (granted) {
-                    Toast.makeText(this, "Storage permission granted! History will persist across uninstalls.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.storage_permission_granted, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "Storage permission denied. History will use private storage.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.storage_permission_denied, Toast.LENGTH_SHORT).show();
                 }
             } else {
                 ErrorReporter.reportError(TAG, "grantResults array is empty!");
