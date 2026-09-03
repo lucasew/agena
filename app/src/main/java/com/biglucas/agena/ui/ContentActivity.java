@@ -95,9 +95,6 @@ public class ContentActivity extends AppCompatActivity {
                 }
                 lineCount++;
                 String line = dis.readLine();
-                if (line != null) {
-                    Log.v(TAG, line);
-                }
                 if (line == null) {
                     break;
                 }
