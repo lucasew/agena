@@ -1,10 +1,7 @@
 package com.biglucas.agena.utils;
 
-import android.annotation.SuppressLint;
-
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
