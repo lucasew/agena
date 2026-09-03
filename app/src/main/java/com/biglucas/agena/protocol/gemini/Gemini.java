@@ -84,7 +84,8 @@ public class Gemini {
      * @throws NoSuchAlgorithmException If hashing algorithms are missing.
      * @throws KeyManagementException If SSL setup fails.
      */
-    public List<String> request(Activity activity, Uri uri) throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
+    public List<String> request(Activity activity, Uri uri)
+            throws IOException, FailedGeminiRequestException, NoSuchAlgorithmException, KeyManagementException {
         // Validate URI according to Gemini spec
         validateUri(uri);
         // Start request with redirect counter at 0
