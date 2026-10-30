@@ -38,4 +38,6 @@
     <string name="error_reading_file_message_size">Não foi possível determinar o tamanho do arquivo.</string>
     <string name="error_unsupported_scheme">Esquema não suportado: %1$s</string>
     <string name="error_database_write">Falha ao gravar no histórico</string>
+    <string name="storage_permission_granted">Permissão de armazenamento concedida! O histórico será mantido mesmo após a desinstalação.</string>
+    <string name="storage_permission_denied">Permissão de armazenamento negada. O histórico utilizará armazenamento privado.</string>
 </resources>
