@@ -38,4 +38,6 @@
     <string name="error_reading_file_message_size">கோப்பு அளவை தீர்மானிக்க முடியவில்லை.</string>
     <string name="error_unsupported_scheme">ஆதரிக்கப்படாத திட்டம்: %1$s</string>
     <string name="error_database_write">வரலாற்றில் எழுத முடியவில்லை</string>
+    <string name="storage_permission_granted">சேமிப்பக அனுமதி வழங்கப்பட்டது! செயலியை நீக்கினாலும் வரலாறு அப்படியே இருக்கும்.</string>
+    <string name="storage_permission_denied">சேமிப்பக அனுமதி மறுக்கப்பட்டது. வரலாறு தனிப்பட்ட சேமிப்பகத்தைப் பயன்படுத்தும்.</string>
 </resources>
