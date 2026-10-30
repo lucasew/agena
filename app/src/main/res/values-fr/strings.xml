@@ -38,4 +38,6 @@
     <string name="error_reading_file_message_size">Impossible de déterminer la taille du fichier.</string>
     <string name="error_unsupported_scheme">Schéma non-supporté : %1$s</string>
     <string name="error_database_write">Echec lors de l\'écriture de l\'historique</string>
+    <string name="storage_permission_granted">Autorisation de stockage accordée ! L\'historique sera conservé même après une désinstallation.</string>
+    <string name="storage_permission_denied">Autorisation de stockage refusée. L’historique utilisera un espace de stockage privé.</string>
 </resources>
