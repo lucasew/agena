@@ -1,8 +1,6 @@
 package com.biglucas.agena.db.wrapper;
 
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 
 import java.sql.Array;
 import java.sql.Blob;
@@ -21,7 +19,6 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Executor;
 
 public class AndroidConnection implements Connection {
     private final SQLiteDatabase db;
