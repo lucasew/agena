@@ -53,28 +53,32 @@ public final class GeminiSpec {
     public static final int STATUS_CERT_NOT_AUTHORIZED = 61;
     public static final int STATUS_CERT_NOT_VALID = 62;
 
-    // Helper methods for ranges
+    // Helper methods for ranges. Categories are half-open: [low, high).
     public static boolean isInput(int code) {
-        return code >= CATEGORY_INPUT && code < CATEGORY_SUCCESS;
+        return inRange(code, CATEGORY_INPUT, CATEGORY_SUCCESS);
     }
 
     public static boolean isSuccess(int code) {
-        return code >= CATEGORY_SUCCESS && code < CATEGORY_REDIRECT;
+        return inRange(code, CATEGORY_SUCCESS, CATEGORY_REDIRECT);
     }
 
     public static boolean isRedirect(int code) {
-        return code >= CATEGORY_REDIRECT && code < CATEGORY_TEMP_FAILURE;
+        return inRange(code, CATEGORY_REDIRECT, CATEGORY_TEMP_FAILURE);
     }
 
     public static boolean isTemporaryFailure(int code) {
-        return code >= CATEGORY_TEMP_FAILURE && code < CATEGORY_PERM_FAILURE;
+        return inRange(code, CATEGORY_TEMP_FAILURE, CATEGORY_PERM_FAILURE);
     }
 
     public static boolean isPermanentFailure(int code) {
-        return code >= CATEGORY_PERM_FAILURE && code < CATEGORY_CLIENT_CERT;
+        return inRange(code, CATEGORY_PERM_FAILURE, CATEGORY_CLIENT_CERT);
     }
 
     public static boolean isClientCertificateRequired(int code) {
-        return code >= CATEGORY_CLIENT_CERT && code < CATEGORY_RESERVED;
+        return inRange(code, CATEGORY_CLIENT_CERT, CATEGORY_RESERVED);
+    }
+
+    private static boolean inRange(int code, int lowInclusive, int highExclusive) {
+        return code >= lowInclusive && code < highExclusive;
     }
 }
